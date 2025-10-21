@@ -824,17 +824,44 @@ const MatchesCalendar = {
         const upcomingByCategory = {};
         const categories = ['SENIOR', 'FEMENINO', 'SUB18', 'SUB16', 'SUB14', 'SUB12', 'SUB10', 'SUB8', 'SUB6'];
 
+        // First, handle Rugby Day separately (only show one card for all Rugby Day events)
+        const rugbyDayMatches = this.allMatches
+            .filter(m => {
+                const matchCategory = (m.category || '').toUpperCase();
+                return matchCategory.includes('RUGBY DAY');
+            })
+            .filter(m => {
+                const matchDate = new Date(m.date + 'T00:00:00');
+                matchDate.setHours(0, 0, 0, 0);
+                return matchDate >= today;
+            })
+            .sort((a, b) => new Date(a.date) - new Date(b.date));
+
+        if (rugbyDayMatches.length > 0) {
+            const nextRugbyDay = rugbyDayMatches[0];
+            const matchDate = new Date(nextRugbyDay.date + 'T00:00:00');
+            matchDate.setHours(0, 0, 0, 0);
+            const diffTime = matchDate.getTime() - today.getTime();
+            const daysUntil = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+
+            upcomingByCategory['RUGBY DAY'] = {
+                match: nextRugbyDay,
+                daysUntil: daysUntil
+            };
+        }
+
+        // Then handle regular categories (excluding Rugby Day)
         categories.forEach(category => {
             const categoryMatches = this.allMatches
                 .filter(m => {
                     const matchCategory = (m.category || '').toUpperCase();
-                    const filterCategory = category.toUpperCase();
 
-                    // Special case for RUGBY DAY - only show in younger categories (SUB6, SUB8, SUB10, SUB12)
+                    // Skip Rugby Day matches (already handled above)
                     if (matchCategory.includes('RUGBY DAY')) {
-                        const youngerCategories = ['SUB6', 'SUB8', 'SUB10', 'SUB12'];
-                        return youngerCategories.includes(filterCategory);
+                        return false;
                     }
+
+                    const filterCategory = category.toUpperCase();
 
                     // Check if the match category contains the filter category
                     // Try both with and without space: "SUB18" or "SUB 18"
