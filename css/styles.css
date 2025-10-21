@@ -4115,6 +4115,143 @@ img {
     text-align: center;
 }
 
+/* Matches Table View */
+.matches-table-container {
+    width: 100%;
+}
+
+.matches-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.matches-table thead {
+    background: var(--navy);
+    color: white;
+}
+
+.matches-table thead th {
+    padding: 1rem;
+    text-align: left;
+    font-weight: 600;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.matches-table tbody tr {
+    border-bottom: 1px solid #e8e8e8;
+    transition: background-color 0.2s ease;
+}
+
+.matches-table tbody tr:hover {
+    background-color: #f8f9fa;
+}
+
+.matches-table tbody tr:last-child {
+    border-bottom: none;
+}
+
+.matches-table tbody td {
+    padding: 1rem;
+    color: #333;
+    font-size: 0.95rem;
+}
+
+.matches-table tbody td strong {
+    color: var(--navy);
+    font-weight: 700;
+}
+
+/* Category badges in table */
+.matches-table .category-badge {
+    display: inline-block;
+    padding: 0.35rem 0.7rem;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.category-senior {
+    background: #1e3a8a;
+    color: white;
+}
+
+.category-femenino {
+    background: #db2777;
+    color: white;
+}
+
+.category-sub18 {
+    background: #059669;
+    color: white;
+}
+
+.category-sub16 {
+    background: #0891b2;
+    color: white;
+}
+
+.category-sub14 {
+    background: #ea580c;
+    color: white;
+}
+
+.category-sub12 {
+    background: #7c3aed;
+    color: white;
+}
+
+.category-sub10 {
+    background: #c026d3;
+    color: white;
+}
+
+.category-sub8 {
+    background: #65a30d;
+    color: white;
+}
+
+.category-sub6 {
+    background: #0369a1;
+    color: white;
+}
+
+/* Status badges in table */
+.matches-table .status-badge {
+    padding: 0.35rem 0.7rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.status-confirmed {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.status-planned {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.status-cancelled {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.status-finished {
+    background: #dbeafe;
+    color: #1e40af;
+}
+
 /* Responsive Design */
 @media (max-width: 1024px) {
     .calendar-day {
@@ -4159,15 +4296,6 @@ img {
         padding: 0.5rem 1rem;
     }
 
-    /* Hide calendar grid on mobile, show list instead */
-    .calendar-grid {
-        display: none !important;
-    }
-
-    .matches-list {
-        display: block !important;
-    }
-
     .match-date-group {
         padding: 1rem;
     }
@@ -4183,6 +4311,44 @@ img {
 
     .match-detail {
         font-size: 0.9rem;
+    }
+
+    /* Responsive table for mobile */
+    .matches-table {
+        font-size: 0.85rem;
+    }
+
+    .matches-table thead {
+        display: none;
+    }
+
+    .matches-table tbody td {
+        display: block;
+        padding: 0.5rem 1rem;
+        text-align: right;
+        border: none;
+        position: relative;
+    }
+
+    .matches-table tbody td::before {
+        content: attr(data-label);
+        position: absolute;
+        left: 1rem;
+        font-weight: 600;
+        color: var(--navy);
+        text-align: left;
+    }
+
+    .matches-table tbody tr {
+        display: block;
+        margin-bottom: 1.5rem;
+        border: 1px solid #e8e8e8;
+        border-radius: 8px;
+        padding: 0.5rem 0;
+    }
+
+    .matches-table tbody tr:hover {
+        background-color: white;
     }
 }
 

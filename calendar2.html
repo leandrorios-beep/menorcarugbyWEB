@@ -104,12 +104,8 @@
                     </button>
                 </div>
 
-                <!-- Calendar Grid - Hidden in List View -->
-                <div class="calendar-grid" id="calendarGrid" style="display: none !important;">
-                </div>
-
-                <!-- Matches List - Always Visible -->
-                <div class="matches-list" id="matchesList" style="display: block !important;">
+                <!-- Matches Table - Always Visible -->
+                <div class="matches-table-container" id="matchesTable">
                     <div class="calendar-loading">
                         <i class="fas fa-spinner fa-spin"></i>
                         <span>Cargando partidos...</span>
@@ -169,18 +165,7 @@
     <!-- Scripts -->
     <script src="js/config-loader.js" defer></script>
     <script src="js/i18n.js" defer></script>
-    <script src="js/calendar.js" defer></script>
-    <script>
-        // Force list view on this page
-        document.addEventListener('DOMContentLoaded', function() {
-            setTimeout(() => {
-                if (typeof MatchesCalendar !== 'undefined') {
-                    MatchesCalendar.currentView = 'list';
-                    MatchesCalendar.loadAllMatches();
-                }
-            }, 1000);
-        });
-    </script>
+    <script src="js/calendar2.js" defer></script>
     <script src="js/main.js" defer></script>
 </body>
 </html>
