@@ -222,8 +222,11 @@
   "calendar": {
     "title": "Calendario de Partidos",
     "subtitle": "Próximos encuentros y resultados",
+    "list_title": "Lista Completa de Partidos",
+    "list_subtitle": "Todos los partidos de la temporada • Octubre 2025 - Mayo 2026",
     "loading": "Cargando partidos...",
     "view_full_list": "Ver Lista Completa",
+    "view_calendar": "Ver Calendario",
     "rotate_device": "Gira tu dispositivo para una mejor experiencia",
     "filter": {
       "all": "Todos",

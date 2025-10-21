@@ -242,8 +242,11 @@
   "calendar": {
     "title": "Calendário de Jogos",
     "subtitle": "Próximos jogos e resultados",
+    "list_title": "Lista Completa de Jogos",
+    "list_subtitle": "Todos os jogos da temporada • Outubro 2025 - Maio 2026",
     "loading": "Carregando jogos...",
     "view_full_list": "Ver Lista Completa",
+    "view_calendar": "Ver Calendário",
     "rotate_device": "Gire o seu dispositivo para uma melhor experiência",
     "filter": {
       "all": "Todos",

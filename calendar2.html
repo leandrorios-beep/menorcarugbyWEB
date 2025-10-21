@@ -30,10 +30,10 @@
     <!-- Header/Navigation -->
     <nav class="navbar" id="navbar">
         <div class="nav-container">
-            <div class="nav-brand">
+            <a href="index.html" class="nav-brand">
                 <img src="assets/images/static/logo.png" alt="Menorca Rugby" class="logo">
                 <span class="brand-text" data-i18n="nav.brand">MENORCA RUGBY</span>
-            </div>
+            </a>
 
             <ul class="nav-menu" id="nav-menu">
                 <li><a href="index.html#inicio" class="nav-link" data-i18n="nav.home">Inicio</a></li>
@@ -57,8 +57,8 @@
     <section id="calendario" class="calendar-section" style="padding-top: 120px;">
         <div class="container">
             <div class="section-header">
-                <h1>Lista Completa de Partidos</h1>
-                <p>Todos los partidos de la temporada • Octubre 2025 - Mayo 2026</p>
+                <h1 data-i18n="calendar.list_title">Lista Completa de Partidos</h1>
+                <p data-i18n="calendar.list_subtitle">Todos los partidos de la temporada • Octubre 2025 - Mayo 2026</p>
             </div>
 
             <div class="calendar-container">
@@ -66,7 +66,7 @@
                 <div style="text-align: right; margin-bottom: 1rem;">
                     <a href="calendar.html" style="color: var(--navy); text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1.5rem; background: white; border: 2px solid var(--yellow); border-radius: 8px; font-weight: 600; transition: all 0.3s;">
                         <i class="fas fa-calendar-alt"></i>
-                        <span>Ver Calendario</span>
+                        <span data-i18n="calendar.view_calendar">Ver Calendario</span>
                     </a>
                 </div>
 
@@ -108,7 +108,7 @@
                 <div class="matches-table-container" id="matchesTable">
                     <div class="calendar-loading">
                         <i class="fas fa-spinner fa-spin"></i>
-                        <span>Cargando partidos...</span>
+                        <span data-i18n="calendar.loading">Cargando partidos...</span>
                     </div>
                 </div>
             </div>

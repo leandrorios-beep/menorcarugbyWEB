@@ -242,8 +242,11 @@
   "calendar": {
     "title": "Match Calendar",
     "subtitle": "Upcoming matches and results",
+    "list_title": "Complete Match List",
+    "list_subtitle": "All matches of the season • October 2025 - May 2026",
     "loading": "Loading matches...",
     "view_full_list": "View Full List",
+    "view_calendar": "View Calendar",
     "rotate_device": "Rotate your device for a better experience",
     "filter": {
       "all": "All",

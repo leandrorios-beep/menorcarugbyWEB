@@ -242,8 +242,11 @@
   "calendar": {
     "title": "Calendari de Partits",
     "subtitle": "Pròxims encontres i resultats",
+    "list_title": "Llista Completa de Partits",
+    "list_subtitle": "Tots els partits de la temporada • Octubre 2025 - Maig 2026",
     "loading": "Carregant partits...",
     "view_full_list": "Veure Llista Completa",
+    "view_calendar": "Veure Calendari",
     "rotate_device": "Gira el teu dispositiu per a una millor experiència",
     "filter": {
       "all": "Tots",
