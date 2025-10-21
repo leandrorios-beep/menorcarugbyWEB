@@ -243,6 +243,8 @@
     "title": "Calendrier des Matchs",
     "subtitle": "Prochains matchs et résultats",
     "loading": "Chargement des matchs...",
+    "view_full_list": "Voir Liste Complète",
+    "rotate_device": "Tournez votre appareil pour une meilleure expérience",
     "filter": {
       "all": "Tous",
       "senior": "Senior",

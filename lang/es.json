@@ -223,6 +223,8 @@
     "title": "Calendario de Partidos",
     "subtitle": "Próximos encuentros y resultados",
     "loading": "Cargando partidos...",
+    "view_full_list": "Ver Lista Completa",
+    "rotate_device": "Gira tu dispositivo para una mejor experiencia",
     "filter": {
       "all": "Todos",
       "senior": "Senior",

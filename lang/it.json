@@ -243,6 +243,8 @@
     "title": "Calendario Partite",
     "subtitle": "Prossimi incontri e risultati",
     "loading": "Caricamento partite...",
+    "view_full_list": "Visualizza Lista Completa",
+    "rotate_device": "Ruota il tuo dispositivo per una migliore esperienza",
     "filter": {
       "all": "Tutti",
       "senior": "Senior",

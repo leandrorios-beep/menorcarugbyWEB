@@ -243,6 +243,8 @@
     "title": "Calendário de Jogos",
     "subtitle": "Próximos jogos e resultados",
     "loading": "Carregando jogos...",
+    "view_full_list": "Ver Lista Completa",
+    "rotate_device": "Gire o seu dispositivo para uma melhor experiência",
     "filter": {
       "all": "Todos",
       "senior": "Sénior",

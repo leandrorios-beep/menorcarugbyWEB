@@ -3634,6 +3634,64 @@ img {
     margin: 0 auto;
 }
 
+/* Rotate Device Message (Mobile Portrait Only) */
+.rotate-device-message {
+    display: none;
+}
+
+@media (max-width: 768px) and (orientation: portrait) {
+    .rotate-device-message {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.75rem;
+        padding: 1rem 1.5rem;
+        margin: 0 1rem 1.5rem 1rem;
+        background: linear-gradient(135deg, #ffc107 0%, #ffb300 100%);
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(255, 193, 7, 0.3);
+        animation: gentle-pulse 2s ease-in-out infinite;
+    }
+
+    .rotate-device-message i {
+        font-size: 1.5rem;
+        color: #0f2557;
+    }
+
+    .rotate-device-message i.fa-rotate {
+        animation: rotate-icon 2s linear infinite;
+    }
+
+    .rotate-device-message p {
+        margin: 0;
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: #0f2557;
+        text-align: center;
+        line-height: 1.4;
+    }
+}
+
+@keyframes gentle-pulse {
+    0%, 100% {
+        transform: scale(1);
+        box-shadow: 0 4px 12px rgba(255, 193, 7, 0.3);
+    }
+    50% {
+        transform: scale(1.02);
+        box-shadow: 0 6px 16px rgba(255, 193, 7, 0.4);
+    }
+}
+
+@keyframes rotate-icon {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
 /* Calendar Navigation */
 .calendar-nav {
     display: flex;

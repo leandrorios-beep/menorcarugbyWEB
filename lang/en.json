@@ -243,6 +243,8 @@
     "title": "Match Calendar",
     "subtitle": "Upcoming matches and results",
     "loading": "Loading matches...",
+    "view_full_list": "View Full List",
+    "rotate_device": "Rotate your device for a better experience",
     "filter": {
       "all": "All",
       "senior": "Senior",
