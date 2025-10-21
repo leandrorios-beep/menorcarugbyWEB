@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calendario de Partidos - Menorca Rugby Club</title>
-    <meta name="description" content="Calendario completo de partidos del Menorca Rugby Club. Todos los equipos, categorías y próximos encuentros.">
+    <title>Lista Completa de Partidos - Menorca Rugby Club</title>
+    <meta name="description" content="Lista completa de todos los partidos del Menorca Rugby Club. Todos los equipos, categorías y próximos encuentros.">
 
     <!-- Preload critical resources -->
     <link rel="preload" href="css/styles.css" as="style">
@@ -57,28 +57,17 @@
     <section id="calendario" class="calendar-section" style="padding-top: 120px;">
         <div class="container">
             <div class="section-header">
-                <h1 data-i18n="calendar.title">Calendario de Partidos</h1>
-                <p data-i18n="calendar.subtitle">Próximos encuentros y resultados</p>
+                <h1>Lista Completa de Partidos</h1>
+                <p>Todos los partidos de la temporada • Octubre 2025 - Mayo 2026</p>
             </div>
 
             <div class="calendar-container">
-                <!-- Link to List View -->
+                <!-- Link to Calendar View -->
                 <div style="text-align: right; margin-bottom: 1rem;">
-                    <a href="calendar2.html" style="color: var(--navy); text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1.5rem; background: white; border: 2px solid var(--yellow); border-radius: 8px; font-weight: 600; transition: all 0.3s;">
-                        <i class="fas fa-list"></i>
-                        <span>Ver Lista Completa</span>
+                    <a href="calendar.html" style="color: var(--navy); text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1.5rem; background: white; border: 2px solid var(--yellow); border-radius: 8px; font-weight: 600; transition: all 0.3s;">
+                        <i class="fas fa-calendar-alt"></i>
+                        <span>Ver Calendario</span>
                     </a>
-                </div>
-
-                <!-- Calendar Navigation -->
-                <div class="calendar-nav">
-                    <button class="calendar-nav-btn" id="prevMonth">
-                        <i class="fas fa-chevron-left"></i>
-                    </button>
-                    <h3 class="calendar-month" id="currentMonth">Enero 2025</h3>
-                    <button class="calendar-nav-btn" id="nextMonth">
-                        <i class="fas fa-chevron-right"></i>
-                    </button>
                 </div>
 
                 <!-- Category Filter -->
@@ -115,17 +104,16 @@
                     </button>
                 </div>
 
-                <!-- Calendar Grid -->
-                <div class="calendar-grid" id="calendarGrid">
-                    <div class="calendar-loading">
-                        <i class="fas fa-spinner fa-spin"></i>
-                        <span data-i18n="calendar.loading">Cargando partidos...</span>
-                    </div>
+                <!-- Calendar Grid - Hidden in List View -->
+                <div class="calendar-grid" id="calendarGrid" style="display: none !important;">
                 </div>
 
-                <!-- Matches List for Mobile only -->
-                <div class="matches-list" id="matchesList" style="display: none;">
-                    <!-- Matches will be loaded here on mobile -->
+                <!-- Matches List - Always Visible -->
+                <div class="matches-list" id="matchesList" style="display: block !important;">
+                    <div class="calendar-loading">
+                        <i class="fas fa-spinner fa-spin"></i>
+                        <span>Cargando partidos...</span>
+                    </div>
                 </div>
             </div>
         </div>
@@ -182,6 +170,17 @@
     <script src="js/config-loader.js" defer></script>
     <script src="js/i18n.js" defer></script>
     <script src="js/calendar.js" defer></script>
+    <script>
+        // Force list view on this page
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(() => {
+                if (typeof MatchesCalendar !== 'undefined') {
+                    MatchesCalendar.currentView = 'list';
+                    MatchesCalendar.loadAllMatches();
+                }
+            }, 1000);
+        });
+    </script>
     <script src="js/main.js" defer></script>
 </body>
 </html>
