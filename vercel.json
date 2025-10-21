@@ -1,0 +1,14 @@
+{
+  "redirects": [
+    {
+      "source": "/zona-socios",
+      "destination": "https://menorcarugby.clupik.app/es/registrations/21930",
+      "permanent": true
+    },
+    {
+      "source": "/zona%20socios",
+      "destination": "https://menorcarugby.clupik.app/es/registrations/21930",
+      "permanent": true
+    }
+  ]
+}

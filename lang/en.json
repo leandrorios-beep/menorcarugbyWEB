@@ -1,0 +1,257 @@
+{
+  "meta": {
+    "title": "Menorca Rugby Club - Live the Rugby Passion",
+    "description": "Discover Menorca Rugby Club. Join our community and experience rugby passion in Menorca with values of respect, teamwork and discipline."
+  },
+  "nav": {
+    "brand": "MENORCA RUGBY",
+    "home": "Home",
+    "about": "About Us",
+    "team": "Team",
+    "calendar": "Calendar",
+    "gallery": "Gallery",
+    "news": "News",
+    "store": "Store",
+    "contact": "Contact",
+    "join": "Join Us"
+  },
+  "hero": {
+    "title_main": "MENORCA",
+    "title_sub": "RUGBY CLUB",
+    "subtitle": "Live rugby passion in the heart of the Mediterranean",
+    "join_team": "Join the Team",
+    "upcoming_matches": "Upcoming Matches",
+    "learn_more": "Learn More",
+    "stats": {
+      "years": "Years of History",
+      "players": "Players",
+      "categories": "Categories",
+      "passion": "Passion"
+    }
+  },
+  "about": {
+    "title": "Our Club",
+    "subtitle": "More than a sport, a family",
+    "history_title": "Our History",
+    "history": {
+      "description": "Menorca Rugby Club was born over 20 years ago from passion for this noble sport and love for our island. Founded by a group of English enthusiasts, the club grew with the mission to transmit the essential values of rugby: respect, integrity, passion, solidarity and discipline. Today we continue sharing that same spirit, bringing rugby closer to our community and building a great family on and off the field."
+    },
+    "philosophy_title": "Our Philosophy",
+    "philosophy_text": "We believe in rugby as a comprehensive training tool. We develop not only sports skills, but also values that transcend the playing field and enrich the lives of our players.",
+    "values": {
+      "respect": {
+        "title": "Respect",
+        "description": "For teammates, opponents and referees"
+      },
+      "team": {
+        "title": "Teamwork",
+        "description": "Strength lies in unity"
+      },
+      "excellence": {
+        "title": "Excellence",
+        "description": "Always give your best"
+      },
+      "passion": {
+        "title": "Passion",
+        "description": "Love for rugby and Menorca"
+      }
+    }
+  },
+  "team": {
+    "title": "Our Teams",
+    "subtitle": "Players of all ages and levels",
+    "senior": {
+      "title": "Senior Team",
+      "subtitle": "The heart of the club",
+      "description": "Our senior team competes in the Balearic League, facing rivals from Mallorca and Ibiza in a round-robin championship. At the end of the season, the top four compete for the title. We also have a women's team that participates in Rugby 7's, taking the spirit of rugby to the highest level.",
+      "players": "20+ players",
+      "training": "Trains Tuesdays and Thursdays 7:30 PM"
+    },
+    "youth": {
+      "title": "Youth Team",
+      "subtitle": "The future of rugby",
+      "description": "Aimed at players aged 14 to 18, our youth team participates in the Balearic League, measuring strength against teams from Mallorca and Ibiza. Additionally, they have presence in national selections and various tournaments, both official and friendly, providing them with a unique experience of sporting and personal growth.",
+      "players": "40+ players",
+      "training": "Trains Tuesdays and Thursdays 6:00 PM"
+    },
+    "school": {
+      "title": "Rugby School",
+      "subtitle": "First steps",
+      "description": "The foundation of our club begins with the youngest: from 6 to 12 years old. Although they don't compete in leagues, they enjoy the fun \"Rugby Days\", events where SUB6, SUB8, SUB10 and SUB12 teams play short matches, have fun and learn that what matters is not the result, but enjoying the game. Each team plays between 3 and 4 matches per day, always with smiles.",
+      "players": "20+ children",
+      "training": "Trains Tuesdays and Thursdays 6:00 PM"
+    }
+  },
+  "gallery": {
+    "title": "Gallery of Moments",
+    "subtitle": "Relive our best moments",
+    "filters": {
+      "all": "All",
+      "matches": "Matches",
+      "training": "Training",
+      "events": "Events"
+    }
+  },
+  "store": {
+    "title": "Official Store",
+    "subtitle": "Take Menorca Rugby colors with you",
+    "products": {
+      "jersey": {
+        "title": "Official Jersey 2025",
+        "description": "Official Menorca Rugby Club jersey for 2025 season. Exclusive design with traditional colors."
+      },
+      "hoodie": {
+        "title": "Training Hoodie",
+        "description": "Technical hoodie for training with embroidered logo and breathable technology."
+      },
+      "cap": {
+        "title": "Official Cap",
+        "description": "Adjustable cap with embroidered club official shield. Premium quality material."
+      },
+      "pack": {
+        "title": "Complete Pack",
+        "description": "Complete pack: jersey + shorts + socks. Ideal for new players."
+      }
+    },
+    "badges": {
+      "new": "New",
+      "popular": "Popular"
+    },
+    "buy": "Buy",
+    "cta": {
+      "title": "Looking for something specific?",
+      "description": "Visit our complete online store with all official products",
+      "button": "View Complete Store"
+    },
+    "external": {
+      "opening": "Opening store...",
+      "redirecting": "Redirecting to our official store..."
+    }
+  },
+  "news": {
+    "title": "Latest News",
+    "subtitle": "Stay updated with everything happening at the club",
+    "read_more": "Read More",
+    "categories": {
+      "matches": "Matches",
+      "club": "Club",
+      "training": "Training"
+    },
+    "featured": {
+      "title": "Registrations Open!",
+      "description": "Join Menorca Rugby Club. Registrations open for all categories: School, Youth and Senior.",
+      "button": "Register Now"
+    }
+  },
+  "join": {
+    "title": "Join the Family",
+    "description": "Are you passionate about rugby? Want to be part of a unique community in Menorca? Menorca Rugby Club is waiting for you.",
+    "benefits": {
+      "training": "Professional training",
+      "family": "Family-friendly atmosphere",
+      "competitions": "Official competitions",
+      "events": "Social and cultural events"
+    },
+    "form": {
+      "title": "Choose Your Category"
+    },
+    "categories": {
+      "subtitle": "Select the category that best fits your profile",
+      "school": "6-12 years - First steps in rugby",
+      "youth": "13-18 years - Development and competition",
+      "senior": "18+ years - Official competition",
+      "members": "Support the club as member or volunteer"
+    },
+    "members": {
+      "title": "Members & Volunteers"
+    },
+    "register": "Register",
+    "external_note": "You will be redirected to our official registration system"
+  },
+  "contact": {
+    "title": "Contact",
+    "subtitle": "We're here to resolve all your questions",
+    "location": {
+      "title": "Rugby Field",
+      "address": "Sa Terranova 8<br>Maó, Illes Balears<br>Spain"
+    },
+    "phone": {
+      "title": "Phone"
+    },
+    "email": {
+      "title": "Email"
+    },
+    "map": {
+      "title": "Rugby Field Map",
+      "description": "Sa Terranova 8, Maó, Illes Balears"
+    }
+  },
+  "sponsors": {
+    "title": "Our Sponsors",
+    "subtitle": "Thanks to our sponsors who support rugby in Menorca"
+  },
+  "footer": {
+    "description": "Experience rugby passion in Menorca. More than a sport, a family united by rugby values.",
+    "quick_links": "Quick Links",
+    "contact": "Contact",
+    "follow_us": "Follow Us",
+    "copyright": "All rights reserved.",
+    "made_with": "Designed with",
+    "for": "for Menorca's rugby community"
+  },
+  "chat": {
+    "button_text": "Need help?",
+    "opening": "Opening chat...",
+    "loading": "Connecting with our team...",
+    "external_info": "You will be redirected to our real-time chat where you can speak directly with our team.",
+    "live_support": "Live support available",
+    "status": "Online",
+    "placeholder": "Type your message...",
+    "typing": "Typing...",
+    "quick_replies": {
+      "join": "Join the team",
+      "training": "Training",
+      "schedule": "Schedule",
+      "store": "Store"
+    },
+    "responses": {
+      "welcome": "Hello! 👋 I'm the Menorca Rugby Club assistant. How can I help you today?",
+      "join_team": "Excellent! 🏉 We love your interest. To join Menorca Rugby Club you can:\n\n• Come to training (Tuesdays and Thursdays 7:00 PM)\n• Contact us on WhatsApp at +34 XXX XXX XXX\n• Fill out the form in the \"Join Us\" section\n\nAre you interested in any specific category?",
+      "training_info": "🏃‍♂️ Our training sessions are:\n\n📅 **Schedule:**\n• Senior: Tuesdays and Thursdays 7:00-9:00 PM\n• Youth: Mondays and Wednesdays 6:00-7:30 PM\n• School: Saturdays 10:00-11:30 AM\n\n📍 **Location:** Menorca Rugby Field\n\nNeed more information about any category?",
+      "schedule": "🏆 **Upcoming Matches:**\n\n• Sept 21 - MRC vs Rival Club (Home)\n• Sept 28 - Visiting Club vs MRC (Away)\n• Oct 5 - MRC vs Local Team (Home)\n\nAll home matches are at 4:00 PM at our field. Come support us! 📣",
+      "store_info": "🛍️ In our official store you'll find:\n\n• Official jerseys (45€)\n• Training hoodies (65€)\n• Caps and accessories (25€)\n• Complete packs (120€)\n\nInterested in any specific product? We also have member discounts!",
+      "default": "Thank you for your message. A team member will contact you soon. Is there anything specific I can help you with in the meantime?",
+      "prices": "💰 Our product prices are:\n\n• Monthly fee: 30€ (members)\n• Official jersey: 45€\n• Complete pack: 120€\n\nInterested in information about member discounts?",
+      "hello": "Hello! 👋 Welcome to Menorca Rugby Club. I'm here to help you with any questions about our club, training, matches or products. How can I help you?",
+      "thanks": "You're welcome! 😊 If you have more questions don't hesitate to message me. See you on the field! 🏉"
+    }
+  },
+  "forms": {
+    "success": "Application submitted successfully! We'll contact you soon.",
+    "error": "Form error",
+    "required": "This field is required",
+    "invalid_email": "Email format is not valid",
+    "sending": "Sending..."
+  },
+  "notifications": {
+    "success": "Success",
+    "error": "Error",
+    "warning": "Warning",
+    "info": "Information"
+  },
+  "calendar": {
+    "title": "Match Calendar",
+    "subtitle": "Upcoming matches and results",
+    "loading": "Loading matches...",
+    "filter": {
+      "all": "All",
+      "senior": "Senior",
+      "women": "Women",
+      "youth": "Youth"
+    },
+    "view": {
+      "calendar": "Calendar",
+      "list": "List"
+    }
+  }
+}

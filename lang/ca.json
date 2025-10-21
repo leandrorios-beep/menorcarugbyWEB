@@ -1,0 +1,257 @@
+{
+  "meta": {
+    "title": "Menorca Rugby Club - Viu la Passió del Rugby",
+    "description": "Descobreix el Menorca Rugby Club. Uneix-te a la nostra comunitat i viu la passió del rugby a Menorca amb valors de respecte, treball en equip i disciplina."
+  },
+  "nav": {
+    "brand": "MENORCA RUGBY",
+    "home": "Inici",
+    "about": "Nosaltres",
+    "team": "Equip",
+    "calendar": "Calendari",
+    "gallery": "Galeria",
+    "news": "Notícies",
+    "store": "Botiga",
+    "contact": "Contacte",
+    "join": "Uneix-te"
+  },
+  "hero": {
+    "title_main": "MENORCA",
+    "title_sub": "RUGBY CLUB",
+    "subtitle": "Viu la passió del rugby al cor de la Mediterrània",
+    "join_team": "Uneix-te a l'Equip",
+    "upcoming_matches": "Pròxims Partits",
+    "learn_more": "Coneix Més",
+    "stats": {
+      "years": "Anys d'Història",
+      "players": "Jugadors",
+      "categories": "Categories",
+      "passion": "Passió"
+    }
+  },
+  "about": {
+    "title": "El Nostre Club",
+    "subtitle": "Més que un esport, una família",
+    "history_title": "La Nostra Història",
+    "history": {
+      "description": "El Menorca Rugby Club va néixer fa més de 20 anys de la passió per aquest noble esport i l'amor per la nostra illa. Fundat per un grup d'entusiastes anglesos, el club va créixer amb la missió de transmetre els valors essencials del rugby: respecte, integritat, passió, solidaritat i disciplina. Avui seguim compartint aquest mateix esperit, apropant el rugby a la nostra comunitat i construint una gran família dins i fora del camp."
+    },
+    "philosophy_title": "La Nostra Filosofia",
+    "philosophy_text": "Creiem en el rugby com a eina de formació integral. Desenvolupem no només habilitats esportives, sinó també valors que transcendeixen el camp de joc i enriqueixen la vida dels nostres jugadors.",
+    "values": {
+      "respect": {
+        "title": "Respecte",
+        "description": "Per companys, rivals i àrbitres"
+      },
+      "team": {
+        "title": "Equip",
+        "description": "La força està en la unió"
+      },
+      "excellence": {
+        "title": "Excel·lència",
+        "description": "Sempre donar el millor"
+      },
+      "passion": {
+        "title": "Passió",
+        "description": "Amor pel rugby i Menorca"
+      }
+    }
+  },
+  "team": {
+    "title": "Els Nostres Equips",
+    "subtitle": "Jugadors de totes les edats i nivells",
+    "senior": {
+      "title": "Equip Senior",
+      "subtitle": "El cor del club",
+      "description": "El nostre equip senior competeix a la Lliga Balear, enfrontant-se a rivals de Mallorca i Eivissa en un campionat d'anada i tornada. Al final de la temporada, els quatre millors es disputen el títol. També comptem amb un equip femení, que participa en la modalitat de Rugby 7's, portant l'esperit del rugby al més alt.",
+      "players": "20+ jugadors",
+      "training": "Entrena Dimarts i Dijous 19.30"
+    },
+    "youth": {
+      "title": "Equip Juvenil",
+      "subtitle": "El futur del rugby",
+      "description": "Dirigit a jugadors de 14 a 18 anys, el nostre juvenil participa a la Lliga Balear, mesurant forces amb equips de Mallorca i Eivissa. A més, tenen presència en seleccionats nacionals i en diferents tornejos, tant oficials com amistosos, la qual cosa els brinda una experiència única de creixement esportiu i personal.",
+      "players": "40+ jugadors",
+      "training": "Entrena Dimarts i Dijous 18.00"
+    },
+    "school": {
+      "title": "Escola de Rugby",
+      "subtitle": "Primers passos",
+      "description": "La base del nostre club comença amb els més petits: des dels 6 fins als 12 anys. Encara que no competeixen en lligues, gaudeixen dels divertits 'Rugby Day', jornades on els equips SUB6, SUB8, SUB10 i SUB12 juguen partits curts, es diverteixen i aprenen que l'important no és el resultat, sinó gaudir del joc. Cada equip disputa entre 3 i 4 encontres per jornada, sempre amb somriures pel mig.",
+      "players": "20+ nens",
+      "training": "Entrena Dimarts i Dijous 18.00"
+    }
+  },
+  "gallery": {
+    "title": "Galeria de Moments",
+    "subtitle": "Reviu els nostres millors moments",
+    "filters": {
+      "all": "Totes",
+      "matches": "Partits",
+      "training": "Entrenaments",
+      "events": "Esdeveniments"
+    }
+  },
+  "store": {
+    "title": "Botiga Oficial",
+    "subtitle": "Porta els colors del Menorca Rugby amb tu",
+    "products": {
+      "jersey": {
+        "title": "Samarreta Oficial 2025",
+        "description": "Samarreta oficial del Menorca Rugby Club temporada 2025. Disseny exclusiu amb colors tradicionals."
+      },
+      "hoodie": {
+        "title": "Dessuadora Training",
+        "description": "Dessuadora tècnica per entrenaments amb logo brodat i tecnologia transpirable."
+      },
+      "cap": {
+        "title": "Gorra Oficial",
+        "description": "Gorra ajustable amb brodat de l'escut oficial del club. Material de primera qualitat."
+      },
+      "pack": {
+        "title": "Pack Complet",
+        "description": "Pack complet: samarreta + pantaló + mitjons. Ideal per a nous jugadors."
+      }
+    },
+    "badges": {
+      "new": "Nou",
+      "popular": "Popular"
+    },
+    "buy": "Comprar",
+    "cta": {
+      "title": "Cerques alguna cosa específica?",
+      "description": "Visita la nostra botiga online completa amb tots els productes oficials",
+      "button": "Veure Botiga Completa"
+    },
+    "external": {
+      "opening": "Obrint botiga...",
+      "redirecting": "Redirigint a la nostra botiga oficial..."
+    }
+  },
+  "news": {
+    "title": "Últimes Notícies",
+    "subtitle": "Mantén-te al dia amb tot el que passa al club",
+    "read_more": "Llegir més",
+    "categories": {
+      "matches": "Partits",
+      "club": "Club",
+      "training": "Formació"
+    },
+    "featured": {
+      "title": "Inscripcions Obertes!",
+      "description": "Uneix-te al Menorca Rugby Club. Inscripcions obertes per a totes les categories: Escola, Juvenil i Senior.",
+      "button": "Inscriu-te Ara"
+    }
+  },
+  "join": {
+    "title": "Uneix-te a la Família",
+    "description": "T'apassiona el rugby? Vols formar part d'una comunitat única a Menorca? El Menorca Rugby Club t'està esperant.",
+    "benefits": {
+      "training": "Entrenaments professionals",
+      "family": "Ambient familiar i acollidor",
+      "competitions": "Competicions oficials",
+      "events": "Esdeveniments socials i culturals"
+    },
+    "form": {
+      "title": "Tria la teva Categoria"
+    },
+    "categories": {
+      "subtitle": "Selecciona la categoria que millor s'ajusti al teu perfil",
+      "school": "6-12 anys - Primers passos en el rugby",
+      "youth": "13-18 anys - Desenvolupament i competició",
+      "senior": "18+ anys - Competició oficial",
+      "members": "Dona suport al club com a soci o voluntari"
+    },
+    "members": {
+      "title": "Socis i Voluntaris"
+    },
+    "register": "Inscriure's",
+    "external_note": "Seràs redirigit al nostre sistema de registre oficial"
+  },
+  "contact": {
+    "title": "Contacte",
+    "subtitle": "Som aquí per resoldre tots els teus dubtes",
+    "location": {
+      "title": "Camp de Rugby",
+      "address": "Sa Terranova 8<br>Maó, Illes Balears<br>Espanya"
+    },
+    "phone": {
+      "title": "Telèfon"
+    },
+    "email": {
+      "title": "Email"
+    },
+    "map": {
+      "title": "Mapa del Camp de Rugby",
+      "description": "Sa Terranova 8, Maó, Illes Balears"
+    }
+  },
+  "sponsors": {
+    "title": "Els Nostres Patrocinadors",
+    "subtitle": "Gràcies als nostres sponsors que recolzen el rugby a Menorca"
+  },
+  "footer": {
+    "description": "Viu la passió del rugby a Menorca. Més que un esport, una família unida pels valors del rugby.",
+    "quick_links": "Enllaços Ràpids",
+    "contact": "Contacte",
+    "follow_us": "Segueix-nos",
+    "copyright": "Tots els drets reservats.",
+    "made_with": "Dissenyat amb",
+    "for": "per a la comunitat rugbística de Menorca"
+  },
+  "chat": {
+    "button_text": "Necessites ajuda?",
+    "opening": "Obrint xat...",
+    "loading": "Connectant amb el nostre equip...",
+    "external_info": "Seràs redirigit al nostre xat en temps real on podràs parlar directament amb el nostre equip.",
+    "live_support": "Suport en viu disponible",
+    "status": "En línia",
+    "placeholder": "Escriu el teu missatge...",
+    "typing": "Escrivint...",
+    "quick_replies": {
+      "join": "Unir-me a l'equip",
+      "training": "Entrenaments",
+      "schedule": "Horaris",
+      "store": "Botiga"
+    },
+    "responses": {
+      "welcome": "Hola! 👋 Sóc l'assistent del Menorca Rugby Club. En què puc ajudar-te avui?",
+      "join_team": "Excel·lent! 🏉 Ens encanta el teu interès. Per unir-te al Menorca Rugby Club pots:\n\n• Venir als entrenaments (dimarts i dijous 19:00h)\n• Contactar-nos per WhatsApp al +34 XXX XXX XXX\n• Emplenar el formulari a la secció \"Uneix-te\"\n\nT'interessa alguna categoria específica?",
+      "training_info": "🏃‍♂️ Els nostres entrenaments són:\n\n📅 **Horaris:**\n• Senior: Dimarts i Dijous 19:00-21:00h\n• Juvenil: Dilluns i Dimecres 18:00-19:30h\n• Escola: Dissabtes 10:00-11:30h\n\n📍 **Ubicació:** Camp de Rugby de Menorca\n\nNecessites més informació sobre alguna categoria?",
+      "schedule": "🏆 **Pròxims Partits:**\n\n• 21 Set - MRC vs Club Rival (Casa)\n• 28 Set - Club Visitant vs MRC (Fora)\n• 5 Oct - MRC vs Equip Local (Casa)\n\nTots els partits a casa són a les 16:00h al nostre camp. Vine a donar-nos suport! 📣",
+      "store_info": "🛍️ A la nostra botiga oficial trobaràs:\n\n• Samarretes oficials (45€)\n• Dessuadores training (65€)\n• Gorres i accessoris (25€)\n• Packs complets (120€)\n\nT'interessa algun producte específic? També tenim descomptes per socis!",
+      "default": "Gràcies pel teu missatge. Un membre de l'equip es posarà en contacte amb tu aviat. Hi ha alguna cosa específica en què pugui ajudar-te mentrestant?",
+      "prices": "💰 Els preus dels nostres productes són:\n\n• Quota mensual: 30€ (socis)\n• Samarreta oficial: 45€\n• Pack complet: 120€\n\nT'interessa informació sobre descomptes per socis?",
+      "hello": "Hola! 👋 Benvingut al Menorca Rugby Club. Sóc aquí per ajudar-te amb qualsevol pregunta sobre el nostre club, entrenaments, partits o productes. En què puc ajudar-te?",
+      "thanks": "De res! 😊 Si tens més preguntes no dubtis a escriure'm. Ens veiem al camp! 🏉"
+    }
+  },
+  "forms": {
+    "success": "Sol·licitud enviada amb èxit! Et contactarem aviat.",
+    "error": "Error al formulari",
+    "required": "Aquest camp és obligatori",
+    "invalid_email": "L'email no té un format vàlid",
+    "sending": "Enviant..."
+  },
+  "notifications": {
+    "success": "Èxit",
+    "error": "Error",
+    "warning": "Advertència",
+    "info": "Informació"
+  },
+  "calendar": {
+    "title": "Calendari de Partits",
+    "subtitle": "Pròxims encontres i resultats",
+    "loading": "Carregant partits...",
+    "filter": {
+      "all": "Tots",
+      "senior": "Senior",
+      "women": "Femení",
+      "youth": "Juvenil"
+    },
+    "view": {
+      "calendar": "Calendari",
+      "list": "Llista"
+    }
+  }
+}

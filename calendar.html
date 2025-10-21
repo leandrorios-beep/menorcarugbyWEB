@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calendario de Partidos - Menorca Rugby Club</title>
+    <meta name="description" content="Calendario completo de partidos del Menorca Rugby Club. Todos los equipos, categorías y próximos encuentros.">
+
+    <!-- Preload critical resources -->
+    <link rel="preload" href="css/styles.css" as="style">
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" as="style">
+
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="css/styles.css">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Favicons -->
+    <link rel="apple-touch-icon" sizes="180x180" href="assets/images/static/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="assets/images/static/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="assets/images/static/favicon-16x16.png">
+</head>
+<body>
+    <!-- Header/Navigation -->
+    <nav class="navbar" id="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <img src="assets/images/static/logo.png" alt="Menorca Rugby" class="logo">
+                <span class="brand-text" data-i18n="nav.brand">MENORCA RUGBY</span>
+            </div>
+
+            <ul class="nav-menu" id="nav-menu">
+                <li><a href="index.html#inicio" class="nav-link" data-i18n="nav.home">Inicio</a></li>
+                <li><a href="index.html#nosotros" class="nav-link" data-i18n="nav.about">Nosotros</a></li>
+                <li><a href="index.html#equipo" class="nav-link" data-i18n="nav.team">Equipo</a></li>
+                <li><a href="calendar.html" class="nav-link active" data-i18n="nav.calendar">Calendario</a></li>
+                <li><a href="index.html#galeria" class="nav-link" data-i18n="nav.gallery">Galería</a></li>
+                <li><a href="index.html#tienda" class="nav-link" data-i18n="nav.store">Tienda</a></li>
+                <li><a href="index.html#contacto" class="nav-link" data-i18n="nav.contact">Contacto</a></li>
+            </ul>
+
+            <div class="nav-toggle" id="nav-toggle">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Calendar Section -->
+    <section id="calendario" class="calendar-section" style="padding-top: 120px;">
+        <div class="container">
+            <div class="section-header">
+                <h1 data-i18n="calendar.title">Calendario de Partidos</h1>
+                <p data-i18n="calendar.subtitle">Próximos encuentros y resultados</p>
+            </div>
+
+            <div class="calendar-container">
+                <!-- View Toggle -->
+                <div class="calendar-view-toggle">
+                    <button class="view-toggle-btn active" data-view="calendar">
+                        <i class="fas fa-calendar-alt"></i>
+                        <span data-i18n="calendar.view.calendar">Calendario</span>
+                    </button>
+                    <button class="view-toggle-btn" data-view="list">
+                        <i class="fas fa-list"></i>
+                        <span data-i18n="calendar.view.list">Lista</span>
+                    </button>
+                </div>
+
+                <!-- Calendar Navigation -->
+                <div class="calendar-nav">
+                    <button class="calendar-nav-btn" id="prevMonth">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <h3 class="calendar-month" id="currentMonth">Enero 2025</h3>
+                    <button class="calendar-nav-btn" id="nextMonth">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+
+                <!-- Category Filter -->
+                <div class="calendar-filters">
+                    <button class="filter-chip active" data-category="all">
+                        <span data-i18n="calendar.filter.all">Todos</span>
+                    </button>
+                    <button class="filter-chip" data-category="SENIOR">
+                        <span data-i18n="calendar.filter.senior">Senior</span>
+                    </button>
+                    <button class="filter-chip" data-category="FEMENINO">
+                        <span data-i18n="calendar.filter.women">Femenino</span>
+                    </button>
+                    <button class="filter-chip" data-category="SUB18">
+                        <span>SUB18</span>
+                    </button>
+                    <button class="filter-chip" data-category="SUB16">
+                        <span>SUB16</span>
+                    </button>
+                    <button class="filter-chip" data-category="SUB14">
+                        <span>SUB14</span>
+                    </button>
+                    <button class="filter-chip" data-category="SUB12">
+                        <span>SUB12</span>
+                    </button>
+                    <button class="filter-chip" data-category="SUB10">
+                        <span>SUB10</span>
+                    </button>
+                    <button class="filter-chip" data-category="SUB8">
+                        <span>SUB8</span>
+                    </button>
+                    <button class="filter-chip" data-category="SUB6">
+                        <span>SUB6</span>
+                    </button>
+                </div>
+
+                <!-- Calendar Grid -->
+                <div class="calendar-grid" id="calendarGrid">
+                    <div class="calendar-loading">
+                        <i class="fas fa-spinner fa-spin"></i>
+                        <span data-i18n="calendar.loading">Cargando partidos...</span>
+                    </div>
+                </div>
+
+                <!-- Matches List for Mobile/List View -->
+                <div class="matches-list" id="matchesList">
+                    <!-- Matches will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <div class="footer-logo">
+                        <img src="assets/images/static/logo.png" alt="Menorca Rugby">
+                        <h3>MENORCA RUGBY CLUB</h3>
+                    </div>
+                    <p data-i18n="footer.description">Vive la pasión del rugby en Menorca. Más que un deporte, una familia unida por los valores del rugby.</p>
+                </div>
+
+                <div class="footer-section">
+                    <h4 data-i18n="footer.quick_links">Enlaces Rápidos</h4>
+                    <ul>
+                        <li><a href="index.html#inicio" data-i18n="nav.home">Inicio</a></li>
+                        <li><a href="index.html#nosotros" data-i18n="nav.about">Nosotros</a></li>
+                        <li><a href="index.html#equipo" data-i18n="nav.team">Equipo</a></li>
+                        <li><a href="calendar.html" data-i18n="nav.calendar">Calendario</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-section">
+                    <h4 data-i18n="footer.contact">Contacto</h4>
+                    <ul>
+                        <li><i class="fas fa-map-marker-alt"></i> Sa Terranova 8, Maó</li>
+                        <li><i class="fas fa-phone"></i> +34 XXX XXX XXX</li>
+                        <li><i class="fas fa-envelope"></i> info@menorcarugbyclub.com</li>
+                    </ul>
+                </div>
+
+                <div class="footer-section">
+                    <h4 data-i18n="footer.follow_us">Síguenos</h4>
+                    <div class="social-links">
+                        <a href="https://facebook.com/menorcarugby" target="_blank" rel="noopener"><i class="fab fa-facebook"></i></a>
+                        <a href="https://instagram.com/menorcarugby" target="_blank" rel="noopener"><i class="fab fa-instagram"></i></a>
+                        <a href="https://twitter.com/menorcarugby" target="_blank" rel="noopener"><i class="fab fa-twitter"></i></a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <p>&copy; 2025 Menorca Rugby Club. <span data-i18n="footer.copyright">Todos los derechos reservados.</span></p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="js/config-loader.js" defer></script>
+    <script src="js/i18n.js" defer></script>
+    <script src="js/calendar.js" defer></script>
+    <script src="js/main.js" defer></script>
+</body>
+</html>

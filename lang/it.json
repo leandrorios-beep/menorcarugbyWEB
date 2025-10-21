@@ -1,0 +1,257 @@
+{
+  "meta": {
+    "title": "Menorca Rugby Club - Vivi la Passione del Rugby",
+    "description": "Scopri il Menorca Rugby Club. Unisciti alla nostra comunità e vivi la passione del rugby a Minorca con valori di rispetto, lavoro di squadra e disciplina."
+  },
+  "nav": {
+    "brand": "MENORCA RUGBY",
+    "home": "Home",
+    "about": "Chi Siamo",
+    "team": "Squadra",
+    "calendar": "Calendario",
+    "gallery": "Galleria",
+    "news": "Notizie",
+    "store": "Negozio",
+    "contact": "Contatto",
+    "join": "Unisciti"
+  },
+  "hero": {
+    "title_main": "MENORCA",
+    "title_sub": "RUGBY CLUB",
+    "subtitle": "Vivi la passione del rugby nel cuore del Mediterraneo",
+    "join_team": "Unisciti alla Squadra",
+    "upcoming_matches": "Prossime Partite",
+    "learn_more": "Scopri di Più",
+    "stats": {
+      "years": "Anni di Storia",
+      "players": "Giocatori",
+      "categories": "Categorie",
+      "passion": "Passione"
+    }
+  },
+  "about": {
+    "title": "Il Nostro Club",
+    "subtitle": "Più di uno sport, una famiglia",
+    "history": {
+      "title": "La Nostra Storia",
+      "description": "Il Menorca Rugby Club è nato più di 20 anni fa dalla passione per questo nobile sport e dall'amore per la nostra isola. Fondato da un gruppo di entusiasti inglesi, il club è cresciuto con la missione di trasmettere i valori essenziali del rugby: rispetto, integrità, passione, solidarietà e disciplina. Oggi continuiamo a condividere quello stesso spirito, avvicinando il rugby alla nostra comunità e costruendo una grande famiglia dentro e fuori dal campo."
+    },
+    "philosophy_title": "La Nostra Filosofia",
+    "philosophy_text": "Crediamo nel rugby come strumento di formazione integrale. Sviluppiamo non solo abilità sportive, ma anche valori che trascendono il campo da gioco e arricchiscono la vita dei nostri giocatori.",
+    "values": {
+      "respect": {
+        "title": "Rispetto",
+        "description": "Per compagni, avversari e arbitri"
+      },
+      "team": {
+        "title": "Squadra",
+        "description": "La forza sta nell'unione"
+      },
+      "excellence": {
+        "title": "Eccellenza",
+        "description": "Dare sempre il meglio"
+      },
+      "passion": {
+        "title": "Passione",
+        "description": "Amore per il rugby e Minorca"
+      }
+    }
+  },
+  "team": {
+    "title": "Le Nostre Squadre",
+    "subtitle": "Giocatori di tutte le età e livelli",
+    "senior": {
+      "title": "Squadra Senior",
+      "subtitle": "Il cuore del club",
+      "description": "La nostra squadra senior compete nella Liga Balear, affrontando rivali di Mallorca e Ibiza in un campionato di andata e ritorno. Alla fine della stagione, le quattro migliori si contendono il titolo. Abbiamo anche una squadra femminile, che partecipa nella modalità di Rugby 7's, portando lo spirito del rugby al massimo livello.",
+      "players": "20+ giocatori",
+      "training": "Allenamento Martedì e Giovedì 19.30"
+    },
+    "youth": {
+      "title": "Squadra Giovanile",
+      "subtitle": "Il futuro del rugby",
+      "description": "Rivolta ai giocatori dai 14 ai 18 anni, la nostra giovanile partecipa alla Liga Balear, misurando le forze con le squadre di Mallorca e Ibiza. Inoltre, hanno presenza nelle selezioni nazionali e in diversi tornei, sia ufficiali che amichevoli, che offre loro un'esperienza unica di crescita sportiva e personale.",
+      "players": "40+ giocatori",
+      "training": "Allenamento Martedì e Giovedì 18.00"
+    },
+    "school": {
+      "title": "Scuola di Rugby",
+      "subtitle": "Primi passi",
+      "description": "La base del nostro club inizia con i più piccoli: dai 6 ai 12 anni. Anche se non competono in campionati, si divertono con i divertenti \"Rugby Day\", giornate dove le squadre SUB6, SUB8, SUB10 e SUB12 giocano partite brevi, si divertono e imparano che l'importante non è il risultato, ma divertirsi con il gioco. Ogni squadra disputa tra 3 e 4 incontri per giornata, sempre con sorrisi di mezzo.",
+      "players": "20+ bambini",
+      "training": "Allenamento Martedì e Giovedì 18.00"
+    }
+  },
+  "gallery": {
+    "title": "Galleria dei Momenti",
+    "subtitle": "Rivivi i nostri momenti migliori",
+    "filters": {
+      "all": "Tutti",
+      "matches": "Partite",
+      "training": "Allenamenti",
+      "events": "Eventi"
+    }
+  },
+  "store": {
+    "title": "Negozio Ufficiale",
+    "subtitle": "Porta con te i colori del Menorca Rugby",
+    "products": {
+      "jersey": {
+        "title": "Maglia Ufficiale 2025",
+        "description": "Maglia ufficiale del Menorca Rugby Club stagione 2025. Design esclusivo con colori tradizionali."
+      },
+      "hoodie": {
+        "title": "Felpa Training",
+        "description": "Felpa tecnica per allenamenti con logo ricamato e tecnologia traspirante."
+      },
+      "cap": {
+        "title": "Cappellino Ufficiale",
+        "description": "Cappellino regolabile con ricamo dello stemma ufficiale del club. Materiale di prima qualità."
+      },
+      "pack": {
+        "title": "Pack Completo",
+        "description": "Pack completo: maglia + pantaloncini + calzettoni. Ideale per nuovi giocatori."
+      }
+    },
+    "badges": {
+      "new": "Nuovo",
+      "popular": "Popolare"
+    },
+    "buy": "Acquista",
+    "cta": {
+      "title": "Cerchi qualcosa di specifico?",
+      "description": "Visita il nostro negozio online completo con tutti i prodotti ufficiali",
+      "button": "Vedi Negozio Completo"
+    },
+    "external": {
+      "opening": "Aprendo negozio...",
+      "redirecting": "Reindirizzamento al nostro negozio ufficiale..."
+    }
+  },
+  "news": {
+    "title": "Ultime Notizie",
+    "subtitle": "Resta aggiornato su tutto quello che succede nel club",
+    "read_more": "Leggi di più",
+    "categories": {
+      "matches": "Partite",
+      "club": "Club",
+      "training": "Formazione"
+    },
+    "featured": {
+      "title": "Iscrizioni Aperte!",
+      "description": "Unisciti al Menorca Rugby Club. Iscrizioni aperte per tutte le categorie: Scuola, Giovani e Senior.",
+      "button": "Iscriviti Ora"
+    }
+  },
+  "join": {
+    "title": "Unisciti alla Famiglia",
+    "description": "Ti appassiona il rugby? Vuoi far parte di una comunità unica a Minorca? Il Menorca Rugby Club ti sta aspettando.",
+    "benefits": {
+      "training": "Allenamenti professionali",
+      "family": "Ambiente familiare e accogliente",
+      "competitions": "Competizioni ufficiali",
+      "events": "Eventi sociali e culturali"
+    },
+    "form": {
+      "title": "Scegli la tua Categoria"
+    },
+    "categories": {
+      "subtitle": "Seleziona la categoria che si adatta meglio al tuo profilo",
+      "school": "6-12 anni - Primi passi nel rugby",
+      "youth": "13-18 anni - Sviluppo e competizione",
+      "senior": "18+ anni - Competizione ufficiale",
+      "members": "Sostieni il club come socio o volontario"
+    },
+    "members": {
+      "title": "Soci e Volontari"
+    },
+    "register": "Iscriviti",
+    "external_note": "Sarai reindirizzato al nostro sistema di registrazione ufficiale"
+  },
+  "contact": {
+    "title": "Contatto",
+    "subtitle": "Siamo qui per risolvere tutti i tuoi dubbi",
+    "location": {
+      "title": "Campo da Rugby",
+      "address": "Sa Terranova 8<br>Maó, Illes Balears<br>Spagna"
+    },
+    "phone": {
+      "title": "Telefono"
+    },
+    "email": {
+      "title": "Email"
+    },
+    "map": {
+      "title": "Mappa del Campo da Rugby",
+      "description": "Sa Terranova 8, Maó, Illes Balears"
+    }
+  },
+  "sponsors": {
+    "title": "I Nostri Sponsor",
+    "subtitle": "Grazie ai nostri sponsor che supportano il rugby a Minorca"
+  },
+  "footer": {
+    "description": "Vivi la passione del rugby a Minorca. Più di uno sport, una famiglia unita dai valori del rugby.",
+    "quick_links": "Link Rapidi",
+    "contact": "Contatto",
+    "follow_us": "Seguici",
+    "copyright": "Tutti i diritti riservati.",
+    "made_with": "Progettato con",
+    "for": "per la comunità rugbistica di Minorca"
+  },
+  "chat": {
+    "button_text": "Hai bisogno di aiuto?",
+    "opening": "Aprendo chat...",
+    "loading": "Connessione con il nostro team...",
+    "external_info": "Sarai reindirizzato alla nostra chat in tempo reale dove potrai parlare direttamente con il nostro team.",
+    "live_support": "Supporto dal vivo disponibile",
+    "status": "Online",
+    "placeholder": "Scrivi il tuo messaggio...",
+    "typing": "Scrivendo...",
+    "quick_replies": {
+      "join": "Unirsi alla squadra",
+      "training": "Allenamenti",
+      "schedule": "Orari",
+      "store": "Negozio"
+    },
+    "responses": {
+      "welcome": "Ciao! 👋 Sono l'assistente del Menorca Rugby Club. Come posso aiutarti oggi?",
+      "join_team": "Eccellente! 🏉 Ci piace il tuo interesse. Per unirti al Menorca Rugby Club puoi:\n\n• Venire agli allenamenti (martedì e giovedì 19:00)\n• Contattarci su WhatsApp al +34 XXX XXX XXX\n• Compilare il modulo nella sezione \"Unisciti\"\n\nTi interessa qualche categoria specifica?",
+      "training_info": "🏃‍♂️ I nostri allenamenti sono:\n\n📅 **Orari:**\n• Senior: Martedì e Giovedì 19:00-21:00\n• Giovanile: Lunedì e Mercoledì 18:00-19:30\n• Scuola: Sabati 10:00-11:30\n\n📍 **Ubicazione:** Campo da Rugby di Minorca\n\nHai bisogno di più informazioni su qualche categoria?",
+      "schedule": "🏆 **Prossime Partite:**\n\n• 21 Set - MRC vs Club Rivale (Casa)\n• 28 Set - Club Ospite vs MRC (Fuori)\n• 5 Ott - MRC vs Squadra Locale (Casa)\n\nTutte le partite in casa sono alle 16:00 nel nostro campo. Vieni a sostenerci! 📣",
+      "store_info": "🛍️ Nel nostro negozio ufficiale troverai:\n\n• Maglie ufficiali (45€)\n• Felpe training (65€)\n• Cappellini e accessori (25€)\n• Pack completi (120€)\n\nTi interessa qualche prodotto specifico? Abbiamo anche sconti per i soci!",
+      "default": "Grazie per il tuo messaggio. Un membro del team ti contatterà presto. C'è qualcosa di specifico con cui posso aiutarti nel frattempo?",
+      "prices": "💰 I prezzi dei nostri prodotti sono:\n\n• Quota mensile: 30€ (soci)\n• Maglia ufficiale: 45€\n• Pack completo: 120€\n\nTi interessano informazioni sugli sconti per i soci?",
+      "hello": "Ciao! 👋 Benvenuto al Menorca Rugby Club. Sono qui per aiutarti con qualsiasi domanda sul nostro club, allenamenti, partite o prodotti. Come posso aiutarti?",
+      "thanks": "Prego! 😊 Se hai altre domande non esitare a scrivermi. Ci vediamo in campo! 🏉"
+    }
+  },
+  "forms": {
+    "success": "Richiesta inviata con successo! Ti contatteremo presto.",
+    "error": "Errore nel modulo",
+    "required": "Questo campo è obbligatorio",
+    "invalid_email": "Il formato email non è valido",
+    "sending": "Invio in corso..."
+  },
+  "notifications": {
+    "success": "Successo",
+    "error": "Errore",
+    "warning": "Avviso",
+    "info": "Informazione"
+  },
+  "calendar": {
+    "title": "Calendario Partite",
+    "subtitle": "Prossimi incontri e risultati",
+    "loading": "Caricamento partite...",
+    "filter": {
+      "all": "Tutti",
+      "senior": "Senior",
+      "women": "Femminile",
+      "youth": "Giovanile"
+    },
+    "view": {
+      "calendar": "Calendario",
+      "list": "Lista"
+    }
+  }
+}

@@ -1,0 +1,97 @@
+{
+  "articles": [
+    {
+      "id": "2025-09-21-victoria-senior",
+      "category": "partidos",
+      "date": "2025-09-21",
+      "featured": true,
+      "image": "news/partidos/2025-09-21-victoria-senior/imagen.jpg",
+      "title": {
+        "es": "Gran victoria del equipo senior",
+        "en": "Great senior team victory",
+        "ca": "Gran victòria de l'equip sènior",
+        "fr": "Grande victoire de l'équipe senior",
+        "it": "Grande vittoria della squadra senior",
+        "pt": "Grande vitória da equipe sênior"
+      },
+      "content": {
+        "es": "El Menorca Rugby Club consiguió una brillante victoria por 24-18 ante el equipo visitante, demostrando una gran mejora en su juego colectivo. Los jugadores mostraron un excelente nivel técnico y una mentalidad ganadora que les llevó a dominar el partido desde el primer minuto.\n\nLa primera parte fue muy equilibrada, con ambos equipos luchando por el control del balón. Sin embargo, el Menorca Rugby supo aprovechar sus oportunidades y se fue al descanso con una ventaja de 12-8.\n\nEn la segunda parte, el equipo local demostró su superioridad física y táctica, consiguiendo dos tries más que les aseguraron la victoria. El público presente en el campo vivió una tarde emocionante de rugby de calidad.\n\nEsta victoria consolida al Menorca Rugby en las posiciones altas de la clasificación y refuerza la confianza del equipo de cara a los próximos compromisos de la temporada.",
+        "en": "Menorca Rugby Club achieved a brilliant 24-18 victory against the visiting team, demonstrating great improvement in their collective game. The players showed excellent technical level and a winning mentality that led them to dominate the match from the first minute.\n\nThe first half was very balanced, with both teams fighting for ball control. However, Menorca Rugby knew how to take advantage of their opportunities and went to halftime with a 12-8 lead.\n\nIn the second half, the home team demonstrated their physical and tactical superiority, scoring two more tries that secured the victory. The public present at the field lived an exciting afternoon of quality rugby.\n\nThis victory consolidates Menorca Rugby in the high positions of the classification and reinforces the team's confidence for the next commitments of the season.",
+        "ca": "El Menorca Rugby Club va aconseguir una brillant victòria per 24-18 davant l'equip visitant, demostrant una gran millora en el seu joc col·lectiu. Els jugadors van mostrar un excel·lent nivell tècnic i una mentalitat guanyadora que els va portar a dominar el partit des del primer minut.\n\nLa primera part va ser molt equilibrada, amb ambdós equips lluitant pel control de la pilota. No obstant això, el Menorca Rugby va saber aprofitar les seves oportunitats i va anar al descans amb un avantatge de 12-8.\n\nEn la segona part, l'equip local va demostrar la seva superioritat física i tàctica, aconseguint dos tries més que els van assegurar la victòria. El públic present al camp va viure una tarda emocionant de rugbi de qualitat.\n\nAquesta victòria consolida el Menorca Rugby en les posicions altes de la classificació i reforça la confiança de l'equip de cara als pròxims compromisos de la temporada.",
+        "fr": "Le Menorca Rugby Club a remporté une brillante victoire 24-18 contre l'équipe visiteuse, démontrant une grande amélioration de leur jeu collectif. Les joueurs ont montré un excellent niveau technique et une mentalité gagnante qui les a menés à dominer le match dès la première minute.\n\nLa première mi-temps était très équilibrée, avec les deux équipes se battant pour le contrôle du ballon. Cependant, Menorca Rugby a su profiter de ses opportunités et est allé à la mi-temps avec une avance de 12-8.\n\nEn seconde période, l'équipe locale a démontré sa supériorité physique et tactique, marquant deux essais de plus qui ont assuré la victoire. Le public présent sur le terrain a vécu un après-midi passionnant de rugby de qualité.\n\nCette victoire consolide Menorca Rugby dans les positions hautes du classement et renforce la confiance de l'équipe pour les prochains engagements de la saison.",
+        "it": "Il Menorca Rugby Club ha ottenuto una brillante vittoria per 24-18 contro la squadra ospite, dimostrando un grande miglioramento nel loro gioco collettivo. I giocatori hanno mostrato un eccellente livello tecnico e una mentalità vincente che li ha portati a dominare la partita dal primo minuto.\n\nIl primo tempo è stato molto equilibrato, con entrambe le squadre che lottavano per il controllo della palla. Tuttavia, il Menorca Rugby ha saputo sfruttare le proprie opportunità ed è andato all'intervallo con un vantaggio di 12-8.\n\nNel secondo tempo, la squadra di casa ha dimostrato la propria superiorità fisica e tattica, segnando due mete in più che hanno assicurato la vittoria. Il pubblico presente al campo ha vissuto un pomeriggio emozionante di rugby di qualità.\n\nQuesta vittoria consolida il Menorca Rugby nelle posizioni alte della classifica e rafforza la fiducia della squadra per i prossimi impegni della stagione.",
+        "pt": "O Menorca Rugby Club conseguiu uma brilhante vitória por 24-18 contra a equipe visitante, demonstrando uma grande melhoria em seu jogo coletivo. Os jogadores mostraram excelente nível técnico e mentalidade vencedora que os levou a dominar a partida desde o primeiro minuto.\n\nO primeiro tempo foi muito equilibrado, com ambas as equipes lutando pelo controle da bola. No entanto, o Menorca Rugby soube aproveitar suas oportunidades e foi para o intervalo com vantagem de 12-8.\n\nNo segundo tempo, a equipe da casa demonstrou sua superioridade física e tática, conseguindo dois tries a mais que asseguraram a vitória. O público presente no campo viveu uma tarde emocionante de rugby de qualidade.\n\nEsta vitória consolida o Menorca Rugby nas posições altas da classificação e reforça a confiança da equipe para os próximos compromissos da temporada."
+      },
+      "categoryText": {
+        "es": "Partidos",
+        "en": "Matches",
+        "ca": "Partits",
+        "fr": "Matchs",
+        "it": "Partite",
+        "pt": "Jogos"
+      }
+    },
+    {
+      "id": "2025-09-15-nueva-temporada",
+      "category": "general",
+      "date": "2025-09-15",
+      "featured": false,
+      "image": "assets/images/gallery/foto (19).jpg",
+      "title": {
+        "es": "Inicio de la nueva temporada 2025",
+        "en": "Start of the new 2025 season",
+        "ca": "Inici de la nova temporada 2025",
+        "fr": "Début de la nouvelle saison 2025",
+        "it": "Inizio della nuova stagione 2025",
+        "pt": "Início da nova temporada 2025"
+      },
+      "content": {
+        "es": "Con renovadas energías y grandes expectativas, el Menorca Rugby Club da la bienvenida a la temporada 2025. Una nueva etapa llena de desafíos, ilusión y oportunidades para seguir creciendo como club y como familia rugbística.\n\nEste año contamos con importantes novedades: nuevos jugadores que se han unido a nuestras filas, un cuerpo técnico reforzado con entrenadores especializados y unas instalaciones mejoradas que nos permitirán ofrecer la mejor experiencia deportiva.\n\nLa pretemporada ha sido intensa y productiva. Los equipos han trabajado duro en la preparación física y táctica, mostrando un nivel excepcional que nos hace ser optimistas de cara a los retos que nos esperan.\n\nQueremos agradecer a todos los socios, jugadores, familiares y aficionados por su apoyo incondicional. Sin vosotros, nada de esto sería posible. ¡Juntos haremos de esta temporada algo especial!",
+        "en": "With renewed energy and great expectations, Menorca Rugby Club welcomes the 2025 season. A new stage full of challenges, excitement and opportunities to continue growing as a club and as a rugby family.\n\nThis year we have important new features: new players who have joined our ranks, a reinforced coaching staff with specialized trainers and improved facilities that will allow us to offer the best sporting experience.\n\nThe preseason has been intense and productive. The teams have worked hard in physical and tactical preparation, showing an exceptional level that makes us optimistic about the challenges ahead.\n\nWe want to thank all the members, players, families and fans for their unconditional support. Without you, none of this would be possible. Together we will make this season something special!",
+        "ca": "Amb energies renovades i grans expectatives, el Menorca Rugby Club dona la benvinguda a la temporada 2025. Una nova etapa plena de desafiaments, il·lusió i oportunitats per continuar creixent com a club i com a família rugbística.\n\nEnguany comptem amb importants novetats: nous jugadors que s'han unit a les nostres files, un cos tècnic reforçat amb entrenadors especialitzats i unes instal·lacions millorades que ens permetran oferir la millor experiència esportiva.\n\nLa pretemporada ha estat intensa i productiva. Els equips han treballat dur en la preparació física i tàctica, mostrant un nivell excepcional que ens fa ser optimistes de cara als reptes que ens esperen.\n\nVolem agrair a tots els socis, jugadors, familiars i aficionats pel seu suport incondicional. Sense vosaltres, res d'això seria possible. Junts farem d'aquesta temporada alguna cosa especial!",
+        "fr": "Avec une énergie renouvelée et de grandes attentes, le Menorca Rugby Club accueille la saison 2025. Une nouvelle étape pleine de défis, d'enthousiasme et d'opportunités pour continuer à grandir en tant que club et famille de rugby.\n\nCette année, nous avons d'importantes nouveautés : de nouveaux joueurs qui ont rejoint nos rangs, un staff technique renforcé avec des entraîneurs spécialisés et des installations améliorées qui nous permettront d'offrir la meilleure expérience sportive.\n\nLa pré-saison a été intense et productive. Les équipes ont travaillé dur dans la préparation physique et tactique, montrant un niveau exceptionnel qui nous rend optimistes face aux défis à venir.\n\nNous voulons remercier tous les membres, joueurs, familles et fans pour leur soutien inconditionnel. Sans vous, rien de tout cela ne serait possible. Ensemble, nous ferons de cette saison quelque chose de spécial !",
+        "it": "Con energie rinnovate e grandi aspettative, il Menorca Rugby Club accoglie la stagione 2025. Una nuova tappa piena di sfide, entusiasmo e opportunità per continuare a crescere come club e come famiglia del rugby.\n\nQuest'anno abbiamo importanti novità: nuovi giocatori che si sono uniti alle nostre fila, uno staff tecnico rafforzato con allenatori specializzati e strutture migliorate che ci permetteranno di offrire la migliore esperienza sportiva.\n\nLa pre-stagione è stata intensa e produttiva. Le squadre hanno lavorato sodo nella preparazione fisica e tattica, mostrando un livello eccezionale che ci rende ottimisti riguardo alle sfide che ci aspettano.\n\nVogliamo ringraziare tutti i soci, giocatori, familiari e tifosi per il loro supporto incondizionato. Senza di voi, nulla di tutto questo sarebbe possibile. Insieme renderemo questa stagione qualcosa di speciale!",
+        "pt": "Com energias renovadas e grandes expectativas, o Menorca Rugby Club dá as boas-vindas à temporada 2025. Uma nova etapa cheia de desafios, entusiasmo e oportunidades para continuar crescendo como clube e como família do rugby.\n\nEste ano temos importantes novidades: novos jogadores que se juntaram às nossas fileiras, uma equipe técnica reforçada com treinadores especializados e instalações melhoradas que nos permitirão oferecer a melhor experiência esportiva.\n\nA pré-temporada foi intensa e produtiva. As equipes trabalharam duro na preparação física e tática, mostrando um nível excepcional que nos deixa otimistas diante dos desafios que nos esperam.\n\nQueremos agradecer a todos os sócios, jogadores, familiares e torcedores pelo apoio incondicional. Sem vocês, nada disso seria possível. Juntos faremos desta temporada algo especial!"
+      },
+      "categoryText": {
+        "es": "General",
+        "en": "General",
+        "ca": "General",
+        "fr": "Général",
+        "it": "Generale",
+        "pt": "Geral"
+      }
+    },
+    {
+      "id": "2025-09-10-escuela-rugby",
+      "category": "entrenamientos",
+      "date": "2025-09-10",
+      "featured": false,
+      "image": "assets/images/gallery/foto (21).jpg",
+      "title": {
+        "es": "Apertura inscripciones Escuela de Rugby 2025",
+        "en": "Opening of Rugby School 2025 registrations",
+        "ca": "Obertura inscripcions Escola de Rugbi 2025",
+        "fr": "Ouverture des inscriptions École de Rugby 2025",
+        "it": "Apertura iscrizioni Scuola di Rugby 2025",
+        "pt": "Abertura de inscrições Escola de Rugby 2025"
+      },
+      "content": {
+        "es": "Ya están abiertas las inscripciones para la Escuela de Rugby del Menorca Rugby Club temporada 2025. Una oportunidad única para que los más pequeños descubran los valores y la emoción de este maravilloso deporte.\n\nLa Escuela de Rugby está dirigida a niños y niñas de 6 a 12 años, sin importar si tienen experiencia previa. Nuestro objetivo es que aprendan jugando, desarrollen sus habilidades motrices y, sobre todo, se diviertan mientras descubren los valores fundamentales del rugby.\n\nLos entrenamientos se realizan todos los sábados por la mañana de 10:00 a 11:30h en nuestras instalaciones. Contamos con un equipo de entrenadores titulados y especializados en formación infantil que garantizan un aprendizaje seguro y divertido.\n\nLas plazas son limitadas, por lo que recomendamos formalizar la inscripción cuanto antes. Para más información y reservar plaza, podéis contactar con nosotros a través del formulario de contacto o visitarnos en nuestras instalaciones.",
+        "en": "Registrations are now open for the Menorca Rugby Club Rugby School 2025 season. A unique opportunity for the little ones to discover the values and excitement of this wonderful sport.\n\nThe Rugby School is aimed at boys and girls aged 6 to 12, regardless of whether they have previous experience. Our goal is for them to learn by playing, develop their motor skills and, above all, have fun while discovering the fundamental values of rugby.\n\nTraining takes place every Saturday morning from 10:00 to 11:30 at our facilities. We have a team of qualified coaches specialized in children's training that guarantee safe and fun learning.\n\nPlaces are limited, so we recommend formalizing registration as soon as possible. For more information and to reserve a place, you can contact us through the contact form or visit us at our facilities.",
+        "ca": "Ja estan obertes les inscripcions per a l'Escola de Rugbi del Menorca Rugby Club temporada 2025. Una oportunitat única perquè els més petits descobreixin els valors i l'emoció d'aquest meravellós esport.\n\nL'Escola de Rugbi està dirigida a nens i nenes de 6 a 12 anys, sense importar si tenen experiència prèvia. El nostre objectiu és que aprenguin jugant, desenvolupin les seves habilitats motrius i, sobretot, es diverteixin mentre descobreixen els valors fonamentals del rugbi.\n\nEls entrenaments es realitzen tots els dissabtes al matí de 10:00 a 11:30h a les nostres instal·lacions. Comptem amb un equip d'entrenadors titulats i especialitzats en formació infantil que garanteixen un aprenentatge segur i divertit.\n\nLes places són limitades, per la qual cosa recomanem formalitzar la inscripció com més aviat millor. Per a més informació i reservar plaça, podeu contactar amb nosaltres a través del formulari de contacte o visitar-nos a les nostres instal·lacions.",
+        "fr": "Les inscriptions sont maintenant ouvertes pour l'École de Rugby du Menorca Rugby Club saison 2025. Une opportunité unique pour les plus petits de découvrir les valeurs et l'émotion de ce merveilleux sport.\n\nL'École de Rugby s'adresse aux garçons et filles de 6 à 12 ans, qu'ils aient ou non une expérience préalable. Notre objectif est qu'ils apprennent en jouant, développent leurs habiletés motrices et, surtout, s'amusent tout en découvrant les valeurs fondamentales du rugby.\n\nLes entraînements ont lieu tous les samedis matin de 10h00 à 11h30 dans nos installations. Nous avons une équipe d'entraîneurs qualifiés spécialisés dans la formation des enfants qui garantissent un apprentissage sûr et amusant.\n\nLes places sont limitées, nous recommandons donc de formaliser l'inscription dès que possible. Pour plus d'informations et réserver une place, vous pouvez nous contacter via le formulaire de contact ou nous rendre visite dans nos installations.",
+        "it": "Sono ora aperte le iscrizioni per la Scuola di Rugby del Menorca Rugby Club stagione 2025. Un'opportunità unica per i più piccoli di scoprire i valori e l'emozione di questo meraviglioso sport.\n\nLa Scuola di Rugby è rivolta a bambini e bambine dai 6 ai 12 anni, indipendentemente dal fatto che abbiano esperienza precedente. Il nostro obiettivo è che imparino giocando, sviluppino le loro abilità motorie e, soprattutto, si divertano mentre scoprono i valori fondamentali del rugby.\n\nGli allenamenti si svolgono ogni sabato mattina dalle 10:00 alle 11:30 presso le nostre strutture. Abbiamo un team di allenatori qualificati specializzati nella formazione infantile che garantiscono un apprendimento sicuro e divertente.\n\nI posti sono limitati, quindi raccomandiamo di formalizzare l'iscrizione il prima possibile. Per maggiori informazioni e prenotare un posto, potete contattarci tramite il modulo di contatto o visitarci presso le nostre strutture.",
+        "pt": "Já estão abertas as inscrições para a Escola de Rugby do Menorca Rugby Club temporada 2025. Uma oportunidade única para os pequenos descobrirem os valores e a emoção deste maravilhoso esporte.\n\nA Escola de Rugby é destinada a meninos e meninas de 6 a 12 anos, independentemente de terem experiência prévia. Nosso objetivo é que aprendam brincando, desenvolvam suas habilidades motoras e, acima de tudo, se divirtam enquanto descobrem os valores fundamentais do rugby.\n\nOs treinos acontecem todos os sábados de manhã das 10:00 às 11:30 em nossas instalações. Temos uma equipe de treinadores qualificados especializados em formação infantil que garantem aprendizado seguro e divertido.\n\nAs vagas são limitadas, por isso recomendamos formalizar a inscrição o quanto antes. Para mais informações e reservar vaga, vocês podem nos contactar através do formulário de contato ou nos visitar em nossas instalações."
+      },
+      "categoryText": {
+        "es": "Entrenamientos",
+        "en": "Training",
+        "ca": "Entrenaments",
+        "fr": "Entraînement",
+        "it": "Allenamenti",
+        "pt": "Treinos"
+      }
+    }
+  ]
+}

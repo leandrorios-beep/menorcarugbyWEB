@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find:*)",
+      "Bash(grep:*)",
+      "Bash(sed:*)",
+      "Bash(cat:*)",
+      "Bash(vercel:*)",
+      "WebFetch(domain:mr-1dxba935d-menorca-rugby.vercel.app)",
+      "WebFetch(domain:mr-neon.vercel.app)",
+      "WebFetch(domain:www.menorcarugbyclub.com)",
+      "WebFetch(domain:menorcarugby.clupik.app)",
+      "WebFetch(domain:app.menorcarugbyclub.com)",
+      "Bash(curl -s \"https://www.menorcarugbyclub.com/calendar.html\")"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
