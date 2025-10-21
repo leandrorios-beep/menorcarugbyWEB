@@ -31,7 +31,9 @@
   },
   "about": {
     "title": "Our Club",
+    "title_full": "Rugby Club in Menorca - Our History",
     "subtitle": "More than a sport, a family",
+    "subtitle_full": "More than a sport, a rugby family in the Balearic Islands",
     "history_title": "Our History",
     "history": {
       "description": "Menorca Rugby Club was born over 20 years ago from passion for this noble sport and love for our island. Founded by a group of English enthusiasts, the club grew with the mission to transmit the essential values of rugby: respect, integrity, passion, solidarity and discipline. Today we continue sharing that same spirit, bringing rugby closer to our community and building a great family on and off the field."
@@ -59,9 +61,12 @@
   },
   "team": {
     "title": "Our Teams",
+    "title_full": "Menorca Rugby Teams - Senior, Youth and School",
     "subtitle": "Players of all ages and levels",
+    "subtitle_full": "Players of all ages and levels in the Balearic Islands",
     "senior": {
       "title": "Senior Team",
+      "title_short": "Senior",
       "subtitle": "The heart of the club",
       "description": "Our senior team competes in the Balearic League, facing rivals from Mallorca and Ibiza in a round-robin championship. At the end of the season, the top four compete for the title. We also have a women's team that participates in Rugby 7's, taking the spirit of rugby to the highest level.",
       "players": "20+ players",
@@ -69,6 +74,7 @@
     },
     "youth": {
       "title": "Youth Team",
+      "title_short": "Youth",
       "subtitle": "The future of rugby",
       "description": "Aimed at players aged 14 to 18, our youth team participates in the Balearic League, measuring strength against teams from Mallorca and Ibiza. Additionally, they have presence in national selections and various tournaments, both official and friendly, providing them with a unique experience of sporting and personal growth.",
       "players": "40+ players",
@@ -76,6 +82,7 @@
     },
     "school": {
       "title": "Rugby School",
+      "title_short": "School",
       "subtitle": "First steps",
       "description": "The foundation of our club begins with the youngest: from 6 to 12 years old. Although they don't compete in leagues, they enjoy the fun \"Rugby Days\", events where SUB6, SUB8, SUB10 and SUB12 teams play short matches, have fun and learn that what matters is not the result, but enjoying the game. Each team plays between 3 and 4 matches per day, always with smiles.",
       "players": "20+ children",
@@ -195,7 +202,9 @@
     "quick_links": "Quick Links",
     "contact": "Contact",
     "follow_us": "Follow Us",
+    "club_name": "MENORCA RUGBY CLUB",
     "copyright": "All rights reserved.",
+    "copyright_full": "&copy; 2025 Menorca Rugby Club. All rights reserved.",
     "made_with": "Designed with",
     "for": "for Menorca's rugby community"
   },
