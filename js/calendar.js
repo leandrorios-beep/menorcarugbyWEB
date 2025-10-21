@@ -733,9 +733,10 @@ const MatchesCalendar = {
                 const matchCategory = (m.category || '').toUpperCase();
                 const filterCategory = this.selectedCategory.toUpperCase();
 
-                // Special case for RUGBY DAY - show when filtering by any SUB category
-                if (matchCategory.includes('RUGBY DAY') && filterCategory.startsWith('SUB')) {
-                    return true;
+                // Special case for RUGBY DAY - only show in younger categories (SUB6, SUB8, SUB10, SUB12)
+                if (matchCategory.includes('RUGBY DAY')) {
+                    const youngerCategories = ['SUB6', 'SUB8', 'SUB10', 'SUB12'];
+                    return youngerCategories.includes(filterCategory);
                 }
 
                 // Check if the match category contains the filter category
@@ -848,9 +849,10 @@ const MatchesCalendar = {
                     const matchCategory = (m.category || '').toUpperCase();
                     const filterCategory = category.toUpperCase();
 
-                    // Special case for RUGBY DAY - show when filtering by any SUB category
-                    if (matchCategory.includes('RUGBY DAY') && filterCategory.startsWith('SUB')) {
-                        return true;
+                    // Special case for RUGBY DAY - only show in younger categories (SUB6, SUB8, SUB10, SUB12)
+                    if (matchCategory.includes('RUGBY DAY')) {
+                        const youngerCategories = ['SUB6', 'SUB8', 'SUB10', 'SUB12'];
+                        return youngerCategories.includes(filterCategory);
                     }
 
                     // Check if the match category contains the filter category

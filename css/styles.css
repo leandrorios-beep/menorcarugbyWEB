@@ -3655,8 +3655,8 @@ img {
 }
 
 .calendar-nav-btn {
-    background: var(--navy);
-    color: white;
+    background: transparent;
+    color: #000;
     border: none;
     width: 45px;
     height: 45px;
@@ -3666,12 +3666,13 @@ img {
     align-items: center;
     justify-content: center;
     transition: all 0.3s ease;
-    font-size: 1.2rem;
+    font-size: 1.5rem;
+    font-weight: bold;
 }
 
 .calendar-nav-btn:hover {
-    background: var(--yellow);
-    color: var(--navy);
+    background: rgba(0, 0, 0, 0.05);
+    color: #000;
     transform: scale(1.1);
 }
 
@@ -3689,8 +3690,8 @@ img {
 }
 
 .filter-chip {
-    background: var(--navy);
-    color: white;
+    background: white;
+    color: var(--navy);
     border: 2px solid var(--navy);
     padding: 0.6rem 1.2rem;
     border-radius: 25px;
@@ -3702,8 +3703,9 @@ img {
 }
 
 .filter-chip:hover {
-    background: #1e3a5f;
-    border-color: #1e3a5f;
+    background: var(--navy);
+    color: white;
+    border-color: var(--navy);
     transform: translateY(-2px);
 }
 
