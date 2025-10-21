@@ -824,11 +824,18 @@ const MatchesCalendar = {
         const upcomingByCategory = {};
         const categories = ['SENIOR', 'FEMENINO', 'SUB18', 'SUB16', 'SUB14', 'SUB12', 'SUB10', 'SUB8', 'SUB6'];
 
-        // First, handle Rugby Day separately (only show one card for all Rugby Day events)
+        // First, handle Rugby Day separately (consolidate SUB8, SUB10, SUB12 as RUGBY DAY)
         const rugbyDayMatches = this.allMatches
             .filter(m => {
                 const matchCategory = (m.category || '').toUpperCase();
-                return matchCategory.includes('RUGBY DAY');
+                // Include Rugby Day OR SUB8/SUB10/SUB12 (they're all Rugby Day events)
+                return matchCategory.includes('RUGBY DAY') ||
+                       matchCategory.includes('SUB8') ||
+                       matchCategory.includes('SUB 8') ||
+                       matchCategory.includes('SUB10') ||
+                       matchCategory.includes('SUB 10') ||
+                       matchCategory.includes('SUB12') ||
+                       matchCategory.includes('SUB 12');
             })
             .filter(m => {
                 const matchDate = new Date(m.date + 'T00:00:00');
@@ -850,7 +857,7 @@ const MatchesCalendar = {
             };
         }
 
-        // Then handle regular categories (excluding Rugby Day)
+        // Then handle regular categories (excluding Rugby Day and SUB8/10/12)
         categories.forEach(category => {
             const categoryMatches = this.allMatches
                 .filter(m => {
@@ -858,6 +865,13 @@ const MatchesCalendar = {
 
                     // Skip Rugby Day matches (already handled above)
                     if (matchCategory.includes('RUGBY DAY')) {
+                        return false;
+                    }
+
+                    // Skip SUB8, SUB10, SUB12 (they're consolidated as Rugby Day)
+                    if (matchCategory.includes('SUB8') || matchCategory.includes('SUB 8') ||
+                        matchCategory.includes('SUB10') || matchCategory.includes('SUB 10') ||
+                        matchCategory.includes('SUB12') || matchCategory.includes('SUB 12')) {
                         return false;
                     }
 

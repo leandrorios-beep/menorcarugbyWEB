@@ -4625,29 +4625,134 @@ img {
     gap: 0.5rem;
 }
 
-/* Category-specific border colors for upcoming cards */
+/* Category-specific colors for upcoming cards */
 .upcoming-card.category-senior {
-    border-left-color: #182B49;
+    background: linear-gradient(135deg, #182B49 0%, #2a4365 100%);
+    border-left-color: #fbbf24;
+    color: white;
+}
+
+.upcoming-card.category-senior .upcoming-card-category,
+.upcoming-card.category-senior .upcoming-card-opponent {
+    color: white;
+}
+
+.upcoming-card.category-senior .upcoming-card-time {
+    color: #fbbf24;
+}
+
+.upcoming-card.category-senior .upcoming-card-location {
+    color: rgba(255, 255, 255, 0.8);
 }
 
 .upcoming-card.category-femenino {
-    border-left-color: #d946ef;
+    background: linear-gradient(135deg, #d946ef 0%, #c026d3 100%);
+    border-left-color: white;
+    color: white;
+}
+
+.upcoming-card.category-femenino .upcoming-card-category,
+.upcoming-card.category-femenino .upcoming-card-opponent {
+    color: white;
+}
+
+.upcoming-card.category-femenino .upcoming-card-time {
+    color: #fbbf24;
+}
+
+.upcoming-card.category-femenino .upcoming-card-location {
+    color: rgba(255, 255, 255, 0.8);
 }
 
 .upcoming-card.category-sub18 {
-    border-left-color: #2563eb;
+    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+    border-left-color: #fbbf24;
+    color: white;
+}
+
+.upcoming-card.category-sub18 .upcoming-card-category,
+.upcoming-card.category-sub18 .upcoming-card-opponent {
+    color: white;
+}
+
+.upcoming-card.category-sub18 .upcoming-card-time {
+    color: #fbbf24;
+}
+
+.upcoming-card.category-sub18 .upcoming-card-location {
+    color: rgba(255, 255, 255, 0.8);
 }
 
 .upcoming-card.category-sub16 {
-    border-left-color: #7c3aed;
+    background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+    border-left-color: #fbbf24;
+    color: white;
+}
+
+.upcoming-card.category-sub16 .upcoming-card-category,
+.upcoming-card.category-sub16 .upcoming-card-opponent {
+    color: white;
+}
+
+.upcoming-card.category-sub16 .upcoming-card-time {
+    color: #fbbf24;
+}
+
+.upcoming-card.category-sub16 .upcoming-card-location {
+    color: rgba(255, 255, 255, 0.8);
 }
 
 .upcoming-card.category-sub14 {
-    border-left-color: #dc2626;
+    background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+    border-left-color: #fbbf24;
+    color: white;
 }
 
-.upcoming-card.category-sub12 {
-    border-left-color: #ea580c;
+.upcoming-card.category-sub14 .upcoming-card-category,
+.upcoming-card.category-sub14 .upcoming-card-opponent {
+    color: white;
+}
+
+.upcoming-card.category-sub14 .upcoming-card-time {
+    color: #fbbf24;
+}
+
+.upcoming-card.category-sub14 .upcoming-card-location {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.upcoming-card.category-rugby-day,
+.upcoming-card.category-sub12,
+.upcoming-card.category-sub10,
+.upcoming-card.category-sub8 {
+    background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+    border-left-color: #fbbf24;
+    color: white;
+}
+
+.upcoming-card.category-rugby-day .upcoming-card-category,
+.upcoming-card.category-rugby-day .upcoming-card-opponent,
+.upcoming-card.category-sub12 .upcoming-card-category,
+.upcoming-card.category-sub12 .upcoming-card-opponent,
+.upcoming-card.category-sub10 .upcoming-card-category,
+.upcoming-card.category-sub10 .upcoming-card-opponent,
+.upcoming-card.category-sub8 .upcoming-card-category,
+.upcoming-card.category-sub8 .upcoming-card-opponent {
+    color: white;
+}
+
+.upcoming-card.category-rugby-day .upcoming-card-time,
+.upcoming-card.category-sub12 .upcoming-card-time,
+.upcoming-card.category-sub10 .upcoming-card-time,
+.upcoming-card.category-sub8 .upcoming-card-time {
+    color: #fbbf24;
+}
+
+.upcoming-card.category-rugby-day .upcoming-card-location,
+.upcoming-card.category-sub12 .upcoming-card-location,
+.upcoming-card.category-sub10 .upcoming-card-location,
+.upcoming-card.category-sub8 .upcoming-card-location {
+    color: rgba(255, 255, 255, 0.8);
 }
 
 /* ==========================================================================
