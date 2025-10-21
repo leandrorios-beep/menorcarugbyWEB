@@ -3689,9 +3689,9 @@ img {
 }
 
 .filter-chip {
-    background: white;
-    color: var(--navy);
-    border: 2px solid #e0e0e0;
+    background: var(--navy);
+    color: white;
+    border: 2px solid var(--navy);
     padding: 0.6rem 1.2rem;
     border-radius: 25px;
     cursor: pointer;
@@ -3702,8 +3702,8 @@ img {
 }
 
 .filter-chip:hover {
-    border-color: var(--yellow);
-    background: #fff9e6;
+    background: #1e3a5f;
+    border-color: #1e3a5f;
     transform: translateY(-2px);
 }
 
@@ -3920,6 +3920,48 @@ img {
 
 .category-sub12:hover {
     background: #fb923c;
+}
+
+.category-sub10,
+.category-sub-10 {
+    background: #059669;
+}
+
+.category-sub10:hover,
+.category-sub-10:hover {
+    background: #10b981;
+}
+
+.category-sub8,
+.category-sub-8 {
+    background: #0891b2;
+}
+
+.category-sub8:hover,
+.category-sub-8:hover {
+    background: #06b6d4;
+}
+
+.category-sub6,
+.category-sub-6 {
+    background: #7c3aed;
+}
+
+.category-sub6:hover,
+.category-sub-6:hover {
+    background: #a78bfa;
+}
+
+.category-rugby-day,
+.category-rugby-days {
+    background: #dc2626;
+    color: white;
+}
+
+.category-rugby-day:hover,
+.category-rugby-days:hover {
+    background: #ef4444;
+    color: white;
 }
 
 /* Loading State */
@@ -4220,6 +4262,12 @@ img {
 
 .category-sub6 {
     background: #0369a1;
+    color: white;
+}
+
+.category-rugby-day,
+.category-rugby-days {
+    background: #dc2626;
     color: white;
 }
 

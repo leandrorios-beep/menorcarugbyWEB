@@ -66,10 +66,22 @@ const MatchesTable = {
         const tableContainer = document.getElementById('matchesTable');
         if (!tableContainer) return;
 
-        // Filter matches
+        // Filter matches - improved to handle composite categories
         let filteredMatches = this.matches;
         if (this.selectedCategory !== 'all') {
-            filteredMatches = this.matches.filter(m => m.category === this.selectedCategory);
+            filteredMatches = this.matches.filter(m => {
+                const matchCategory = (m.category || '').toUpperCase();
+                const filterCategory = this.selectedCategory.toUpperCase();
+
+                // Special case for RUGBY DAY - show when filtering by any SUB category
+                if (matchCategory.includes('RUGBY DAY') && filterCategory.startsWith('SUB')) {
+                    return true;
+                }
+
+                // Check if the match category contains the filter category
+                // This handles cases like "SUB 10 Y SUB 8" matching both "SUB10" and "SUB8"
+                return matchCategory.includes(filterCategory.replace(/(\d+)/, ' $1'));
+            });
         }
 
         // Sort by date

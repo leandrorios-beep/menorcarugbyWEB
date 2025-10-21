@@ -726,10 +726,22 @@ const MatchesCalendar = {
 
         const lang = this.getCurrentLanguage();
 
-        // Filter matches by category
+        // Filter matches by category - improved to handle composite categories
         let filteredMatches = this.allMatches;
         if (this.selectedCategory !== 'all') {
-            filteredMatches = this.allMatches.filter(m => m.category === this.selectedCategory);
+            filteredMatches = this.allMatches.filter(m => {
+                const matchCategory = (m.category || '').toUpperCase();
+                const filterCategory = this.selectedCategory.toUpperCase();
+
+                // Special case for RUGBY DAY - show when filtering by any SUB category
+                if (matchCategory.includes('RUGBY DAY') && filterCategory.startsWith('SUB')) {
+                    return true;
+                }
+
+                // Check if the match category contains the filter category
+                // This handles cases like "SUB 10 Y SUB 8" matching both "SUB10" and "SUB8"
+                return matchCategory.includes(filterCategory.replace(/(\d+)/, ' $1'));
+            });
         }
 
         if (filteredMatches.length === 0) {
@@ -832,7 +844,18 @@ const MatchesCalendar = {
 
         categories.forEach(category => {
             const categoryMatches = this.allMatches
-                .filter(m => m.category === category)
+                .filter(m => {
+                    const matchCategory = (m.category || '').toUpperCase();
+                    const filterCategory = category.toUpperCase();
+
+                    // Special case for RUGBY DAY - show when filtering by any SUB category
+                    if (matchCategory.includes('RUGBY DAY') && filterCategory.startsWith('SUB')) {
+                        return true;
+                    }
+
+                    // Check if the match category contains the filter category
+                    return matchCategory.includes(filterCategory.replace(/(\d+)/, ' $1'));
+                })
                 .filter(m => {
                     const matchDate = new Date(m.date + 'T00:00:00');
                     matchDate.setHours(0, 0, 0, 0);
