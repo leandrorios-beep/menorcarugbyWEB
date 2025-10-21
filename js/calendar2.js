@@ -190,7 +190,5 @@ const MatchesTable = {
 // Initialize when DOM is ready
 document.addEventListener('DOMContentLoaded', function() {
     console.log('🚀 DOM Content Loaded - Calendar Table View');
-    setTimeout(() => {
-        MatchesTable.init();
-    }, 500);
+    MatchesTable.init();
 });

@@ -973,11 +973,9 @@ document.addEventListener('DOMContentLoaded', function() {
     console.log('🔍 Calendar Grid exists:', !!calendarGrid);
     console.log('🔍 Upcoming Banner exists:', !!upcomingBanner);
 
-    // Wait a bit for i18n to load
-    setTimeout(() => {
-        console.log('⏰ Starting calendar initialization after timeout');
-        MatchesCalendar.init();
-    }, 500);
+    // Initialize immediately for instant rendering
+    console.log('⏰ Starting calendar initialization');
+    MatchesCalendar.init();
 });
 
 // Re-render on window resize
