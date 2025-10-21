@@ -479,6 +479,10 @@ const MatchesCalendar = {
     renderMatchBadge(match) {
         const categoryClass = this.getCategoryClass(match.category);
         const homeAway = match.is_home ? '🏠' : '✈️';
+        const statusText = match.status === 'confirmed' ? 'Confirmado' :
+                          match.status === 'planned' ? 'Planificado' :
+                          match.status === 'cancelled' ? 'Cancelado' : 'Planificado';
+        const statusClass = `status-${match.status || 'planned'}`;
 
         return `
             <div class="match-badge ${categoryClass}" data-match-id="${match.id}" title="${match.category} - ${match.opponent} - ${match.time}">
@@ -490,6 +494,7 @@ const MatchesCalendar = {
                     <span class="match-icon">${homeAway}</span>
                     <span class="match-opponent">${this.truncate(match.opponent, 12)}</span>
                 </div>
+                <div class="match-status-mini ${statusClass}">${statusText}</div>
             </div>
         `;
     },
@@ -740,8 +745,9 @@ const MatchesCalendar = {
                 }
 
                 // Check if the match category contains the filter category
-                // This handles cases like "SUB 10 Y SUB 8" matching both "SUB10" and "SUB8"
-                return matchCategory.includes(filterCategory.replace(/(\d+)/, ' $1'));
+                // Try both with and without space: "SUB18" or "SUB 18"
+                const withSpace = filterCategory.replace(/(\d+)/, ' $1');
+                return matchCategory.includes(filterCategory) || matchCategory.includes(withSpace);
             });
         }
 
@@ -856,7 +862,9 @@ const MatchesCalendar = {
                     }
 
                     // Check if the match category contains the filter category
-                    return matchCategory.includes(filterCategory.replace(/(\d+)/, ' $1'));
+                    // Try both with and without space: "SUB18" or "SUB 18"
+                    const withSpace = filterCategory.replace(/(\d+)/, ' $1');
+                    return matchCategory.includes(filterCategory) || matchCategory.includes(withSpace);
                 })
                 .filter(m => {
                     const matchDate = new Date(m.date + 'T00:00:00');

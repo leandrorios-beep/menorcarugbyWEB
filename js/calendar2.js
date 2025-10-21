@@ -80,8 +80,9 @@ const MatchesTable = {
                 }
 
                 // Check if the match category contains the filter category
-                // This handles cases like "SUB 10 Y SUB 8" matching both "SUB10" and "SUB8"
-                return matchCategory.includes(filterCategory.replace(/(\d+)/, ' $1'));
+                // Try both with and without space: "SUB18" or "SUB 18"
+                const withSpace = filterCategory.replace(/(\d+)/, ' $1');
+                return matchCategory.includes(filterCategory) || matchCategory.includes(withSpace);
             });
         }
 
