@@ -9,7 +9,6 @@ const MatchesTable = {
     selectedCategory: 'all',
 
     async init() {
-        console.log('📋 TABLE VIEW: Initializing...');
         this.setupFilters();
         await this.loadAllMatches();
     },
@@ -27,11 +26,9 @@ const MatchesTable = {
     },
 
     async loadAllMatches() {
-        console.log('📋 TABLE VIEW: Loading all matches...');
         const tableContainer = document.getElementById('matchesTable');
 
         if (!tableContainer) {
-            console.error('❌ TABLE VIEW: No table container found');
             return;
         }
 
@@ -47,8 +44,6 @@ const MatchesTable = {
             }
 
             this.matches = data.matches || [];
-            console.log(`📋 TABLE VIEW: Loaded ${this.matches.length} matches`);
-
             this.renderTable();
 
         } catch (error) {
@@ -189,6 +184,5 @@ const MatchesTable = {
 
 // Initialize when DOM is ready
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('🚀 DOM Content Loaded - Calendar Table View');
     MatchesTable.init();
 });

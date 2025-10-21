@@ -40,35 +40,21 @@ const MatchesCalendar = {
 
     // Initialize calendar
     init() {
-        console.log('📅 CALENDAR: Initializing...');
-        console.log('📅 CALENDAR: Current date:', new Date());
-        console.log('📅 CALENDAR: Current month state:', this.currentMonth);
-
         // Check if we're on the home page or calendar page
         const upcomingBanner = document.getElementById('upcomingBanner');
         const calendarSection = document.getElementById('calendarGrid');
 
-        console.log('📅 CALENDAR: Elements found - upcomingBanner:', !!upcomingBanner, 'calendarGrid:', !!calendarSection);
-
         // Always load all matches for the upcoming banner
         if (upcomingBanner) {
-            console.log('📅 CALENDAR: Loading upcoming matches banner');
             this.loadAllMatches(); // This will render the banner
         }
 
         // Only initialize full calendar if we're on the calendar page
         if (calendarSection) {
-            console.log('📅 CALENDAR: Full calendar page detected');
-            console.log('📅 CALENDAR: Setting up event listeners...');
             this.setupEventListeners();
-            console.log('📅 CALENDAR: Loading matches for current month...');
             this.loadMatches(); // Load current month for calendar view
             this.checkUrlHash(); // Check if coming from #calendario
-        } else {
-            console.warn('⚠️ CALENDAR: calendarGrid element not found!');
         }
-
-        console.log('✅ CALENDAR: Initialized successfully');
     },
 
     // Setup event listeners
@@ -77,29 +63,23 @@ const MatchesCalendar = {
         const prevBtn = document.getElementById('prevMonth');
         const nextBtn = document.getElementById('nextMonth');
 
-        console.log('📅 CALENDAR: Setting up event listeners', { prevBtn: !!prevBtn, nextBtn: !!nextBtn });
-
         if (prevBtn) {
             prevBtn.addEventListener('click', () => {
-                console.log('📅 CALENDAR: Previous month clicked');
                 this.changeMonth(-1);
             });
         }
 
         if (nextBtn) {
             nextBtn.addEventListener('click', () => {
-                console.log('📅 CALENDAR: Next month clicked');
                 this.changeMonth(1);
             });
         }
 
         // Category filters
         const filterBtns = document.querySelectorAll('.calendar-filters .filter-chip');
-        console.log('📅 CALENDAR: Found', filterBtns.length, 'filter buttons');
 
         filterBtns.forEach(btn => {
             btn.addEventListener('click', () => {
-                console.log('📅 CALENDAR: Filter clicked:', btn.getAttribute('data-category'));
                 // Remove active class from all
                 filterBtns.forEach(b => b.classList.remove('active'));
                 // Add active to clicked
@@ -137,15 +117,10 @@ const MatchesCalendar = {
 
     // Change month
     changeMonth(direction) {
-        console.log('📅 CALENDAR: Changing month by', direction);
-        console.log('📅 CALENDAR: Current month before:', this.currentMonth.getMonth(), this.currentMonth.getFullYear());
-
         // Create a new Date object to avoid mutation issues
         const year = this.currentMonth.getFullYear();
         const month = this.currentMonth.getMonth();
         this.currentMonth = new Date(year, month + direction, 1);
-
-        console.log('📅 CALENDAR: Current month after:', this.currentMonth.getMonth(), this.currentMonth.getFullYear());
         this.loadMatches();
     },
 
@@ -932,12 +907,15 @@ const MatchesCalendar = {
             pt: 'Ver Calendário Completo'
         };
 
+        // Sort by days until match (nearest first)
+        const sortedMatches = Object.entries(upcomingByCategory)
+            .sort((a, b) => a[1].daysUntil - b[1].daysUntil);
+
         let html = '<div class="upcoming-banner-container">';
         html += `<h3 class="upcoming-banner-title">${titleText[lang] || titleText.es}</h3>`;
         html += '<div class="upcoming-cards">';
 
-        Object.keys(upcomingByCategory).forEach(category => {
-            const data = upcomingByCategory[category];
+        sortedMatches.forEach(([category, data]) => {
             const categoryClass = this.getCategoryClass(category);
             const timeText = data.daysUntil === 0
                 ? todayText[lang] + ' ' + data.match.time
@@ -964,17 +942,7 @@ const MatchesCalendar = {
 
 // Initialize when DOM is ready
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('🚀 DOM Content Loaded - Calendar page');
-    console.log('📍 Current URL:', window.location.href);
-
-    // Check if calendar elements exist
-    const calendarGrid = document.getElementById('calendarGrid');
-    const upcomingBanner = document.getElementById('upcomingBanner');
-    console.log('🔍 Calendar Grid exists:', !!calendarGrid);
-    console.log('🔍 Upcoming Banner exists:', !!upcomingBanner);
-
     // Initialize immediately for instant rendering
-    console.log('⏰ Starting calendar initialization');
     MatchesCalendar.init();
 });
 
