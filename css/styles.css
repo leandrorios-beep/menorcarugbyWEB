@@ -3656,8 +3656,8 @@ img {
 
 .calendar-nav-btn {
     background: transparent;
-    color: #000;
-    border: none;
+    color: var(--navy);
+    border: 2px solid var(--navy);
     width: 45px;
     height: 45px;
     border-radius: 50%;
@@ -3665,19 +3665,22 @@ img {
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: all 0.3s ease;
-    font-size: 1.5rem;
+    transition: all 0.2s ease;
+    font-size: 1.3rem;
     font-weight: bold;
 }
 
 .calendar-nav-btn:hover {
-    background: rgba(0, 0, 0, 0.05);
-    color: #000;
-    transform: scale(1.1);
+    background: var(--navy);
+    color: white;
+    border-color: var(--navy);
+    transform: scale(1.05);
 }
 
 .calendar-nav-btn:active {
-    transform: scale(0.95);
+    background: var(--navy);
+    color: white;
+    transform: scale(0.98);
 }
 
 /* Calendar Filters */
@@ -3690,37 +3693,39 @@ img {
 }
 
 .filter-chip {
-    background: white;
+    background: #f0f4f8;
     color: var(--navy);
-    border: 2px solid var(--navy);
+    border: 2px solid #d1dce6;
     padding: 0.6rem 1.2rem;
     border-radius: 25px;
     cursor: pointer;
-    transition: all 0.3s ease;
-    font-weight: 500;
-    font-size: 0.9rem;
+    transition: all 0.2s ease;
+    font-weight: 600;
+    font-size: 0.95rem;
     font-family: var(--font-primary);
 }
 
 .filter-chip:hover {
-    background: var(--navy);
-    color: white;
+    background: #e3eaf1;
+    color: var(--navy);
     border-color: var(--navy);
-    transform: translateY(-2px);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .filter-chip.active {
-    background: var(--yellow);
-    color: var(--navy);
-    border-color: var(--yellow);
-    font-weight: 600;
+    background: var(--navy);
+    color: white;
+    border-color: var(--navy);
+    font-weight: 700;
 }
 
 .filter-chip.active:hover {
-    background: var(--yellow);
-    color: var(--navy);
-    border-color: var(--yellow);
-    transform: translateY(0);
+    background: #1e3a5f;
+    color: white;
+    border-color: #1e3a5f;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
 }
 
 /* Calendar Grid */
@@ -4174,17 +4179,19 @@ img {
 }
 
 .matches-table thead {
-    background: var(--navy);
+    background: #0f2557;
     color: white;
 }
 
 .matches-table thead th {
-    padding: 1rem;
+    padding: 1.2rem 1rem;
     text-align: left;
-    font-weight: 600;
-    font-size: 0.9rem;
+    font-weight: 700;
+    font-size: 1rem;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.8px;
+    color: white;
+    border-bottom: 3px solid var(--yellow);
 }
 
 .matches-table tbody tr {
