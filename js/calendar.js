@@ -838,6 +838,12 @@ const MatchesCalendar = {
                        matchCategory.includes('SUB 12');
             })
             .filter(m => {
+                // Exclude postponed and cancelled matches
+                const status = (m.status || '').toLowerCase();
+                if (status === 'postponed' || status === 'cancelled' || status === 'canceled') {
+                    return false;
+                }
+
                 const matchDate = new Date(m.date + 'T00:00:00');
                 matchDate.setHours(0, 0, 0, 0);
                 return matchDate >= today;
@@ -883,6 +889,12 @@ const MatchesCalendar = {
                     return matchCategory.includes(filterCategory) || matchCategory.includes(withSpace);
                 })
                 .filter(m => {
+                    // Exclude postponed and cancelled matches
+                    const status = (m.status || '').toLowerCase();
+                    if (status === 'postponed' || status === 'cancelled' || status === 'canceled') {
+                        return false;
+                    }
+
                     const matchDate = new Date(m.date + 'T00:00:00');
                     matchDate.setHours(0, 0, 0, 0);
                     return matchDate >= today;
