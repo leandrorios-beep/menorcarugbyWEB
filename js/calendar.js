@@ -86,9 +86,9 @@ const MatchesCalendar = {
                 btn.classList.add('active');
                 // Update filter
                 this.selectedCategory = btn.getAttribute('data-category');
-                // Re-render current view
+                // Reload matches with new filter
                 if (this.currentView === 'calendar') {
-                    this.renderCalendar();
+                    this.loadMatches(); // This will fetch filtered data and re-render
                 } else {
                     this.renderFullListView();
                 }
