@@ -163,8 +163,9 @@ const MatchesCalendar = {
             // Build API URL
             let apiUrl = `${this.apiUrl}?from=${fromDate}&to=${toDate}`;
 
-            // Add category filter if not "all"
-            if (this.selectedCategory !== 'all') {
+            // Add category filter if not "all" or "RUGBY_DAY"
+            // RUGBY_DAY is special - we'll filter client-side for SUB6/8/10/12
+            if (this.selectedCategory !== 'all' && this.selectedCategory !== 'RUGBY_DAY') {
                 apiUrl += `&category=${this.selectedCategory}`;
             }
 
@@ -185,7 +186,37 @@ const MatchesCalendar = {
                 throw new Error('API returned success: false');
             }
 
-            this.matches = data.matches || [];
+            // Filter out cancelled, postponed, and finished matches
+            const allMatches = data.matches || [];
+            let filteredMatches = allMatches.filter(m => {
+                const status = (m.status || '').toLowerCase();
+                // Only show confirmed and planned matches
+                return status !== 'cancelled' &&
+                       status !== 'canceled' &&
+                       status !== 'postponed' &&
+                       status !== 'finished' &&
+                       status !== 'completed';
+            });
+
+            // If Rugby Day filter is selected, filter for SUB6/8/10/12 categories
+            if (this.selectedCategory === 'RUGBY_DAY') {
+                filteredMatches = filteredMatches.filter(m => {
+                    const category = (m.category || '').toUpperCase();
+                    return category.includes('RUGBY DAY') ||
+                           category.includes('SUB6') ||
+                           category.includes('SUB 6') ||
+                           category.includes('SUB8') ||
+                           category.includes('SUB 8') ||
+                           category.includes('SUB10') ||
+                           category.includes('SUB 10') ||
+                           category.includes('SUB12') ||
+                           category.includes('SUB 12');
+                });
+            }
+
+            this.matches = filteredMatches;
+
+            console.log(`📅 CALENDAR: Filtered ${allMatches.length - this.matches.length} matches (cancelled/postponed/finished/category)`);
 
             // Log first few matches for debugging
             if (this.matches.length > 0) {
