@@ -27,7 +27,7 @@ TIKTOK_URL=https://www.tiktok.com/@menorcarugbyclub
 # CONTACT INFO
 PHONE=+34 971 XXX XXX
 EMAIL=hola@menorcarugby.com
-WHATSAPP=+34 647 760 232
+WHATSAPP=
 
 # TRAINING SCHEDULE
 SENIOR_TRAINING=Martes y Jueves 19:00-21:00h
