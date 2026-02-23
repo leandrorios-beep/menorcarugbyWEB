@@ -159,7 +159,7 @@ class I18nSystem {
     createLanguageSwitcher() {
         const languages = {
             'es': { name: 'Español', flag: '<img src="https://flagcdn.com/w40/es.png" alt="ES" width="20" height="14">' },
-            'ca': { name: 'Català', flag: '<img src="https://flagcdn.com/w40/es-ct.png" alt="CA" width="20" height="14">' },
+            'ca': { name: 'Català', flag: '<img src="assets/images/static/flag-ca.svg" alt="CA" width="20" height="14">' },
             'en': { name: 'English', flag: '<img src="https://flagcdn.com/w40/gb.png" alt="EN" width="20" height="14">' },
             'fr': { name: 'Français', flag: '<img src="https://flagcdn.com/w40/fr.png" alt="FR" width="20" height="14">' },
             'it': { name: 'Italiano', flag: '<img src="https://flagcdn.com/w40/it.png" alt="IT" width="20" height="14">' },
@@ -212,7 +212,7 @@ class I18nSystem {
     updateLanguageSwitcher() {
         const languages = {
             'es': { name: 'Español', flag: '<img src="https://flagcdn.com/w40/es.png" alt="ES" width="20" height="14">' },
-            'ca': { name: 'Català', flag: '<img src="https://flagcdn.com/w40/es-ct.png" alt="CA" width="20" height="14">' },
+            'ca': { name: 'Català', flag: '<img src="assets/images/static/flag-ca.svg" alt="CA" width="20" height="14">' },
             'en': { name: 'English', flag: '<img src="https://flagcdn.com/w40/gb.png" alt="EN" width="20" height="14">' },
             'fr': { name: 'Français', flag: '<img src="https://flagcdn.com/w40/fr.png" alt="FR" width="20" height="14">' },
             'it': { name: 'Italiano', flag: '<img src="https://flagcdn.com/w40/it.png" alt="IT" width="20" height="14">' },
@@ -285,7 +285,7 @@ class I18nSystem {
     getCurrentLanguageInfo() {
         const languages = {
             'es': { name: 'Español', nativeName: 'Español', flag: '<img src="https://flagcdn.com/w40/es.png" alt="ES" width="20" height="14">' },
-            'ca': { name: 'Catalan', nativeName: 'Català', flag: '<img src="https://flagcdn.com/w40/es-ct.png" alt="CA" width="20" height="14">' },
+            'ca': { name: 'Catalan', nativeName: 'Català', flag: '<img src="assets/images/static/flag-ca.svg" alt="CA" width="20" height="14">' },
             'en': { name: 'English', nativeName: 'English', flag: '<img src="https://flagcdn.com/w40/gb.png" alt="EN" width="20" height="14">' },
             'fr': { name: 'French', nativeName: 'Français', flag: '<img src="https://flagcdn.com/w40/fr.png" alt="FR" width="20" height="14">' },
             'it': { name: 'Italian', nativeName: 'Italiano', flag: '<img src="https://flagcdn.com/w40/it.png" alt="IT" width="20" height="14">' },
