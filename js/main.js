@@ -121,11 +121,12 @@ function initSmoothScroll() {
 
     links.forEach(link => {
         link.addEventListener('click', (e) => {
-            e.preventDefault();
             const targetId = link.getAttribute('href');
+            if (!targetId || targetId === '#') return;
             const targetSection = document.querySelector(targetId);
 
             if (targetSection) {
+                e.preventDefault();
                 const offsetTop = targetSection.offsetTop - 80;
 
                 window.scrollTo({
@@ -206,6 +207,9 @@ function initGallery() {
         // Add keyboard navigation
         document.addEventListener('keydown', handleKeyDown);
     }
+
+    // Expose globally for carousel items
+    window.openLightbox = openLightbox;
 
     function closeLightbox() {
         lightbox.classList.remove('active');
@@ -500,7 +504,9 @@ function initParallaxEffects() {
         const hero = document.querySelector('.hero');
         if (hero) {
             const heroVideo = hero.querySelector('.hero-video');
-            heroVideo.style.transform = `translateY(${scrollY * 0.5}px)`;
+            if (heroVideo) {
+                heroVideo.style.transform = `translateY(${scrollY * 0.5}px)`;
+            }
         }
 
         ticking = false;
@@ -630,35 +636,6 @@ function throttle(func, limit) {
 // PERFORMANCE OPTIMIZATIONS
 // ==========================================================================
 
-// Lazy loading for images
-function initLazyLoading() {
-    const images = document.querySelectorAll('img[data-src]');
-    const imageObserver = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                const img = entry.target;
-                img.src = img.dataset.src;
-                img.classList.remove('lazy');
-                imageObserver.unobserve(img);
-            }
-        });
-    });
-
-    images.forEach(img => imageObserver.observe(img));
-}
-
-// Optimize scroll events
-const optimizedScrollHandler = throttle(() => {
-    // Handle scroll events here
-}, 16); // ~60fps
-
-window.addEventListener('scroll', optimizedScrollHandler);
-
-// ==========================================================================
-// ACCESSIBILITY IMPROVEMENTS
-// ==========================================================================
-
-
 // ==========================================================================
 // ERROR HANDLING
 // ==========================================================================
@@ -763,10 +740,8 @@ function initChatWidget() {
         }
     };
 
-    // Wait longer for DOM to be fully ready
-    setTimeout(() => {
-        console.log('🕐 CHAT: DOM ready, finding elements...');
-
+    // DOM is ready (inside DOMContentLoaded), find elements directly
+    {
         const chatLauncher = document.getElementById('chatLauncher');
         const contactChatBtn = document.getElementById('contactChatBtn');
         const chatWindow = document.getElementById('chatWindow');
@@ -944,9 +919,7 @@ function initChatWidget() {
         }
 
         console.log('✅ CHAT: Setup completed');
-        console.log('🧪 CHAT: Type "window.testChat()" in console to force open chat');
-
-    }, 500);
+    }
 }
 
 // ==========================================================================
@@ -1094,27 +1067,28 @@ function shuffleArray(array) {
 // ==========================================================================
 
 function setupExternalLinks() {
-    // Setup store links
-    document.querySelectorAll('.store-link, .product-btn').forEach(link => {
-        link.addEventListener('click', (e) => {
-            e.preventDefault();
-            const currentLang = i18n?.currentLanguage || 'es';
-            const storeKey = `STORE_${currentLang.toUpperCase()}`;
-            const storeURL = siteConfig[storeKey] || siteConfig['STORE_ES'];
-            window.open(storeURL, '_blank', 'noopener,noreferrer');
+    // Only setup store links if configLoader is not present (it handles them on pages that load it)
+    if (typeof configLoader === 'undefined') {
+        document.querySelectorAll('.store-link, .product-btn').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const currentLang = i18n?.currentLanguage || 'es';
+                const storeKey = `STORE_${currentLang.toUpperCase()}`;
+                const storeURL = siteConfig[storeKey] || siteConfig['STORE_ES'];
+                window.open(storeURL, '_blank', 'noopener,noreferrer');
+            });
         });
-    });
 
-    // Setup navigation store link
-    const navStoreLink = document.querySelector('a[href="#tienda"]');
-    if (navStoreLink) {
-        navStoreLink.addEventListener('click', (e) => {
-            e.preventDefault();
-            const currentLang = i18n?.currentLanguage || 'es';
-            const storeKey = `STORE_${currentLang.toUpperCase()}`;
-            const storeURL = siteConfig[storeKey] || siteConfig['STORE_ES'];
-            window.open(storeURL, '_blank', 'noopener,noreferrer');
-        });
+        const navStoreLink = document.querySelector('a[href="#tienda"]');
+        if (navStoreLink) {
+            navStoreLink.addEventListener('click', (e) => {
+                e.preventDefault();
+                const currentLang = i18n?.currentLanguage || 'es';
+                const storeKey = `STORE_${currentLang.toUpperCase()}`;
+                const storeURL = siteConfig[storeKey] || siteConfig['STORE_ES'];
+                window.open(storeURL, '_blank', 'noopener,noreferrer');
+            });
+        }
     }
 
     // Setup social media links

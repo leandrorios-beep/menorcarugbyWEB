@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- SEO Meta Tags -->
+    <title>Proyecto FRIDAS - Erasmus+ Sport | Menorca Rugby Club</title>
+    <meta name="description" content="FRIDAS: Fostering Rugby Inclusion, Diversity through Art and Sport. Proyecto europeo Erasmus+ Sport con 7 socios de 5 paises.">
+    <meta name="keywords" content="FRIDAS, Erasmus+ Sport, rugby inclusion, menorca rugby, european project, wheelchair rugby, art and sport">
+    <meta name="author" content="Menorca Rugby Club">
+    <meta name="robots" content="index, follow">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://www.menorcarugbyclub.com/fridas">
+    <meta property="og:title" content="Proyecto FRIDAS - Erasmus+ Sport | Menorca Rugby Club">
+    <meta property="og:description" content="FRIDAS: Rugby, arte e inclusion. Proyecto europeo Erasmus+ con 7 socios de 5 paises.">
+    <meta property="og:image" content="https://www.menorcarugbyclub.com/assets/images/static/1.jpeg">
+
+    <!-- Favicons -->
+    <link rel="icon" type="image/x-icon" href="assets/images/static/favicon.ico">
+    <link rel="apple-touch-icon" sizes="180x180" href="assets/images/static/apple-touch-icon.png">
+    <meta name="theme-color" content="#182B49">
+
+    <!-- Canonical -->
+    <link rel="canonical" href="https://www.menorcarugbyclub.com/fridas">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="css/styles.css?v=2024091506">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar" id="navbar">
+        <div class="nav-container">
+            <a href="index.html" class="nav-brand">
+                <img src="assets/images/static/logo.png" alt="Menorca Rugby" class="logo">
+                <span class="brand-text" data-i18n="nav.brand">MENORCA RUGBY</span>
+            </a>
+
+            <ul class="nav-menu" id="nav-menu">
+                <li><a href="index.html#inicio" class="nav-link" data-i18n="nav.home">Inicio</a></li>
+                <li><a href="index.html#nosotros" class="nav-link" data-i18n="nav.about">Nosotros</a></li>
+                <li><a href="index.html#equipo" class="nav-link" data-i18n="nav.team">Equipo</a></li>
+                <li><a href="calendar.html" class="nav-link" data-i18n="nav.calendar">Calendario</a></li>
+                <li><a href="index.html#galeria" class="nav-link" data-i18n="nav.gallery">Galeria</a></li>
+                <li><a href="index.html#tienda" class="nav-link" data-i18n="nav.store">Tienda</a></li>
+                <li><a href="index.html#contacto" class="nav-link" data-i18n="nav.contact">Contacto</a></li>
+                <li><a href="socios.html" class="nav-link" data-i18n="nav.membership">Hazte Socio</a></li>
+            </ul>
+
+            <div class="nav-toggle" id="nav-toggle">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- FRIDAS Hanging Tag -->
+    <a href="fridas.html" class="fridas-hanging-tag" id="fridasTag">
+        <div class="fridas-tag-body">PROYECTO FRIDAS</div>
+    </a>
+
+    <!-- 1. Hero Section -->
+    <section class="fridas-hero">
+        <!-- Animated particles -->
+        <div class="fridas-hero-particles" id="fridasParticles"></div>
+
+        <div class="container">
+            <div class="fridas-hero-content">
+                <div class="fridas-badges-row">
+                    <div class="fridas-eu-badge">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/b/b7/Flag_of_Europe.svg" alt="European Union">
+                        <span data-i18n-fridas="hero.eu_funded">Financiado por la Union Europea</span>
+                    </div>
+                    <div class="fridas-badge">
+                        <i class="fas fa-award"></i>
+                        <span>Erasmus+ Sport</span>
+                    </div>
+                </div>
+
+                <h1 class="fridas-hero-title" data-i18n-fridas="hero.title">FRIDAS</h1>
+                <p class="fridas-hero-acronym" data-i18n-fridas="hero.acronym">Fostering Rugby Inclusion, Diversity through Art and Sport</p>
+                <p class="fridas-hero-tagline" data-i18n-fridas="hero.tagline">Rugby, arte e inclusion para una Europa sin barreras</p>
+
+                <div class="fridas-hero-stats">
+                    <div class="fridas-hero-stat">
+                        <span class="stat-number">5</span>
+                        <span class="stat-label" data-i18n-fridas="stats.countries">Paises</span>
+                    </div>
+                    <div class="fridas-hero-stat">
+                        <span class="stat-number">7</span>
+                        <span class="stat-label" data-i18n-fridas="stats.partners">Socios</span>
+                    </div>
+                    <div class="fridas-hero-stat">
+                        <span class="stat-number">24</span>
+                        <span class="stat-label" data-i18n-fridas="stats.months">Meses</span>
+                    </div>
+                    <div class="fridas-hero-stat">
+                        <span class="stat-number">5</span>
+                        <span class="stat-label" data-i18n-fridas="stats.exchanges">Intercambios</span>
+                    </div>
+                </div>
+
+                <div class="fridas-countries">
+                    <div class="fridas-country">
+                        <img class="flag-emoji" src="https://flagcdn.com/w80/it.png" alt="Italia" width="40">
+                        <span>Italia</span>
+                    </div>
+                    <div class="fridas-country">
+                        <img class="flag-emoji" src="https://flagcdn.com/w80/hr.png" alt="Croacia" width="40">
+                        <span>Croacia</span>
+                    </div>
+                    <div class="fridas-country">
+                        <img class="flag-emoji" src="https://flagcdn.com/w80/bg.png" alt="Bulgaria" width="40">
+                        <span>Bulgaria</span>
+                    </div>
+                    <div class="fridas-country">
+                        <img class="flag-emoji" src="https://flagcdn.com/w80/es.png" alt="Espana" width="40">
+                        <span data-i18n-fridas="country.spain">Espana</span>
+                    </div>
+                    <div class="fridas-country">
+                        <img class="flag-emoji" src="https://flagcdn.com/w80/gr.png" alt="Grecia" width="40">
+                        <span data-i18n-fridas="country.greece">Grecia</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 2. About the Project -->
+    <section class="fridas-about">
+        <div class="container">
+            <div class="section-header">
+                <h2 data-i18n-fridas="about.title">Sobre el Proyecto</h2>
+                <p data-i18n-fridas="about.subtitle">24 meses de rugby, arte e inclusion en Europa</p>
+            </div>
+
+            <p class="fridas-about-desc" data-i18n-fridas="about.desc">
+                FRIDAS es un proyecto europeo financiado por Erasmus+ Sport que une el rugby y el arte como herramientas de inclusion social. Durante 24 meses, 7 organizaciones de 5 paises trabajan juntas para romper barreras de genero, accesibilidad y participacion a traves del deporte, la creatividad y la tecnologia, incluyendo el desarrollo de un videojuego educativo en Roblox creado por y para jovenes.
+            </p>
+
+            <div class="fridas-objectives">
+                <div class="fridas-objective-card">
+                    <div class="obj-icon"><i class="fas fa-venus-mars"></i></div>
+                    <h3 data-i18n-fridas="obj.gender.title">Igualdad de Genero</h3>
+                    <p data-i18n-fridas="obj.gender.desc">Promover la participacion femenina en el rugby y combatir estereotipos de genero en el deporte</p>
+                </div>
+                <div class="fridas-objective-card">
+                    <div class="obj-icon"><i class="fas fa-universal-access"></i></div>
+                    <h3 data-i18n-fridas="obj.access.title">Accesibilidad</h3>
+                    <p data-i18n-fridas="obj.access.desc">Hacer el rugby accesible a personas con discapacidad a traves del rugby en silla de ruedas</p>
+                </div>
+                <div class="fridas-objective-card">
+                    <div class="obj-icon"><i class="fas fa-palette"></i></div>
+                    <h3 data-i18n-fridas="obj.art.title">Arte e Inclusion</h3>
+                    <p data-i18n-fridas="obj.art.desc">Utilizar el arte como puente para la inclusion social y la expresion creativa de los participantes</p>
+                </div>
+                <div class="fridas-objective-card">
+                    <div class="obj-icon"><i class="fas fa-gamepad"></i></div>
+                    <h3 data-i18n-fridas="obj.game.title">Videojuego Educativo</h3>
+                    <p data-i18n-fridas="obj.game.desc">Un videojuego en Roblox sobre valores del rugby, creado con jovenes de 12 a 17 anos de los 5 paises</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 3. Main Activities -->
+    <section class="fridas-activities">
+        <div class="container">
+            <div class="section-header">
+                <h2 data-i18n-fridas="activities.title">Actividades Principales</h2>
+                <p data-i18n-fridas="activities.subtitle">Acciones concretas para el cambio</p>
+            </div>
+
+            <div class="fridas-activities-grid">
+                <div class="fridas-activity-card">
+                    <div class="act-icon"><i class="fas fa-globe-europe"></i></div>
+                    <div>
+                        <h3 data-i18n-fridas="act.exchanges.title">5 Intercambios Internacionales</h3>
+                        <p data-i18n-fridas="act.exchanges.desc">Encuentros deportivos y culturales en Italia, Grecia, Bulgaria, Croacia y Espana con todos los socios del proyecto</p>
+                    </div>
+                </div>
+                <div class="fridas-activity-card">
+                    <div class="act-icon"><i class="fas fa-chalkboard-teacher"></i></div>
+                    <div>
+                        <h3 data-i18n-fridas="act.workshops.title">Talleres y Webinars</h3>
+                        <p data-i18n-fridas="act.workshops.desc">Sesiones formativas sobre inclusion, igualdad de genero y accesibilidad en el deporte para entrenadores y participantes</p>
+                    </div>
+                </div>
+                <div class="fridas-activity-card">
+                    <div class="act-icon"><i class="fas fa-wheelchair"></i></div>
+                    <div>
+                        <h3 data-i18n-fridas="act.wheelchair.title">Rugby en Silla de Ruedas</h3>
+                        <p data-i18n-fridas="act.wheelchair.desc">Sesiones de rugby en silla de ruedas para promover la accesibilidad y sensibilizar sobre la discapacidad en el deporte</p>
+                    </div>
+                </div>
+                <div class="fridas-activity-card">
+                    <div class="act-icon"><i class="fas fa-gamepad"></i></div>
+                    <div>
+                        <h3 data-i18n-fridas="act.game.title">Videojuego Educativo en Roblox</h3>
+                        <p data-i18n-fridas="act.game.desc">Desarrollo de un videojuego en Roblox sobre valores del rugby, inclusion y diversidad, creado con jovenes de 12 a 17 anos</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 4. Partners -->
+    <section class="fridas-partners">
+        <div class="container">
+            <div class="section-header">
+                <h2 data-i18n-fridas="partners.title">Socios del Proyecto</h2>
+                <p data-i18n-fridas="partners.subtitle">7 organizaciones, 5 paises, 1 objetivo comun</p>
+            </div>
+
+            <div class="fridas-partners-group">
+                <h3 data-i18n-fridas="partners.project">Project Partners</h3>
+                <div class="fridas-partners-list">
+                    <div class="fridas-partner-chip">
+                        <img class="partner-flag" src="https://flagcdn.com/w40/it.png" alt="IT" width="20" height="14">
+                        <span>Latitudo</span>
+                        <span class="partner-role" data-i18n-fridas="partners.coordinator">Coordinador</span>
+                    </div>
+                    <div class="fridas-partner-chip">
+                        <img class="partner-flag" src="https://flagcdn.com/w40/gr.png" alt="GR" width="20" height="14">
+                        <span>Liminal</span>
+                    </div>
+                    <div class="fridas-partner-chip">
+                        <img class="partner-flag" src="https://flagcdn.com/w40/bg.png" alt="BG" width="20" height="14">
+                        <span>Bulgarian Rugby Federation</span>
+                    </div>
+                    <div class="fridas-partner-chip">
+                        <img class="partner-flag" src="https://flagcdn.com/w40/it.png" alt="IT" width="20" height="14">
+                        <span>U.S. Primavera Rugby</span>
+                    </div>
+                    <div class="fridas-partner-chip">
+                        <img class="partner-flag" src="https://flagcdn.com/w40/it.png" alt="IT" width="20" height="14">
+                        <span>ASD Romanes Wheelchair Rugby</span>
+                    </div>
+                    <div class="fridas-partner-chip">
+                        <img class="partner-flag" src="https://flagcdn.com/w40/hr.png" alt="HR" width="20" height="14">
+                        <span>RK Zagreb &ndash; Ragbi Klub Zagreb</span>
+                    </div>
+                    <div class="fridas-partner-chip">
+                        <img class="partner-flag" src="https://flagcdn.com/w40/es.png" alt="ES" width="20" height="14">
+                        <span>Menorca Rugby Club</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="fridas-partners-group">
+                <h3 data-i18n-fridas="partners.associated">Associated Partners</h3>
+                <div class="fridas-partners-list">
+                    <div class="fridas-partner-chip">
+                        <img class="partner-flag" src="https://flagcdn.com/w40/it.png" alt="IT" width="20" height="14">
+                        <span>CONI &ndash; Italian National Olympic Committee</span>
+                    </div>
+                    <div class="fridas-partner-chip">
+                        <img class="partner-flag" src="https://flagcdn.com/w40/it.png" alt="IT" width="20" height="14">
+                        <span>FISPES &ndash; Italian Federation of Paralympic and Experimental Sports</span>
+                    </div>
+                    <div class="fridas-partner-chip">
+                        <img class="partner-flag" src="https://flagcdn.com/w40/hr.png" alt="HR" width="20" height="14">
+                        <span>Hrvatski ragbija&#x0161;ki savez</span>
+                    </div>
+                    <div class="fridas-partner-chip">
+                        <img class="partner-flag" src="https://flagcdn.com/w40/bg.png" alt="BG" width="20" height="14">
+                        <span>Association &quot;Nyama nevazmozhni neshta&quot; &ndash; Varna</span>
+                    </div>
+                    <div class="fridas-partner-chip">
+                        <img class="partner-flag" src="https://flagcdn.com/w40/it.png" alt="IT" width="20" height="14">
+                        <span>Accademia di Belle Arti di Roma</span>
+                    </div>
+                    <div class="fridas-partner-chip">
+                        <img class="partner-flag" src="https://flagcdn.com/w40/it.png" alt="IT" width="20" height="14">
+                        <span>FIR &ndash; Italian Rugby Federation</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="fridas-partners-group">
+                <h3 data-i18n-fridas="partners.artists">Artistas</h3>
+                <div class="fridas-partners-list">
+                    <div class="fridas-partner-chip">
+                        <span class="partner-flag"><i class="fas fa-video"></i></span>
+                        <span>Monkeys Video Lab</span>
+                    </div>
+                    <div class="fridas-partner-chip">
+                        <span class="partner-flag"><i class="fas fa-laptop-code"></i></span>
+                        <span>Mekit Studio</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 5. Next Event -->
+    <section class="fridas-event">
+        <div class="container">
+            <div class="section-header">
+                <h2 data-i18n-fridas="event.section_title">Proximo Evento</h2>
+                <p data-i18n-fridas="event.section_subtitle">Nuestro proximo encuentro internacional</p>
+            </div>
+
+            <div class="fridas-event-card">
+                <div class="fridas-event-badge" data-i18n-fridas="event.badge">Proximo Evento</div>
+                <h3 data-i18n-fridas="event.title">1er Intercambio Internacional</h3>
+                <div class="event-location">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <span data-i18n-fridas="event.location">Atenas, Grecia</span>
+                </div>
+                <div class="event-date">
+                    <i class="fas fa-calendar-alt"></i>
+                    <span>16 &ndash; 20 Marzo 2026</span>
+                </div>
+                <div class="event-organizer" data-i18n-fridas="event.organizer">Organizado por Liminal</div>
+                <p class="event-desc" data-i18n-fridas="event.desc">
+                    El primer intercambio del proyecto FRIDAS reunira a los 7 socios en Atenas para una semana de actividades deportivas, talleres artisticos y sesiones de trabajo sobre inclusion en el rugby. Participantes de Italia, Croacia, Bulgaria, Espana y Grecia compartiran experiencias y buenas practicas.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- 6. Roblox Game -->
+    <section class="fridas-roblox">
+        <div class="container">
+            <div class="section-header">
+                <h2 data-i18n-fridas="roblox.title">Videojuego Educativo</h2>
+                <p data-i18n-fridas="roblox.subtitle">Una experiencia interactiva sobre los valores del rugby</p>
+            </div>
+
+            <div class="fridas-roblox-content">
+                <p class="fridas-roblox-desc" data-i18n-fridas="roblox.desc">
+                    Como parte del proyecto FRIDAS, se esta desarrollando un videojuego educativo en la plataforma Roblox. El juego transmite los valores del rugby &mdash; respeto, inclusion y trabajo en equipo &mdash; a traves de una experiencia interactiva disenada con y para jovenes de 12 a 17 anos de los 5 paises participantes.
+                </p>
+
+                <div class="fridas-roblox-features">
+                    <div class="fridas-roblox-feature">
+                        <div class="feat-icon"><i class="fas fa-gamepad"></i></div>
+                        <h4 data-i18n-fridas="roblox.f1.title">Interactivo</h4>
+                        <p data-i18n-fridas="roblox.f1.desc">Experiencia inmersiva en Roblox</p>
+                    </div>
+                    <div class="fridas-roblox-feature">
+                        <div class="feat-icon"><i class="fas fa-book-open"></i></div>
+                        <h4 data-i18n-fridas="roblox.f2.title">Educativo</h4>
+                        <p data-i18n-fridas="roblox.f2.desc">Valores del rugby y la inclusion</p>
+                    </div>
+                    <div class="fridas-roblox-feature">
+                        <div class="feat-icon"><i class="fas fa-globe"></i></div>
+                        <h4 data-i18n-fridas="roblox.f3.title">Europeo</h4>
+                        <p data-i18n-fridas="roblox.f3.desc">Creado por jovenes de 5 paises</p>
+                    </div>
+                </div>
+
+                <p class="fridas-roblox-credit" data-i18n-fridas="roblox.credit">
+                    Desarrollado por Mekit Studio con la participacion de jovenes de 12 a 17 anos
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- 7. Contact CTA -->
+    <section class="fridas-contact">
+        <div class="container">
+            <div class="section-header">
+                <h2 data-i18n-fridas="contact.title">Contacto</h2>
+                <p data-i18n-fridas="contact.subtitle">Quieres saber mas sobre el proyecto FRIDAS?</p>
+            </div>
+
+            <div class="fridas-contact-card">
+                <div class="contact-icon"><i class="fas fa-envelope"></i></div>
+                <h3 data-i18n-fridas="contact.card_title">Escribenos</h3>
+                <p data-i18n-fridas="contact.card_desc">Para mas informacion sobre el proyecto FRIDAS o sobre como participar</p>
+                <a href="mailto:hola@menorcarugbyclub.com?subject=FRIDAS" class="fridas-contact-btn">
+                    <i class="fas fa-envelope"></i>
+                    <span data-i18n-fridas="contact.btn">Contactar</span>
+                    <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <div class="footer-brand">
+                        <img src="assets/images/static/logo.png" alt="Menorca Rugby" class="footer-logo">
+                        <h3 data-i18n="footer.club_name">MENORCA RUGBY CLUB</h3>
+                        <p>Vive la pasion del rugby en Menorca. Mas que un deporte, una familia unida por los valores del rugby.</p>
+                    </div>
+                </div>
+
+                <div class="footer-section">
+                    <h4 data-i18n="footer.quick_links">Enlaces Rapidos</h4>
+                    <ul class="footer-links">
+                        <li><a href="index.html#inicio">Inicio</a></li>
+                        <li><a href="index.html#nosotros">Nosotros</a></li>
+                        <li><a href="index.html#equipo">Equipos</a></li>
+                        <li><a href="calendar.html">Calendario</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-section">
+                    <h4 data-i18n="footer.contact">Contacto</h4>
+                    <ul class="footer-links">
+                        <li><i class="fas fa-map-marker-alt"></i> Carrer d'Artrutx, 4, 07714 Maó</li>
+                        <li><i class="fas fa-map-marker-alt"></i> Sa Terranova 8, Maó</li>
+                        <li><i class="fas fa-envelope"></i> hola@menorcarugbyclub.com</li>
+                    </ul>
+                </div>
+
+                <div class="footer-section">
+                    <h4 data-i18n="footer.follow_us">Siguenos</h4>
+                    <div class="social-links">
+                        <a href="https://www.instagram.com/menorcarugby/" target="_blank" class="social-link" aria-label="Instagram">
+                            <i class="fab fa-instagram"></i>
+                        </a>
+                        <a href="https://www.facebook.com/menorcarugby" target="_blank" class="social-link" aria-label="Facebook">
+                            <i class="fab fa-facebook-f"></i>
+                        </a>
+                        <a href="https://www.tiktok.com/@menorcarugbyclub" target="_blank" class="social-link" aria-label="TikTok">
+                            <i class="fab fa-tiktok"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <p>&copy; 2025 Menorca Rugby Club. <span data-i18n="footer.copyright">Todos los derechos reservados.</span></p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Floating Donation Button -->
+    <div class="donate-widget">
+        <a href="supportus.html" class="donate-launcher" aria-label="Apoyanos">
+            <div class="donate-icon">
+                <i class="fas fa-heart"></i>
+            </div>
+        </a>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/config-loader.js" defer></script>
+    <script src="js/i18n.js" defer></script>
+    <script src="js/main.js" defer></script>
+
+    <!-- FRIDAS page translations -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            function updateFridasTranslations() {
+                const currentLang = localStorage.getItem('menorca_rugby_lang') || 'es';
+
+                const translations = {
+                    es: {
+                        'hero.title': 'FRIDAS',
+                        'hero.acronym': 'Fostering Rugby Inclusion, Diversity through Art and Sport',
+                        'hero.tagline': 'Rugby, arte e inclusion para una Europa sin barreras',
+                        'hero.eu_funded': 'Financiado por la Union Europea',
+                        'stats.countries': 'Paises',
+                        'stats.partners': 'Socios',
+                        'stats.months': 'Meses',
+                        'stats.exchanges': 'Intercambios',
+                        'country.spain': 'Espana',
+                        'country.greece': 'Grecia',
+                        'about.title': 'Sobre el Proyecto',
+                        'about.subtitle': '24 meses de rugby, arte e inclusion en Europa',
+                        'about.desc': 'FRIDAS es un proyecto europeo financiado por Erasmus+ Sport que une el rugby y el arte como herramientas de inclusion social. Durante 24 meses, 7 organizaciones de 5 paises trabajan juntas para romper barreras de genero, accesibilidad y participacion a traves del deporte, la creatividad y la tecnologia, incluyendo el desarrollo de un videojuego educativo en Roblox creado por y para jovenes.',
+                        'obj.gender.title': 'Igualdad de Genero',
+                        'obj.gender.desc': 'Promover la participacion femenina en el rugby y combatir estereotipos de genero en el deporte',
+                        'obj.access.title': 'Accesibilidad',
+                        'obj.access.desc': 'Hacer el rugby accesible a personas con discapacidad a traves del rugby en silla de ruedas',
+                        'obj.art.title': 'Arte e Inclusion',
+                        'obj.art.desc': 'Utilizar el arte como puente para la inclusion social y la expresion creativa de los participantes',
+                        'obj.game.title': 'Videojuego Educativo',
+                        'obj.game.desc': 'Un videojuego en Roblox sobre valores del rugby, creado con jovenes de 12 a 17 anos de los 5 paises',
+                        'activities.title': 'Actividades Principales',
+                        'activities.subtitle': 'Acciones concretas para el cambio',
+                        'act.exchanges.title': '5 Intercambios Internacionales',
+                        'act.exchanges.desc': 'Encuentros deportivos y culturales en Italia, Grecia, Bulgaria, Croacia y Espana con todos los socios del proyecto',
+                        'act.workshops.title': 'Talleres y Webinars',
+                        'act.workshops.desc': 'Sesiones formativas sobre inclusion, igualdad de genero y accesibilidad en el deporte para entrenadores y participantes',
+                        'act.wheelchair.title': 'Rugby en Silla de Ruedas',
+                        'act.wheelchair.desc': 'Sesiones de rugby en silla de ruedas para promover la accesibilidad y sensibilizar sobre la discapacidad en el deporte',
+                        'act.game.title': 'Videojuego Educativo en Roblox',
+                        'act.game.desc': 'Desarrollo de un videojuego en Roblox sobre valores del rugby, inclusion y diversidad, creado con jovenes de 12 a 17 anos',
+                        'partners.title': 'Socios del Proyecto',
+                        'partners.subtitle': '7 organizaciones, 5 paises, 1 objetivo comun',
+                        'partners.project': 'Project Partners',
+                        'partners.associated': 'Associated Partners',
+                        'partners.artists': 'Artistas',
+                        'partners.coordinator': 'Coordinador',
+                        'event.section_title': 'Proximo Evento',
+                        'event.section_subtitle': 'Nuestro proximo encuentro internacional',
+                        'event.badge': 'Proximo Evento',
+                        'event.title': '1er Intercambio Internacional',
+                        'event.location': 'Atenas, Grecia',
+                        'event.organizer': 'Organizado por Liminal',
+                        'event.desc': 'El primer intercambio del proyecto FRIDAS reunira a los 7 socios en Atenas para una semana de actividades deportivas, talleres artisticos y sesiones de trabajo sobre inclusion en el rugby. Participantes de Italia, Croacia, Bulgaria, Espana y Grecia compartiran experiencias y buenas practicas.',
+                        'roblox.title': 'Videojuego Educativo',
+                        'roblox.subtitle': 'Una experiencia interactiva sobre los valores del rugby',
+                        'roblox.desc': 'Como parte del proyecto FRIDAS, se esta desarrollando un videojuego educativo en la plataforma Roblox. El juego transmite los valores del rugby \u2014 respeto, inclusion y trabajo en equipo \u2014 a traves de una experiencia interactiva disenada con y para jovenes de 12 a 17 anos de los 5 paises participantes.',
+                        'roblox.f1.title': 'Interactivo',
+                        'roblox.f1.desc': 'Experiencia inmersiva en Roblox',
+                        'roblox.f2.title': 'Educativo',
+                        'roblox.f2.desc': 'Valores del rugby y la inclusion',
+                        'roblox.f3.title': 'Europeo',
+                        'roblox.f3.desc': 'Creado por jovenes de 5 paises',
+                        'roblox.credit': 'Desarrollado por Mekit Studio con la participacion de jovenes de 12 a 17 anos',
+                        'contact.title': 'Contacto',
+                        'contact.subtitle': 'Quieres saber mas sobre el proyecto FRIDAS?',
+                        'contact.card_title': 'Escribenos',
+                        'contact.card_desc': 'Para mas informacion sobre el proyecto FRIDAS o sobre como participar',
+                        'contact.btn': 'Contactar'
+                    },
+                    en: {
+                        'hero.title': 'FRIDAS',
+                        'hero.acronym': 'Fostering Rugby Inclusion, Diversity through Art and Sport',
+                        'hero.tagline': 'Rugby, art and inclusion for a Europe without barriers',
+                        'hero.eu_funded': 'Funded by the European Union',
+                        'stats.countries': 'Countries',
+                        'stats.partners': 'Partners',
+                        'stats.months': 'Months',
+                        'stats.exchanges': 'Exchanges',
+                        'country.spain': 'Spain',
+                        'country.greece': 'Greece',
+                        'about.title': 'About the Project',
+                        'about.subtitle': '24 months of rugby, art and inclusion across Europe',
+                        'about.desc': 'FRIDAS is a European project funded by Erasmus+ Sport that combines rugby and art as tools for social inclusion. Over 24 months, 7 organisations from 5 countries work together to break down barriers of gender, accessibility and participation through sport, creativity and technology, including the development of an educational video game on Roblox created by and for young people.',
+                        'obj.gender.title': 'Gender Equality',
+                        'obj.gender.desc': 'Promote women\'s participation in rugby and challenge gender stereotypes in sport',
+                        'obj.access.title': 'Accessibility',
+                        'obj.access.desc': 'Make rugby accessible to people with disabilities through wheelchair rugby',
+                        'obj.art.title': 'Art & Inclusion',
+                        'obj.art.desc': 'Use art as a bridge for social inclusion and creative expression of participants',
+                        'obj.game.title': 'Educational Video Game',
+                        'obj.game.desc': 'A Roblox video game about rugby values, created with youth aged 12-17 from the 5 countries',
+                        'activities.title': 'Main Activities',
+                        'activities.subtitle': 'Concrete actions for change',
+                        'act.exchanges.title': '5 International Exchanges',
+                        'act.exchanges.desc': 'Sporting and cultural meetings in Italy, Greece, Bulgaria, Croatia and Spain with all project partners',
+                        'act.workshops.title': 'Workshops & Webinars',
+                        'act.workshops.desc': 'Training sessions on inclusion, gender equality and accessibility in sport for coaches and participants',
+                        'act.wheelchair.title': 'Wheelchair Rugby',
+                        'act.wheelchair.desc': 'Wheelchair rugby sessions to promote accessibility and raise awareness about disability in sport',
+                        'act.game.title': 'Educational Video Game on Roblox',
+                        'act.game.desc': 'Development of a Roblox video game about rugby values, inclusion and diversity, created with youth aged 12-17',
+                        'partners.title': 'Project Partners',
+                        'partners.subtitle': '7 organisations, 5 countries, 1 common goal',
+                        'partners.project': 'Project Partners',
+                        'partners.associated': 'Associated Partners',
+                        'partners.artists': 'Artists',
+                        'partners.coordinator': 'Coordinator',
+                        'event.section_title': 'Next Event',
+                        'event.section_subtitle': 'Our next international meeting',
+                        'event.badge': 'Next Event',
+                        'event.title': '1st International Exchange',
+                        'event.location': 'Athens, Greece',
+                        'event.organizer': 'Organised by Liminal',
+                        'event.desc': 'The first FRIDAS exchange will bring the 7 partners together in Athens for a week of sports activities, art workshops and working sessions on inclusion in rugby. Participants from Italy, Croatia, Bulgaria, Spain and Greece will share experiences and best practices.',
+                        'roblox.title': 'Educational Video Game',
+                        'roblox.subtitle': 'An interactive experience about rugby values',
+                        'roblox.desc': 'As part of the FRIDAS project, an educational video game is being developed on the Roblox platform. The game conveys rugby values \u2014 respect, inclusion and teamwork \u2014 through an interactive experience designed with and for young people aged 12-17 from the 5 participating countries.',
+                        'roblox.f1.title': 'Interactive',
+                        'roblox.f1.desc': 'Immersive Roblox experience',
+                        'roblox.f2.title': 'Educational',
+                        'roblox.f2.desc': 'Rugby and inclusion values',
+                        'roblox.f3.title': 'European',
+                        'roblox.f3.desc': 'Created by youth from 5 countries',
+                        'roblox.credit': 'Developed by Mekit Studio with participation of youth aged 12-17',
+                        'contact.title': 'Contact',
+                        'contact.subtitle': 'Want to know more about the FRIDAS project?',
+                        'contact.card_title': 'Write to Us',
+                        'contact.card_desc': 'For more information about FRIDAS or how to get involved',
+                        'contact.btn': 'Contact Us'
+                    },
+                    ca: {
+                        'hero.title': 'FRIDAS',
+                        'hero.acronym': 'Fostering Rugby Inclusion, Diversity through Art and Sport',
+                        'hero.tagline': 'Rugbi, art i inclusio per a una Europa sense barreres',
+                        'hero.eu_funded': 'Financat per la Unio Europea',
+                        'stats.countries': 'Paisos',
+                        'stats.partners': 'Socis',
+                        'stats.months': 'Mesos',
+                        'stats.exchanges': 'Intercanvis',
+                        'country.spain': 'Espanya',
+                        'country.greece': 'Grecia',
+                        'about.title': 'Sobre el Projecte',
+                        'about.subtitle': '24 mesos de rugbi, art i inclusio a Europa',
+                        'about.desc': 'FRIDAS es un projecte europeu financat per Erasmus+ Sport que uneix el rugbi i l\'art com a eines d\'inclusio social. Durant 24 mesos, 7 organitzacions de 5 paisos treballen juntes per trencar barreres de genere, accessibilitat i participacio a traves de l\'esport, la creativitat i la tecnologia, incloent el desenvolupament d\'un videojoc educatiu a Roblox creat per i per a joves.',
+                        'obj.gender.title': 'Igualtat de Genere',
+                        'obj.gender.desc': 'Promoure la participacio femenina en el rugbi i combatre estereotips de genere en l\'esport',
+                        'obj.access.title': 'Accessibilitat',
+                        'obj.access.desc': 'Fer el rugbi accessible a persones amb discapacitat a traves del rugbi en cadira de rodes',
+                        'obj.art.title': 'Art i Inclusio',
+                        'obj.art.desc': 'Utilitzar l\'art com a pont per a la inclusio social i l\'expressio creativa dels participants',
+                        'obj.game.title': 'Videojoc Educatiu',
+                        'obj.game.desc': 'Un videojoc a Roblox sobre valors del rugbi, creat amb joves de 12 a 17 anys dels 5 paisos',
+                        'activities.title': 'Activitats Principals',
+                        'activities.subtitle': 'Accions concretes per al canvi',
+                        'act.exchanges.title': '5 Intercanvis Internacionals',
+                        'act.exchanges.desc': 'Trobades esportives i culturals a Italia, Grecia, Bulgaria, Croacia i Espanya amb tots els socis del projecte',
+                        'act.workshops.title': 'Tallers i Webinars',
+                        'act.workshops.desc': 'Sessions formatives sobre inclusio, igualtat de genere i accessibilitat en l\'esport per a entrenadors i participants',
+                        'act.wheelchair.title': 'Rugbi en Cadira de Rodes',
+                        'act.wheelchair.desc': 'Sessions de rugbi en cadira de rodes per promoure l\'accessibilitat i sensibilitzar sobre la discapacitat en l\'esport',
+                        'act.game.title': 'Videojoc Educatiu a Roblox',
+                        'act.game.desc': 'Desenvolupament d\'un videojoc a Roblox sobre valors del rugbi, inclusio i diversitat, creat amb joves de 12 a 17 anys',
+                        'partners.title': 'Socis del Projecte',
+                        'partners.subtitle': '7 organitzacions, 5 paisos, 1 objectiu comu',
+                        'partners.project': 'Project Partners',
+                        'partners.associated': 'Associated Partners',
+                        'partners.artists': 'Artistes',
+                        'partners.coordinator': 'Coordinador',
+                        'event.section_title': 'Proper Esdeveniment',
+                        'event.section_subtitle': 'La nostra propera trobada internacional',
+                        'event.badge': 'Proper Esdeveniment',
+                        'event.title': '1r Intercanvi Internacional',
+                        'event.location': 'Atenes, Grecia',
+                        'event.organizer': 'Organitzat per Liminal',
+                        'event.desc': 'El primer intercanvi del projecte FRIDAS reunira els 7 socis a Atenes per a una setmana d\'activitats esportives, tallers artistics i sessions de treball sobre inclusio en el rugbi. Participants d\'Italia, Croacia, Bulgaria, Espanya i Grecia compartiran experiencies i bones practiques.',
+                        'roblox.title': 'Videojoc Educatiu',
+                        'roblox.subtitle': 'Una experiencia interactiva sobre els valors del rugbi',
+                        'roblox.desc': 'Com a part del projecte FRIDAS, s\'esta desenvolupant un videojoc educatiu a la plataforma Roblox. El joc transmet els valors del rugbi \u2014 respecte, inclusio i treball en equip \u2014 a traves d\'una experiencia interactiva dissenyada amb i per a joves de 12 a 17 anys dels 5 paisos participants.',
+                        'roblox.f1.title': 'Interactiu',
+                        'roblox.f1.desc': 'Experiencia immersiva a Roblox',
+                        'roblox.f2.title': 'Educatiu',
+                        'roblox.f2.desc': 'Valors del rugbi i la inclusio',
+                        'roblox.f3.title': 'Europeu',
+                        'roblox.f3.desc': 'Creat per joves de 5 paisos',
+                        'roblox.credit': 'Desenvolupat per Mekit Studio amb la participacio de joves de 12 a 17 anys',
+                        'contact.title': 'Contacte',
+                        'contact.subtitle': 'Vols saber mes sobre el projecte FRIDAS?',
+                        'contact.card_title': 'Escriu-nos',
+                        'contact.card_desc': 'Per a mes informacio sobre el projecte FRIDAS o sobre com participar',
+                        'contact.btn': 'Contactar'
+                    },
+                    fr: {
+                        'hero.title': 'FRIDAS',
+                        'hero.acronym': 'Fostering Rugby Inclusion, Diversity through Art and Sport',
+                        'hero.tagline': 'Rugby, art et inclusion pour une Europe sans barrieres',
+                        'hero.eu_funded': 'Finance par l\'Union Europeenne',
+                        'stats.countries': 'Pays',
+                        'stats.partners': 'Partenaires',
+                        'stats.months': 'Mois',
+                        'stats.exchanges': 'Echanges',
+                        'country.spain': 'Espagne',
+                        'country.greece': 'Grece',
+                        'about.title': 'A propos du Projet',
+                        'about.subtitle': '24 mois de rugby, art et inclusion en Europe',
+                        'about.desc': 'FRIDAS est un projet europeen finance par Erasmus+ Sport qui unit le rugby et l\'art comme outils d\'inclusion sociale. Pendant 24 mois, 7 organisations de 5 pays travaillent ensemble pour briser les barrieres de genre, d\'accessibilite et de participation a travers le sport, la creativite et la technologie, incluant le developpement d\'un jeu video educatif sur Roblox cree par et pour les jeunes.',
+                        'obj.gender.title': 'Egalite des Genres',
+                        'obj.gender.desc': 'Promouvoir la participation feminine dans le rugby et combattre les stereotypes de genre dans le sport',
+                        'obj.access.title': 'Accessibilite',
+                        'obj.access.desc': 'Rendre le rugby accessible aux personnes handicapees grace au rugby en fauteuil roulant',
+                        'obj.art.title': 'Art et Inclusion',
+                        'obj.art.desc': 'Utiliser l\'art comme pont pour l\'inclusion sociale et l\'expression creative des participants',
+                        'obj.game.title': 'Jeu Video Educatif',
+                        'obj.game.desc': 'Un jeu video sur Roblox sur les valeurs du rugby, cree avec des jeunes de 12 a 17 ans des 5 pays',
+                        'activities.title': 'Activites Principales',
+                        'activities.subtitle': 'Des actions concretes pour le changement',
+                        'act.exchanges.title': '5 Echanges Internationaux',
+                        'act.exchanges.desc': 'Rencontres sportives et culturelles en Italie, Grece, Bulgarie, Croatie et Espagne avec tous les partenaires du projet',
+                        'act.workshops.title': 'Ateliers et Webinaires',
+                        'act.workshops.desc': 'Sessions de formation sur l\'inclusion, l\'egalite des genres et l\'accessibilite dans le sport pour entraineurs et participants',
+                        'act.wheelchair.title': 'Rugby en Fauteuil Roulant',
+                        'act.wheelchair.desc': 'Sessions de rugby en fauteuil roulant pour promouvoir l\'accessibilite et sensibiliser au handicap dans le sport',
+                        'act.game.title': 'Jeu Video Educatif sur Roblox',
+                        'act.game.desc': 'Developpement d\'un jeu video sur Roblox sur les valeurs du rugby, l\'inclusion et la diversite, cree avec des jeunes de 12 a 17 ans',
+                        'partners.title': 'Partenaires du Projet',
+                        'partners.subtitle': '7 organisations, 5 pays, 1 objectif commun',
+                        'partners.project': 'Partenaires du Projet',
+                        'partners.associated': 'Partenaires Associes',
+                        'partners.artists': 'Artistes',
+                        'partners.coordinator': 'Coordinateur',
+                        'event.section_title': 'Prochain Evenement',
+                        'event.section_subtitle': 'Notre prochaine rencontre internationale',
+                        'event.badge': 'Prochain Evenement',
+                        'event.title': '1er Echange International',
+                        'event.location': 'Athenes, Grece',
+                        'event.organizer': 'Organise par Liminal',
+                        'event.desc': 'Le premier echange du projet FRIDAS reunira les 7 partenaires a Athenes pour une semaine d\'activites sportives, d\'ateliers artistiques et de sessions de travail sur l\'inclusion dans le rugby. Des participants d\'Italie, Croatie, Bulgarie, Espagne et Grece partageront experiences et bonnes pratiques.',
+                        'roblox.title': 'Jeu Video Educatif',
+                        'roblox.subtitle': 'Une experience interactive sur les valeurs du rugby',
+                        'roblox.desc': 'Dans le cadre du projet FRIDAS, un jeu video educatif est en cours de developpement sur la plateforme Roblox. Le jeu transmet les valeurs du rugby \u2014 respect, inclusion et travail d\'equipe \u2014 a travers une experience interactive concue avec et pour des jeunes de 12 a 17 ans des 5 pays participants.',
+                        'roblox.f1.title': 'Interactif',
+                        'roblox.f1.desc': 'Experience immersive sur Roblox',
+                        'roblox.f2.title': 'Educatif',
+                        'roblox.f2.desc': 'Valeurs du rugby et de l\'inclusion',
+                        'roblox.f3.title': 'Europeen',
+                        'roblox.f3.desc': 'Cree par des jeunes de 5 pays',
+                        'roblox.credit': 'Developpe par Mekit Studio avec la participation de jeunes de 12 a 17 ans',
+                        'contact.title': 'Contact',
+                        'contact.subtitle': 'Vous voulez en savoir plus sur le projet FRIDAS?',
+                        'contact.card_title': 'Ecrivez-nous',
+                        'contact.card_desc': 'Pour plus d\'informations sur le projet FRIDAS ou sur comment participer',
+                        'contact.btn': 'Contacter'
+                    },
+                    it: {
+                        'hero.title': 'FRIDAS',
+                        'hero.acronym': 'Fostering Rugby Inclusion, Diversity through Art and Sport',
+                        'hero.tagline': 'Rugby, arte e inclusione per un\'Europa senza barriere',
+                        'hero.eu_funded': 'Finanziato dall\'Unione Europea',
+                        'stats.countries': 'Paesi',
+                        'stats.partners': 'Partner',
+                        'stats.months': 'Mesi',
+                        'stats.exchanges': 'Scambi',
+                        'country.spain': 'Spagna',
+                        'country.greece': 'Grecia',
+                        'about.title': 'Sul Progetto',
+                        'about.subtitle': '24 mesi di rugby, arte e inclusione in Europa',
+                        'about.desc': 'FRIDAS e un progetto europeo finanziato da Erasmus+ Sport che unisce rugby e arte come strumenti di inclusione sociale. Per 24 mesi, 7 organizzazioni di 5 paesi lavorano insieme per abbattere le barriere di genere, accessibilita e partecipazione attraverso lo sport, la creativita e la tecnologia, incluso lo sviluppo di un videogioco educativo su Roblox creato da e per giovani.',
+                        'obj.gender.title': 'Uguaglianza di Genere',
+                        'obj.gender.desc': 'Promuovere la partecipazione femminile nel rugby e combattere gli stereotipi di genere nello sport',
+                        'obj.access.title': 'Accessibilita',
+                        'obj.access.desc': 'Rendere il rugby accessibile alle persone con disabilita attraverso il rugby in carrozzina',
+                        'obj.art.title': 'Arte e Inclusione',
+                        'obj.art.desc': 'Utilizzare l\'arte come ponte per l\'inclusione sociale e l\'espressione creativa dei partecipanti',
+                        'obj.game.title': 'Videogioco Educativo',
+                        'obj.game.desc': 'Un videogioco su Roblox sui valori del rugby, creato con giovani dai 12 ai 17 anni dei 5 paesi',
+                        'activities.title': 'Attivita Principali',
+                        'activities.subtitle': 'Azioni concrete per il cambiamento',
+                        'act.exchanges.title': '5 Scambi Internazionali',
+                        'act.exchanges.desc': 'Incontri sportivi e culturali in Italia, Grecia, Bulgaria, Croazia e Spagna con tutti i partner del progetto',
+                        'act.workshops.title': 'Workshop e Webinar',
+                        'act.workshops.desc': 'Sessioni formative su inclusione, uguaglianza di genere e accessibilita nello sport per allenatori e partecipanti',
+                        'act.wheelchair.title': 'Rugby in Carrozzina',
+                        'act.wheelchair.desc': 'Sessioni di rugby in carrozzina per promuovere l\'accessibilita e sensibilizzare sulla disabilita nello sport',
+                        'act.game.title': 'Videogioco Educativo su Roblox',
+                        'act.game.desc': 'Sviluppo di un videogioco su Roblox sui valori del rugby, inclusione e diversita, creato con giovani dai 12 ai 17 anni',
+                        'partners.title': 'Partner del Progetto',
+                        'partners.subtitle': '7 organizzazioni, 5 paesi, 1 obiettivo comune',
+                        'partners.project': 'Project Partners',
+                        'partners.associated': 'Associated Partners',
+                        'partners.artists': 'Artisti',
+                        'partners.coordinator': 'Coordinatore',
+                        'event.section_title': 'Prossimo Evento',
+                        'event.section_subtitle': 'Il nostro prossimo incontro internazionale',
+                        'event.badge': 'Prossimo Evento',
+                        'event.title': '1o Scambio Internazionale',
+                        'event.location': 'Atene, Grecia',
+                        'event.organizer': 'Organizzato da Liminal',
+                        'event.desc': 'Il primo scambio del progetto FRIDAS riunira i 7 partner ad Atene per una settimana di attivita sportive, workshop artistici e sessioni di lavoro sull\'inclusione nel rugby. Partecipanti da Italia, Croazia, Bulgaria, Spagna e Grecia condivideranno esperienze e buone pratiche.',
+                        'roblox.title': 'Videogioco Educativo',
+                        'roblox.subtitle': 'Un\'esperienza interattiva sui valori del rugby',
+                        'roblox.desc': 'Come parte del progetto FRIDAS, si sta sviluppando un videogioco educativo sulla piattaforma Roblox. Il gioco trasmette i valori del rugby \u2014 rispetto, inclusione e lavoro di squadra \u2014 attraverso un\'esperienza interattiva progettata con e per giovani dai 12 ai 17 anni dei 5 paesi partecipanti.',
+                        'roblox.f1.title': 'Interattivo',
+                        'roblox.f1.desc': 'Esperienza immersiva su Roblox',
+                        'roblox.f2.title': 'Educativo',
+                        'roblox.f2.desc': 'Valori del rugby e dell\'inclusione',
+                        'roblox.f3.title': 'Europeo',
+                        'roblox.f3.desc': 'Creato da giovani di 5 paesi',
+                        'roblox.credit': 'Sviluppato da Mekit Studio con la partecipazione di giovani dai 12 ai 17 anni',
+                        'contact.title': 'Contatto',
+                        'contact.subtitle': 'Vuoi saperne di piu sul progetto FRIDAS?',
+                        'contact.card_title': 'Scrivici',
+                        'contact.card_desc': 'Per maggiori informazioni sul progetto FRIDAS o su come partecipare',
+                        'contact.btn': 'Contattaci'
+                    },
+                    pt: {
+                        'hero.title': 'FRIDAS',
+                        'hero.acronym': 'Fostering Rugby Inclusion, Diversity through Art and Sport',
+                        'hero.tagline': 'Rugby, arte e inclusao para uma Europa sem barreiras',
+                        'hero.eu_funded': 'Financiado pela Uniao Europeia',
+                        'stats.countries': 'Paises',
+                        'stats.partners': 'Parceiros',
+                        'stats.months': 'Meses',
+                        'stats.exchanges': 'Intercambios',
+                        'country.spain': 'Espanha',
+                        'country.greece': 'Grecia',
+                        'about.title': 'Sobre o Projeto',
+                        'about.subtitle': '24 meses de rugby, arte e inclusao na Europa',
+                        'about.desc': 'FRIDAS e um projeto europeu financiado pelo Erasmus+ Sport que une o rugby e a arte como ferramentas de inclusao social. Durante 24 meses, 7 organizacoes de 5 paises trabalham juntas para quebrar barreiras de genero, acessibilidade e participacao atraves do desporto, da criatividade e da tecnologia, incluindo o desenvolvimento de um videojogo educativo no Roblox criado por e para jovens.',
+                        'obj.gender.title': 'Igualdade de Genero',
+                        'obj.gender.desc': 'Promover a participacao feminina no rugby e combater estereotipos de genero no desporto',
+                        'obj.access.title': 'Acessibilidade',
+                        'obj.access.desc': 'Tornar o rugby acessivel a pessoas com deficiencia atraves do rugby em cadeira de rodas',
+                        'obj.art.title': 'Arte e Inclusao',
+                        'obj.art.desc': 'Utilizar a arte como ponte para a inclusao social e a expressao criativa dos participantes',
+                        'obj.game.title': 'Videojogo Educativo',
+                        'obj.game.desc': 'Um videojogo no Roblox sobre valores do rugby, criado com jovens dos 12 aos 17 anos dos 5 paises',
+                        'activities.title': 'Atividades Principais',
+                        'activities.subtitle': 'Acoes concretas para a mudanca',
+                        'act.exchanges.title': '5 Intercambios Internacionais',
+                        'act.exchanges.desc': 'Encontros desportivos e culturais em Italia, Grecia, Bulgaria, Croacia e Espanha com todos os parceiros do projeto',
+                        'act.workshops.title': 'Workshops e Webinars',
+                        'act.workshops.desc': 'Sessoes formativas sobre inclusao, igualdade de genero e acessibilidade no desporto para treinadores e participantes',
+                        'act.wheelchair.title': 'Rugby em Cadeira de Rodas',
+                        'act.wheelchair.desc': 'Sessoes de rugby em cadeira de rodas para promover a acessibilidade e sensibilizar sobre a deficiencia no desporto',
+                        'act.game.title': 'Videojogo Educativo no Roblox',
+                        'act.game.desc': 'Desenvolvimento de um videojogo no Roblox sobre valores do rugby, inclusao e diversidade, criado com jovens dos 12 aos 17 anos',
+                        'partners.title': 'Parceiros do Projeto',
+                        'partners.subtitle': '7 organizacoes, 5 paises, 1 objetivo comum',
+                        'partners.project': 'Parceiros do Projeto',
+                        'partners.associated': 'Parceiros Associados',
+                        'partners.artists': 'Artistas',
+                        'partners.coordinator': 'Coordenador',
+                        'event.section_title': 'Proximo Evento',
+                        'event.section_subtitle': 'O nosso proximo encontro internacional',
+                        'event.badge': 'Proximo Evento',
+                        'event.title': '1o Intercambio Internacional',
+                        'event.location': 'Atenas, Grecia',
+                        'event.organizer': 'Organizado por Liminal',
+                        'event.desc': 'O primeiro intercambio do projeto FRIDAS reunira os 7 parceiros em Atenas para uma semana de atividades desportivas, workshops artisticos e sessoes de trabalho sobre inclusao no rugby. Participantes de Italia, Croacia, Bulgaria, Espanha e Grecia partilharao experiencias e boas praticas.',
+                        'roblox.title': 'Videojogo Educativo',
+                        'roblox.subtitle': 'Uma experiencia interativa sobre os valores do rugby',
+                        'roblox.desc': 'Como parte do projeto FRIDAS, esta a ser desenvolvido um videojogo educativo na plataforma Roblox. O jogo transmite os valores do rugby \u2014 respeito, inclusao e trabalho em equipa \u2014 atraves de uma experiencia interativa desenhada com e para jovens dos 12 aos 17 anos dos 5 paises participantes.',
+                        'roblox.f1.title': 'Interativo',
+                        'roblox.f1.desc': 'Experiencia imersiva no Roblox',
+                        'roblox.f2.title': 'Educativo',
+                        'roblox.f2.desc': 'Valores do rugby e da inclusao',
+                        'roblox.f3.title': 'Europeu',
+                        'roblox.f3.desc': 'Criado por jovens de 5 paises',
+                        'roblox.credit': 'Desenvolvido por Mekit Studio com a participacao de jovens dos 12 aos 17 anos',
+                        'contact.title': 'Contacto',
+                        'contact.subtitle': 'Queres saber mais sobre o projeto FRIDAS?',
+                        'contact.card_title': 'Escreve-nos',
+                        'contact.card_desc': 'Para mais informacoes sobre o projeto FRIDAS ou sobre como participar',
+                        'contact.btn': 'Contactar'
+                    }
+                };
+
+                document.querySelectorAll('[data-i18n-fridas]').forEach(el => {
+                    const key = el.dataset.i18nFridas;
+                    if (translations[currentLang] && translations[currentLang][key]) {
+                        el.textContent = translations[currentLang][key];
+                    }
+                });
+            }
+
+            // Initial update
+            setTimeout(updateFridasTranslations, 500);
+
+            // Listen for language changes
+            document.addEventListener('languageChanged', () => {
+                updateFridasTranslations();
+            });
+
+            // Floating particles
+            const particlesContainer = document.getElementById('fridasParticles');
+            if (particlesContainer) {
+                const colors = ['#e91e63', '#9c27b0', '#00897b', '#FFD700'];
+                for (let i = 0; i < 20; i++) {
+                    const particle = document.createElement('div');
+                    particle.className = 'fridas-particle';
+                    const size = Math.random() * 6 + 3;
+                    const color = colors[Math.floor(Math.random() * colors.length)];
+                    particle.style.cssText = `
+                        width: ${size}px;
+                        height: ${size}px;
+                        background: ${color};
+                        left: ${Math.random() * 100}%;
+                        animation-duration: ${Math.random() * 15 + 10}s;
+                        animation-delay: ${Math.random() * 10}s;
+                    `;
+                    particlesContainer.appendChild(particle);
+                }
+            }
+        });
+    </script>
+</body>
+</html>

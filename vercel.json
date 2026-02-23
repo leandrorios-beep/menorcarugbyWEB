@@ -9,6 +9,16 @@
       "source": "/zona%20socios",
       "destination": "https://menorcarugby.clupik.app/es/registrations/21930",
       "permanent": true
+    },
+    {
+      "source": "/socios",
+      "destination": "/socios.html",
+      "permanent": false
+    },
+    {
+      "source": "/fridas",
+      "destination": "/fridas.html",
+      "permanent": false
     }
   ]
 }

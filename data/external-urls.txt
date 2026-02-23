@@ -26,7 +26,7 @@ TIKTOK_URL=https://www.tiktok.com/@menorcarugbyclub
 
 # CONTACT INFO
 PHONE=+34 971 XXX XXX
-EMAIL=hola@menorcarugby.com
+EMAIL=hola@menorcarugbyclub.com
 WHATSAPP=
 
 # TRAINING SCHEDULE

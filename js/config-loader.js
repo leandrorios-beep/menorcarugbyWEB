@@ -43,10 +43,14 @@ class ConfigLoader {
             // Skip comments and empty lines
             if (trimmedLine.startsWith('#') || !trimmedLine) return;
 
-            // Parse key=value pairs
-            const [key, value] = trimmedLine.split('=');
-            if (key && value) {
-                this.config[key.trim()] = value.trim();
+            // Parse key=value pairs (handle values containing '=')
+            const idx = trimmedLine.indexOf('=');
+            if (idx > 0) {
+                const key = trimmedLine.substring(0, idx).trim();
+                const value = trimmedLine.substring(idx + 1).trim();
+                if (key && value) {
+                    this.config[key] = value;
+                }
             }
         });
     }
@@ -68,7 +72,7 @@ class ConfigLoader {
             'FACEBOOK_URL': 'https://www.facebook.com/menorcarugby',
             'TIKTOK_URL': 'https://www.tiktok.com/@menorcarugbyclub',
             'PHONE': '+34 971 XXX XXX',
-            'EMAIL': 'info@menorcarugby.com',
+            'EMAIL': 'hola@menorcarugbyclub.com',
             'WHATSAPP': '+34 XXX XXX XXX'
         };
         this.isLoaded = true;
@@ -133,21 +137,26 @@ class ConfigLoader {
     updateStoreLinks() {
         const currentLang = i18n?.currentLanguage || 'es';
         const storeURL = this.getStoreURL(currentLang);
+        const self = this;
 
-        // Update all store links
+        // Clone and replace to remove old listeners, then add new ones
         document.querySelectorAll('.store-link, .product-btn').forEach(link => {
-            link.addEventListener('click', (e) => {
+            const newLink = link.cloneNode(true);
+            link.parentNode.replaceChild(newLink, link);
+            newLink.addEventListener('click', (e) => {
                 e.preventDefault();
-                this.openExternalStore(storeURL);
+                self.openExternalStore(storeURL);
             });
         });
 
         // Update navigation store link
         const navStoreLink = document.querySelector('a[href="#tienda"]');
         if (navStoreLink) {
-            navStoreLink.addEventListener('click', (e) => {
+            const newNav = navStoreLink.cloneNode(true);
+            navStoreLink.parentNode.replaceChild(newNav, navStoreLink);
+            newNav.addEventListener('click', (e) => {
                 e.preventDefault();
-                this.openExternalStore(storeURL);
+                self.openExternalStore(storeURL);
             });
         }
     }

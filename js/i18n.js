@@ -93,10 +93,14 @@ class I18nSystem {
         });
 
         // Update document title and meta
-        document.title = this.getTranslation('meta.title');
+        const titleTranslation = this.getTranslation('meta.title');
+        if (titleTranslation && typeof titleTranslation === 'string') {
+            document.title = titleTranslation;
+        }
         const metaDescription = document.querySelector('meta[name="description"]');
-        if (metaDescription) {
-            metaDescription.content = this.getTranslation('meta.description');
+        const descTranslation = this.getTranslation('meta.description');
+        if (metaDescription && descTranslation && typeof descTranslation === 'string') {
+            metaDescription.content = descTranslation;
         }
     }
 
@@ -105,14 +109,15 @@ class I18nSystem {
         let translation = this.translations;
 
         for (const k of keys) {
-            if (translation && translation[k]) {
+            if (translation && translation[k] !== undefined) {
                 translation = translation[k];
             } else {
                 return null;
             }
         }
 
-        return translation;
+        // Only return strings, not objects
+        return (typeof translation === 'string') ? translation : null;
     }
 
     changeLanguage(language) {
