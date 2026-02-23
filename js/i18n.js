@@ -158,12 +158,12 @@ class I18nSystem {
 
     createLanguageSwitcher() {
         const languages = {
-            'es': { name: 'Español', flag: '🇪🇸' },
-            'ca': { name: 'Català', flag: '🏴󠁥󠁳󠁣󠁴󠁿' },
-            'en': { name: 'English', flag: '🇬🇧' },
-            'fr': { name: 'Français', flag: '🇫🇷' },
-            'it': { name: 'Italiano', flag: '🇮🇹' },
-            'pt': { name: 'Português', flag: '🇵🇹' }
+            'es': { name: 'Español', flag: '<img src="https://flagcdn.com/w40/es.png" alt="ES" width="20" height="14">' },
+            'ca': { name: 'Català', flag: '<img src="https://flagcdn.com/w40/es-ct.png" alt="CA" width="20" height="14">' },
+            'en': { name: 'English', flag: '<img src="https://flagcdn.com/w40/gb.png" alt="EN" width="20" height="14">' },
+            'fr': { name: 'Français', flag: '<img src="https://flagcdn.com/w40/fr.png" alt="FR" width="20" height="14">' },
+            'it': { name: 'Italiano', flag: '<img src="https://flagcdn.com/w40/it.png" alt="IT" width="20" height="14">' },
+            'pt': { name: 'Português', flag: '<img src="https://flagcdn.com/w40/pt.png" alt="PT" width="20" height="14">' }
         };
 
         const switcher = document.createElement('div');
@@ -211,12 +211,12 @@ class I18nSystem {
 
     updateLanguageSwitcher() {
         const languages = {
-            'es': { name: 'Español', flag: '🇪🇸' },
-            'ca': { name: 'Català', flag: '🏴󠁥󠁳󠁣󠁴󠁿' },
-            'en': { name: 'English', flag: '🇬🇧' },
-            'fr': { name: 'Français', flag: '🇫🇷' },
-            'it': { name: 'Italiano', flag: '🇮🇹' },
-            'pt': { name: 'Português', flag: '🇵🇹' }
+            'es': { name: 'Español', flag: '<img src="https://flagcdn.com/w40/es.png" alt="ES" width="20" height="14">' },
+            'ca': { name: 'Català', flag: '<img src="https://flagcdn.com/w40/es-ct.png" alt="CA" width="20" height="14">' },
+            'en': { name: 'English', flag: '<img src="https://flagcdn.com/w40/gb.png" alt="EN" width="20" height="14">' },
+            'fr': { name: 'Français', flag: '<img src="https://flagcdn.com/w40/fr.png" alt="FR" width="20" height="14">' },
+            'it': { name: 'Italiano', flag: '<img src="https://flagcdn.com/w40/it.png" alt="IT" width="20" height="14">' },
+            'pt': { name: 'Português', flag: '<img src="https://flagcdn.com/w40/pt.png" alt="PT" width="20" height="14">' }
         };
 
         const currentBtn = document.getElementById('lang-current');
@@ -284,12 +284,12 @@ class I18nSystem {
     // Get current language info
     getCurrentLanguageInfo() {
         const languages = {
-            'es': { name: 'Español', nativeName: 'Español', flag: '🇪🇸' },
-            'ca': { name: 'Catalan', nativeName: 'Català', flag: '🏴󠁥󠁳󠁣󠁴󠁿' },
-            'en': { name: 'English', nativeName: 'English', flag: '🇬🇧' },
-            'fr': { name: 'French', nativeName: 'Français', flag: '🇫🇷' },
-            'it': { name: 'Italian', nativeName: 'Italiano', flag: '🇮🇹' },
-            'pt': { name: 'Portuguese', nativeName: 'Português', flag: '🇵🇹' }
+            'es': { name: 'Español', nativeName: 'Español', flag: '<img src="https://flagcdn.com/w40/es.png" alt="ES" width="20" height="14">' },
+            'ca': { name: 'Catalan', nativeName: 'Català', flag: '<img src="https://flagcdn.com/w40/es-ct.png" alt="CA" width="20" height="14">' },
+            'en': { name: 'English', nativeName: 'English', flag: '<img src="https://flagcdn.com/w40/gb.png" alt="EN" width="20" height="14">' },
+            'fr': { name: 'French', nativeName: 'Français', flag: '<img src="https://flagcdn.com/w40/fr.png" alt="FR" width="20" height="14">' },
+            'it': { name: 'Italian', nativeName: 'Italiano', flag: '<img src="https://flagcdn.com/w40/it.png" alt="IT" width="20" height="14">' },
+            'pt': { name: 'Portuguese', nativeName: 'Português', flag: '<img src="https://flagcdn.com/w40/pt.png" alt="PT" width="20" height="14">' }
         };
 
         return languages[this.currentLanguage] || languages['es'];
