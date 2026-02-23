@@ -6256,7 +6256,7 @@ img {
 .fridas-hanging-tag::before {
     content: '';
     width: 2px;
-    height: 45px;
+    height: 55px;
     background: linear-gradient(to bottom, rgba(255,255,255,0.3), #e91e63);
     display: block;
     margin-bottom: 0;
@@ -6321,7 +6321,7 @@ img {
     }
 
     .fridas-hanging-tag::before {
-        height: 30px;
+        height: 50px;
     }
 }
 
