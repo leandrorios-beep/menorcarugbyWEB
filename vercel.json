@@ -24,6 +24,11 @@
       "source": "/socios_prueba",
       "destination": "/socios_prueba.html",
       "permanent": false
+    },
+    {
+      "source": "/privacidad",
+      "destination": "/privacidad.html",
+      "permanent": false
     }
   ]
 }
