@@ -36,6 +36,9 @@
 
     <!-- Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
 </head>
 <body>
     <!-- Navigation -->
@@ -145,7 +148,7 @@
                         <li><i class="fas fa-check"></i> <span data-i18n-membership="types.normal.f4">Newsletter mensual</span></li>
                         <li><i class="fas fa-check"></i> <span data-i18n-membership="types.normal.f5">Carnet digital personalizado</span></li>
                     </ul>
-                    <a href="https://buy.stripe.com/00wfZgdPm0WcfUG8w63VC01" target="_blank" rel="noopener" class="type-cta-btn">
+                    <a href="https://buy.stripe.com/00wfZgdPm0WcfUG8w63VC01" target="_blank" rel="noopener" class="type-cta-btn" data-socio-type="normal">
                         <span data-i18n-membership="types.normal.cta">Hacerme socio</span>
                         <i class="fas fa-arrow-right"></i>
                     </a>
@@ -161,7 +164,7 @@
                         <li><i class="fas fa-check"></i> <span data-i18n-membership="types.family.f2">Carnet digital personalizado</span></li>
                         <li><i class="fas fa-check"></i> <span data-i18n-membership="types.family.f3">Opcion gimnasio 10&#8364;/mes</span></li>
                     </ul>
-                    <a href="https://buy.stripe.com/28EfZg7qY9sI9wih2C3VC02" target="_blank" rel="noopener" class="type-cta-btn type-cta-btn--secondary">
+                    <a href="https://buy.stripe.com/28EfZg7qY9sI9wih2C3VC02" target="_blank" rel="noopener" class="type-cta-btn type-cta-btn--secondary" data-socio-type="gym">
                         <span data-i18n-membership="types.family.cta">Contratar gimnasio</span>
                         <i class="fas fa-dumbbell"></i>
                     </a>
@@ -176,7 +179,7 @@
                         <li><i class="fas fa-check"></i> <span data-i18n-membership="types.protector.f1">Todo lo del socio normal</span></li>
                         <li><i class="fas fa-check"></i> <span data-i18n-membership="types.protector.f2">Reconocimiento especial del club</span></li>
                     </ul>
-                    <a href="https://buy.stripe.com/3cI9AS9z6awM8seeUu3VC00" target="_blank" rel="noopener" class="type-cta-btn">
+                    <a href="https://buy.stripe.com/3cI9AS9z6awM8seeUu3VC00" target="_blank" rel="noopener" class="type-cta-btn" data-socio-type="protector">
                         <span data-i18n-membership="types.protector.cta">Hacerme protector</span>
                         <i class="fas fa-arrow-right"></i>
                     </a>
@@ -482,6 +485,234 @@
     <!-- Page-specific translations -->
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+
+            // ── Modal: pre-payment form ──
+            const modalTranslations = {
+                es: {
+                    title: 'Datos del socio',
+                    subtitle: 'Completa tus datos antes de continuar al pago',
+                    nombre: 'Nombre',
+                    apellido: 'Apellido',
+                    documento: 'NIE / DNI / Pasaporte',
+                    email: 'Email',
+                    error_required: 'Este campo es obligatorio',
+                    error_email: 'Introduce un email valido',
+                    submit: 'Continuar al pago',
+                    privacy: 'Tus datos se guardan de forma segura y solo se usan para gestionar tu alta como socio.'
+                },
+                ca: {
+                    title: 'Dades del soci',
+                    subtitle: 'Completa les teves dades abans de continuar al pagament',
+                    nombre: 'Nom',
+                    apellido: 'Cognom',
+                    documento: 'NIE / DNI / Passaport',
+                    email: 'Email',
+                    error_required: 'Aquest camp es obligatori',
+                    error_email: 'Introdueix un email valid',
+                    submit: 'Continuar al pagament',
+                    privacy: 'Les teves dades es guarden de forma segura i nomes s\'usen per gestionar la teva alta com a soci.'
+                },
+                en: {
+                    title: 'Member details',
+                    subtitle: 'Fill in your details before proceeding to payment',
+                    nombre: 'First name',
+                    apellido: 'Last name',
+                    documento: 'ID / Passport',
+                    email: 'Email',
+                    error_required: 'This field is required',
+                    error_email: 'Enter a valid email',
+                    submit: 'Continue to payment',
+                    privacy: 'Your data is stored securely and only used to manage your membership registration.'
+                },
+                fr: {
+                    title: 'Donnees du membre',
+                    subtitle: 'Completez vos donnees avant de continuer au paiement',
+                    nombre: 'Prenom',
+                    apellido: 'Nom de famille',
+                    documento: 'CNI / Passeport',
+                    email: 'Email',
+                    error_required: 'Ce champ est obligatoire',
+                    error_email: 'Entrez un email valide',
+                    submit: 'Continuer au paiement',
+                    privacy: 'Vos donnees sont stockees de maniere securisee et utilisees uniquement pour gerer votre inscription.'
+                },
+                it: {
+                    title: 'Dati del socio',
+                    subtitle: 'Completa i tuoi dati prima di procedere al pagamento',
+                    nombre: 'Nome',
+                    apellido: 'Cognome',
+                    documento: 'Documento / Passaporto',
+                    email: 'Email',
+                    error_required: 'Questo campo e obbligatorio',
+                    error_email: 'Inserisci un email valido',
+                    submit: 'Continua al pagamento',
+                    privacy: 'I tuoi dati sono conservati in modo sicuro e utilizzati solo per gestire la tua iscrizione.'
+                },
+                pt: {
+                    title: 'Dados do socio',
+                    subtitle: 'Completa os teus dados antes de continuar para o pagamento',
+                    nombre: 'Nome',
+                    apellido: 'Apelido',
+                    documento: 'BI / Passaporte',
+                    email: 'Email',
+                    error_required: 'Este campo e obrigatorio',
+                    error_email: 'Introduz um email valido',
+                    submit: 'Continuar para o pagamento',
+                    privacy: 'Os teus dados sao guardados de forma segura e usados apenas para gerir a tua inscricao como socio.'
+                }
+            };
+
+            // Inject modal HTML
+            const modalHTML = `
+            <div class="socio-modal-overlay" id="socioModalOverlay">
+                <div class="socio-modal">
+                    <button class="socio-modal-close" id="socioModalClose" aria-label="Close">&times;</button>
+                    <h2 class="socio-modal-title" data-i18n-modal="title">Datos del socio</h2>
+                    <p class="socio-modal-subtitle" data-i18n-modal="subtitle">Completa tus datos antes de continuar al pago</p>
+                    <form id="socioForm" novalidate>
+                        <div class="socio-modal-row">
+                            <div class="socio-modal-field">
+                                <label for="socioNombre" data-i18n-modal="nombre">Nombre</label>
+                                <input type="text" id="socioNombre" name="nombre" required autocomplete="given-name">
+                                <span class="socio-modal-error" data-i18n-modal="error_required">Este campo es obligatorio</span>
+                            </div>
+                            <div class="socio-modal-field">
+                                <label for="socioApellido" data-i18n-modal="apellido">Apellido</label>
+                                <input type="text" id="socioApellido" name="apellido" required autocomplete="family-name">
+                                <span class="socio-modal-error" data-i18n-modal="error_required">Este campo es obligatorio</span>
+                            </div>
+                        </div>
+                        <div class="socio-modal-field">
+                            <label for="socioDocumento" data-i18n-modal="documento">NIE / DNI / Pasaporte</label>
+                            <input type="text" id="socioDocumento" name="documento" required>
+                            <span class="socio-modal-error" data-i18n-modal="error_required">Este campo es obligatorio</span>
+                        </div>
+                        <div class="socio-modal-field">
+                            <label for="socioEmail" data-i18n-modal="email">Email</label>
+                            <input type="email" id="socioEmail" name="email" required autocomplete="email">
+                            <span class="socio-modal-error socio-modal-error--email" data-i18n-modal="error_email">Introduce un email valido</span>
+                        </div>
+                        <button type="submit" class="socio-modal-submit" id="socioSubmit">
+                            <span data-i18n-modal="submit">Continuar al pago</span>
+                            <i class="fas fa-arrow-right"></i>
+                        </button>
+                    </form>
+                    <p class="socio-modal-privacy" data-i18n-modal="privacy">Tus datos se guardan de forma segura y solo se usan para gestionar tu alta como socio.</p>
+                </div>
+            </div>`;
+            document.body.insertAdjacentHTML('beforeend', modalHTML);
+
+            const overlay = document.getElementById('socioModalOverlay');
+            const closeBtn = document.getElementById('socioModalClose');
+            const form = document.getElementById('socioForm');
+            let pendingStripeLink = '';
+            let pendingSocioType = '';
+
+            function getModalLang() {
+                return localStorage.getItem('menorca_rugby_lang') || 'es';
+            }
+
+            function updateModalTranslations() {
+                const lang = getModalLang();
+                const t = modalTranslations[lang] || modalTranslations.es;
+                document.querySelectorAll('[data-i18n-modal]').forEach(el => {
+                    const key = el.dataset.i18nModal;
+                    if (t[key]) el.textContent = t[key];
+                });
+            }
+
+            function openModal(stripeLink, socioType) {
+                pendingStripeLink = stripeLink;
+                pendingSocioType = socioType;
+                form.reset();
+                overlay.querySelectorAll('.socio-modal-field').forEach(f => f.classList.remove('has-error'));
+                overlay.querySelector('.socio-modal-submit').disabled = false;
+                overlay.querySelector('.socio-modal-submit').classList.remove('is-loading');
+                updateModalTranslations();
+                overlay.classList.add('is-active');
+                document.body.style.overflow = 'hidden';
+                document.getElementById('socioNombre').focus();
+            }
+
+            function closeModal() {
+                overlay.classList.remove('is-active');
+                document.body.style.overflow = '';
+            }
+
+            // Intercept CTA clicks
+            document.querySelectorAll('a.type-cta-btn[data-socio-type]').forEach(btn => {
+                btn.addEventListener('click', e => {
+                    e.preventDefault();
+                    openModal(btn.href, btn.dataset.socioType);
+                });
+            });
+
+            // Close modal
+            closeBtn.addEventListener('click', closeModal);
+            overlay.addEventListener('click', e => { if (e.target === overlay) closeModal(); });
+            document.addEventListener('keydown', e => { if (e.key === 'Escape' && overlay.classList.contains('is-active')) closeModal(); });
+
+            // Form validation + submit
+            form.addEventListener('submit', async e => {
+                e.preventDefault();
+                const nombre = document.getElementById('socioNombre');
+                const apellido = document.getElementById('socioApellido');
+                const documento = document.getElementById('socioDocumento');
+                const email = document.getElementById('socioEmail');
+                const submitBtn = overlay.querySelector('.socio-modal-submit');
+
+                // Reset errors
+                overlay.querySelectorAll('.socio-modal-field').forEach(f => f.classList.remove('has-error'));
+                let valid = true;
+
+                [nombre, apellido, documento].forEach(input => {
+                    if (!input.value.trim()) {
+                        input.closest('.socio-modal-field').classList.add('has-error');
+                        valid = false;
+                    }
+                });
+
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!email.value.trim() || !emailRegex.test(email.value.trim())) {
+                    email.closest('.socio-modal-field').classList.add('has-error');
+                    valid = false;
+                }
+
+                if (!valid) return;
+
+                // Disable button & show loading
+                submitBtn.disabled = true;
+                submitBtn.classList.add('is-loading');
+
+                // Supabase insert (fail-open)
+                try {
+                    if (typeof supabase !== 'undefined' && supabase.createClient) {
+                        const sb = supabase.createClient(
+                            'https://jbkpnpfqfygidbunbmcg.supabase.co',
+                            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impia3BucGZxZnlnaWRidW5ibWNnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzA4OTkxNzIsImV4cCI6MjA0NjQ3NTE3Mn0.dz-tyVp-M4N-GWJUbfsjnq0LjNqvyrRkDgNlvUNjxvM'
+                        );
+                        await sb.from('socios').insert({
+                            nombre: nombre.value.trim(),
+                            apellido: apellido.value.trim(),
+                            documento: documento.value.trim(),
+                            email: email.value.trim(),
+                            tipo_socio: pendingSocioType,
+                            stripe_link: pendingStripeLink
+                        });
+                    }
+                } catch (_) {
+                    // Fail-open: if Supabase is down, still redirect to Stripe
+                }
+
+                // Redirect to Stripe
+                closeModal();
+                window.open(pendingStripeLink, '_blank', 'noopener');
+            });
+
+            // Update modal translations when language changes
+            document.addEventListener('languageChanged', updateModalTranslations);
+
+            // ── Membership page translations ──
             function updateContentByLanguage() {
                 const currentLang = localStorage.getItem('menorca_rugby_lang') || 'es';
 

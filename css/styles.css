@@ -7315,3 +7315,202 @@ a.fridas-partner-chip:hover {
 .privacy-container a:hover {
     color: var(--yellow);
 }
+
+/* ── Socio Modal ── */
+.socio-modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+    padding: 1rem;
+}
+
+.socio-modal-overlay.is-active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.socio-modal {
+    background: white;
+    border-radius: var(--border-radius-lg);
+    padding: 2.5rem 2rem 2rem;
+    max-width: 520px;
+    width: 100%;
+    position: relative;
+    transform: translateY(20px) scale(0.97);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.socio-modal-overlay.is-active .socio-modal {
+    transform: translateY(0) scale(1);
+}
+
+.socio-modal-close {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: none;
+    border: none;
+    font-size: 1.6rem;
+    color: var(--medium-gray);
+    cursor: pointer;
+    line-height: 1;
+    padding: 0.25rem 0.5rem;
+    border-radius: 8px;
+    transition: var(--transition-smooth);
+}
+
+.socio-modal-close:hover {
+    color: var(--primary-navy);
+    background: rgba(0, 0, 0, 0.05);
+}
+
+.socio-modal-title {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--primary-navy);
+    margin-bottom: 0.25rem;
+    font-family: var(--font-primary);
+}
+
+.socio-modal-subtitle {
+    font-size: 0.9rem;
+    color: var(--medium-gray);
+    margin-bottom: 1.5rem;
+}
+
+.socio-modal-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.socio-modal-field {
+    margin-bottom: 1rem;
+}
+
+.socio-modal-field label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--primary-navy);
+    margin-bottom: 0.35rem;
+    font-family: var(--font-primary);
+}
+
+.socio-modal-field input {
+    width: 100%;
+    padding: 0.7rem 0.85rem;
+    border: 2px solid #e0e0e0;
+    border-radius: var(--border-radius-sm);
+    font-size: 0.95rem;
+    font-family: var(--font-primary);
+    color: var(--primary-navy);
+    transition: border-color 0.2s ease;
+    box-sizing: border-box;
+}
+
+.socio-modal-field input:focus {
+    outline: none;
+    border-color: var(--primary-yellow);
+    box-shadow: 0 0 0 3px rgba(255, 199, 44, 0.2);
+}
+
+.socio-modal-field input::placeholder {
+    color: #bbb;
+}
+
+.socio-modal-error {
+    display: none;
+    font-size: 0.8rem;
+    color: #e74c3c;
+    margin-top: 0.3rem;
+}
+
+.socio-modal-field.has-error input {
+    border-color: #e74c3c;
+}
+
+.socio-modal-field.has-error .socio-modal-error {
+    display: block;
+}
+
+.socio-modal-submit {
+    width: 100%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.85rem 1.5rem;
+    background: var(--primary-navy);
+    color: white;
+    font-weight: 600;
+    font-size: 1rem;
+    border-radius: 50px;
+    border: none;
+    cursor: pointer;
+    font-family: var(--font-primary);
+    transition: var(--transition-smooth);
+    margin-top: 0.5rem;
+}
+
+.socio-modal-submit:hover:not(:disabled) {
+    background: var(--primary-yellow);
+    color: var(--primary-navy);
+}
+
+.socio-modal-submit:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+.socio-modal-submit.is-loading span {
+    visibility: hidden;
+}
+
+.socio-modal-submit.is-loading i {
+    visibility: hidden;
+}
+
+.socio-modal-submit.is-loading::after {
+    content: '';
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: socioSpin 0.6s linear infinite;
+}
+
+@keyframes socioSpin {
+    to { transform: rotate(360deg); }
+}
+
+.socio-modal-privacy {
+    font-size: 0.75rem;
+    color: var(--medium-gray);
+    text-align: center;
+    margin-top: 1rem;
+    line-height: 1.5;
+}
+
+@media (max-width: 480px) {
+    .socio-modal {
+        padding: 2rem 1.25rem 1.5rem;
+    }
+    .socio-modal-row {
+        grid-template-columns: 1fr;
+    }
+    .socio-modal-title {
+        font-size: 1.2rem;
+    }
+}
