@@ -5724,6 +5724,7 @@ img {
     padding: 0;
     margin: 0 0 1.5rem;
     text-align: left;
+    flex-grow: 1;
 }
 
 .type-card .type-features li {
@@ -5761,6 +5762,13 @@ img {
 .type-card .type-cta-btn:hover {
     background: var(--primary-yellow);
     color: var(--primary-navy);
+}
+
+.type-card .type-cta-btn--disabled {
+    background: rgba(24, 43, 73, 0.08);
+    color: var(--medium-gray);
+    cursor: default;
+    pointer-events: none;
 }
 
 .type-card .type-cta-btn--secondary {
@@ -5801,14 +5809,6 @@ img {
     text-transform: uppercase;
     letter-spacing: 0.5px;
     vertical-align: middle;
-}
-
-.type-info-text {
-    font-size: 0.85rem;
-    color: var(--medium-gray);
-    font-style: italic;
-    margin-top: auto;
-    padding-top: 0.5rem;
 }
 
 /* Steps (How it works) */
