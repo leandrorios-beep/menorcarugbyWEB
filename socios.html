@@ -70,25 +70,23 @@
         <div class="fridas-tag-body">FRIDAS</div>
     </a>
 
-    <!-- Coming Soon Hero -->
+    <!-- Hero -->
     <section class="membership-hero">
         <div class="container">
             <div class="membership-hero-content">
                 <div class="hero-icon">
                     <i class="fas fa-id-card"></i>
                 </div>
-                <h1 class="membership-title" data-i18n-membership="hero.title">Hazte Socio</h1>
-                <p class="membership-subtitle" data-i18n-membership="hero.subtitle">Forma parte de la familia del rugby en Menorca y disfruta de beneficios exclusivos</p>
-                <div style="margin-top: 2rem; display: inline-block; background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.25); padding: 14px 36px; border-radius: 50px; color: #FFD700; font-weight: 700; font-size: 1.2rem; letter-spacing: 3px; text-transform: uppercase;">
-                    <i class="fas fa-clock" style="margin-right: 10px;"></i>
-                    <span data-i18n-membership="hero.coming_soon">Proximamente</span>
-                </div>
+                <h1 class="membership-title" data-i18n-membership="hero.title">S'Empenta des Menorca Rugby: Hazte socio!</h1>
+                <p class="membership-subtitle" data-i18n-membership="hero.subtitle">No importa si juegas, si empujas desde la grada o si vienes por el tercer tiempo. En este club, todos somos parte de la misma mele.</p>
+                <a href="#elige-tu-carnet" class="hero-cta-btn">
+                    <span data-i18n-membership="hero.cta">Elige tu carnet</span>
+                    <i class="fas fa-arrow-down"></i>
+                </a>
             </div>
         </div>
     </section>
 
-    <!-- Hidden until launch -->
-    <div style="display:none;">
     <section class="membership-benefits">
         <div class="container">
             <div class="section-header">
@@ -98,94 +96,103 @@
 
             <div class="benefits-grid">
                 <div class="benefit-card">
-                    <div class="benefit-icon"><i class="fas fa-star"></i></div>
-                    <h3 data-i18n-membership="benefits.access.title">Acceso Preferente</h3>
-                    <p data-i18n-membership="benefits.access.desc">Entrada prioritaria a todos los partidos y eventos del club</p>
+                    <div class="benefit-icon"><i class="fas fa-id-card"></i></div>
+                    <h3 data-i18n-membership="benefits.identity.title">Identidad</h3>
+                    <p data-i18n-membership="benefits.identity.desc">Carnet digital personalizado con foto y numero unico</p>
                 </div>
                 <div class="benefit-card">
                     <div class="benefit-icon"><i class="fas fa-tags"></i></div>
                     <h3 data-i18n-membership="benefits.discounts.title">Descuentos</h3>
-                    <p data-i18n-membership="benefits.discounts.desc">Descuentos exclusivos en la tienda oficial y actividades del club</p>
+                    <p data-i18n-membership="benefits.discounts.desc">10% en ropa oficial y material del club</p>
                 </div>
                 <div class="benefit-card">
-                    <div class="benefit-icon"><i class="fas fa-bullhorn"></i></div>
-                    <h3 data-i18n-membership="benefits.vote.title">Voz y Voto</h3>
-                    <p data-i18n-membership="benefits.vote.desc">Participa en las decisiones del club y en la asamblea de socios</p>
+                    <div class="benefit-icon"><i class="fas fa-beer-mug-empty"></i></div>
+                    <h3 data-i18n-membership="benefits.hospitality.title">Hospitalidad</h3>
+                    <p data-i18n-membership="benefits.hospitality.desc">Primera consumicion gratis en partidos de casa</p>
                 </div>
                 <div class="benefit-card">
-                    <div class="benefit-icon"><i class="fas fa-users"></i></div>
-                    <h3 data-i18n-membership="benefits.community.title">Comunidad</h3>
-                    <p data-i18n-membership="benefits.community.desc">Forma parte de una comunidad apasionada por el rugby</p>
+                    <div class="benefit-icon"><i class="fas fa-dumbbell"></i></div>
+                    <h3 data-i18n-membership="benefits.health.title">Salud</h3>
+                    <p data-i18n-membership="benefits.health.desc">Opcion de gimnasio por solo 10&#8364;/mes</p>
                 </div>
                 <div class="benefit-card">
-                    <div class="benefit-icon"><i class="fas fa-glass-cheers"></i></div>
-                    <h3 data-i18n-membership="benefits.events.title">Eventos Exclusivos</h3>
-                    <p data-i18n-membership="benefits.events.desc">Acceso a cenas, fiestas y eventos sociales solo para socios</p>
-                </div>
-                <div class="benefit-card">
-                    <div class="benefit-icon"><i class="fas fa-mobile-alt"></i></div>
-                    <h3 data-i18n-membership="benefits.card.title">Carnet Digital</h3>
-                    <p data-i18n-membership="benefits.card.desc">Tu carnet de socio siempre en tu movil, con tecnologia wallet</p>
+                    <div class="benefit-icon"><i class="fas fa-envelope-open-text"></i></div>
+                    <h3 data-i18n-membership="benefits.info.title">Informacion</h3>
+                    <p data-i18n-membership="benefits.info.desc">Newsletter mensual con cronicas, fichajes y eventos</p>
                 </div>
             </div>
         </div>
     </section>
 
     <!-- 3. Membership Types -->
-    <section class="membership-types">
+    <section class="membership-types" id="elige-tu-carnet">
         <div class="container">
             <div class="section-header">
-                <h2 data-i18n-membership="types.title">Tipos de Membresia</h2>
-                <p data-i18n-membership="types.subtitle">Elige la opcion que mejor se adapte a ti</p>
+                <h2 data-i18n-membership="types.title">Elige tu carnet</h2>
+                <p data-i18n-membership="types.subtitle">Cuatro formas de ser parte de la mele</p>
             </div>
 
             <div class="types-grid">
+                <!-- Socio Normal -->
+                <div class="type-card">
+                    <div class="type-icon"><i class="fas fa-user"></i></div>
+                    <h3 data-i18n-membership="types.normal.title">Socio</h3>
+                    <div class="type-price">50&#8364;<span data-i18n-membership="types.normal.price_detail">/ano (2x25&#8364;)</span></div>
+                    <ul class="type-features">
+                        <li><i class="fas fa-check"></i> <span data-i18n-membership="types.normal.f1">10% dto. en ropa oficial</span></li>
+                        <li><i class="fas fa-check"></i> <span data-i18n-membership="types.normal.f2">1a consumicion gratis en partidos de casa</span></li>
+                        <li><i class="fas fa-check"></i> <span data-i18n-membership="types.normal.f3">Opcion gimnasio 10&#8364;/mes</span></li>
+                        <li><i class="fas fa-check"></i> <span data-i18n-membership="types.normal.f4">Newsletter mensual</span></li>
+                        <li><i class="fas fa-check"></i> <span data-i18n-membership="types.normal.f5">Carnet digital personalizado</span></li>
+                    </ul>
+                    <a href="https://buy.stripe.com/00wfZgdPm0WcfUG8w63VC01" target="_blank" rel="noopener" class="type-cta-btn">
+                        <span data-i18n-membership="types.normal.cta">Hacerme socio</span>
+                        <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+
+                <!-- Socio Familiar -->
+                <div class="type-card">
+                    <div class="type-icon"><i class="fas fa-people-roof"></i></div>
+                    <h3 data-i18n-membership="types.family.title">Socio Familiar</h3>
+                    <div class="type-price"><span class="type-badge" data-i18n-membership="types.family.badge">Gratis</span></div>
+                    <ul class="type-features">
+                        <li><i class="fas fa-check"></i> <span data-i18n-membership="types.family.f1">Alta automatica al federar menor</span></li>
+                        <li><i class="fas fa-check"></i> <span data-i18n-membership="types.family.f2">Carnet digital personalizado</span></li>
+                        <li><i class="fas fa-check"></i> <span data-i18n-membership="types.family.f3">Opcion gimnasio 10&#8364;/mes</span></li>
+                    </ul>
+                    <a href="https://buy.stripe.com/28EfZg7qY9sI9wih2C3VC02" target="_blank" rel="noopener" class="type-cta-btn type-cta-btn--secondary">
+                        <span data-i18n-membership="types.family.cta">Contratar gimnasio</span>
+                        <i class="fas fa-dumbbell"></i>
+                    </a>
+                </div>
+
+                <!-- Socio Protector -->
+                <div class="type-card">
+                    <div class="type-icon"><i class="fas fa-hand-holding-heart"></i></div>
+                    <h3 data-i18n-membership="types.protector.title">Socio Protector</h3>
+                    <div class="type-price"><span data-i18n-membership="types.protector.price_label">Desde</span> 50&#8364;<span data-i18n-membership="types.protector.price_detail">/ano</span> <span class="type-badge" data-i18n-membership="types.protector.badge">Cantidad libre</span></div>
+                    <ul class="type-features">
+                        <li><i class="fas fa-check"></i> <span data-i18n-membership="types.protector.f1">Todo lo del socio normal</span></li>
+                        <li><i class="fas fa-check"></i> <span data-i18n-membership="types.protector.f2">Reconocimiento especial del club</span></li>
+                    </ul>
+                    <a href="https://buy.stripe.com/3cI9AS9z6awM8seeUu3VC00" target="_blank" rel="noopener" class="type-cta-btn">
+                        <span data-i18n-membership="types.protector.cta">Hacerme protector</span>
+                        <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+
+                <!-- Socio Jugador -->
                 <div class="type-card">
                     <div class="type-icon"><i class="fas fa-football-ball"></i></div>
                     <h3 data-i18n-membership="types.player.title">Socio Jugador</h3>
+                    <div class="type-price"><span class="type-badge" data-i18n-membership="types.player.badge">Incluido con ficha</span></div>
                     <ul class="type-features">
-                        <li><i class="fas fa-check"></i> <span data-i18n-membership="types.player.f1">Acceso a entrenamientos y competiciones</span></li>
-                        <li><i class="fas fa-check"></i> <span data-i18n-membership="types.player.f2">Equipamiento oficial del club</span></li>
-                        <li><i class="fas fa-check"></i> <span data-i18n-membership="types.player.f3">Seguro deportivo incluido</span></li>
-                        <li><i class="fas fa-check"></i> <span data-i18n-membership="types.player.f4">Carnet digital de socio</span></li>
-                        <li><i class="fas fa-check"></i> <span data-i18n-membership="types.player.f5">Descuentos en tienda</span></li>
+                        <li><i class="fas fa-check"></i> <span data-i18n-membership="types.player.f1">Se asigna al federarse</span></li>
+                        <li><i class="fas fa-check"></i> <span data-i18n-membership="types.player.f2">Prefijo J en tu numero de socio</span></li>
+                        <li><i class="fas fa-check"></i> <span data-i18n-membership="types.player.f3">Carnet digital personalizado</span></li>
                     </ul>
-                    <a href="#registro" class="type-cta-btn">
-                        <span data-i18n-membership="types.cta">Me interesa</span>
-                        <i class="fas fa-arrow-right"></i>
-                    </a>
-                </div>
-
-                <div class="type-card">
-                    <div class="type-icon"><i class="fas fa-heart"></i></div>
-                    <h3 data-i18n-membership="types.supporter.title">Socio Simpatizante</h3>
-                    <ul class="type-features">
-                        <li><i class="fas fa-check"></i> <span data-i18n-membership="types.supporter.f1">Acceso preferente a partidos</span></li>
-                        <li><i class="fas fa-check"></i> <span data-i18n-membership="types.supporter.f2">Voz y voto en asambleas</span></li>
-                        <li><i class="fas fa-check"></i> <span data-i18n-membership="types.supporter.f3">Carnet digital de socio</span></li>
-                        <li><i class="fas fa-check"></i> <span data-i18n-membership="types.supporter.f4">Descuentos en tienda y eventos</span></li>
-                        <li><i class="fas fa-check"></i> <span data-i18n-membership="types.supporter.f5">Boletin informativo exclusivo</span></li>
-                    </ul>
-                    <a href="#registro" class="type-cta-btn">
-                        <span data-i18n-membership="types.cta">Me interesa</span>
-                        <i class="fas fa-arrow-right"></i>
-                    </a>
-                </div>
-
-                <div class="type-card">
-                    <div class="type-icon"><i class="fas fa-home"></i></div>
-                    <h3 data-i18n-membership="types.family.title">Socio Familiar</h3>
-                    <ul class="type-features">
-                        <li><i class="fas fa-check"></i> <span data-i18n-membership="types.family.f1">Incluye a toda la familia</span></li>
-                        <li><i class="fas fa-check"></i> <span data-i18n-membership="types.family.f2">Acceso a eventos familiares</span></li>
-                        <li><i class="fas fa-check"></i> <span data-i18n-membership="types.family.f3">Carnets digitales para todos</span></li>
-                        <li><i class="fas fa-check"></i> <span data-i18n-membership="types.family.f4">Descuentos en escuela de rugby</span></li>
-                        <li><i class="fas fa-check"></i> <span data-i18n-membership="types.family.f5">Actividades para ninos y jovenes</span></li>
-                    </ul>
-                    <a href="#registro" class="type-cta-btn">
-                        <span data-i18n-membership="types.cta">Me interesa</span>
-                        <i class="fas fa-arrow-right"></i>
-                    </a>
+                    <p class="type-info-text" data-i18n-membership="types.player.info">Tu numero se asigna con tu ficha federativa</p>
                 </div>
             </div>
         </div>
@@ -213,7 +220,7 @@
                             </div>
                         </div>
                         <div class="card-member-name">Juan Garcia Lopez</div>
-                        <div class="card-member-number">SOCIO N. 00142</div>
+                        <div class="card-member-number">SOCIO N&#186; P0002</div>
                         <div class="card-bottom">
                             <div class="card-info">
                                 menorcarugbyclub.com<br>
@@ -273,20 +280,42 @@
         </div>
     </section>
 
-    <!-- 5. Registration CTA -->
-    <section class="membership-register" id="registro">
+    <!-- 5. How it works -->
+    <section class="membership-register" id="como-funciona">
         <div class="container">
-            <div class="register-cta-card">
-                <div class="cta-icon">
-                    <i class="fas fa-envelope"></i>
+            <div class="section-header" style="text-align:center; margin-bottom:2.5rem;">
+                <h2 data-i18n-membership="howto.title">Como funciona</h2>
+                <p data-i18n-membership="howto.subtitle">En 4 sencillos pasos</p>
+            </div>
+            <div class="steps-list">
+                <div class="step-item">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <h4 data-i18n-membership="howto.step1.title">Elige tu tipo de socio</h4>
+                        <p data-i18n-membership="howto.step1.desc">Revisa las opciones y decide cual encaja contigo</p>
+                    </div>
                 </div>
-                <h2 data-i18n-membership="register.title">Quiero ser Socio</h2>
-                <p data-i18n-membership="register.desc">Escribenos un email y te informaremos de todo lo que necesitas para hacerte socio del Menorca Rugby Club</p>
-                <a href="mailto:hola@menorcarugbyclub.com?subject=Quiero%20ser%20socio%20del%20Menorca%20Rugby%20Club" class="register-btn">
-                    <i class="fas fa-envelope"></i>
-                    <span data-i18n-membership="register.cta">Contactar por Email</span>
-                    <i class="fas fa-arrow-right"></i>
-                </a>
+                <div class="step-item">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <h4 data-i18n-membership="howto.step2.title">Haz clic en "Hacerme socio"</h4>
+                        <p data-i18n-membership="howto.step2.desc">Te llevara al pago seguro con Stripe</p>
+                    </div>
+                </div>
+                <div class="step-item">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <h4 data-i18n-membership="howto.step3.title">Completa el pago con tarjeta</h4>
+                        <p data-i18n-membership="howto.step3.desc">Proceso rapido y 100% seguro</p>
+                    </div>
+                </div>
+                <div class="step-item">
+                    <div class="step-number">4</div>
+                    <div class="step-content">
+                        <h4 data-i18n-membership="howto.step4.title">Recibe tu carnet digital</h4>
+                        <p data-i18n-membership="howto.step4.desc">Por email junto a la guia de bienvenida. El club te contactara para tu foto y datos del carnet.</p>
+                    </div>
+                </div>
             </div>
         </div>
     </section>
@@ -337,64 +366,62 @@
                         <i class="fas fa-chevron-down"></i>
                     </button>
                     <div class="faq-answer">
-                        <p data-i18n-membership="faq.q1.answer">Envía un email a hola@menorcarugbyclub.com indicando tu interes y te enviaremos toda la informacion necesaria para completar tu inscripcion como socio.</p>
+                        <p data-i18n-membership="faq.q1.answer">Elige tu tipo de socio, haz clic en "Hacerme socio", completa el pago seguro con Stripe y recibiras tu carnet digital por email.</p>
                     </div>
                 </div>
 
                 <div class="faq-item">
                     <button class="faq-question" onclick="this.parentElement.classList.toggle('active')">
-                        <span data-i18n-membership="faq.q2.question">Puedo ser socio sin jugar al rugby?</span>
+                        <span data-i18n-membership="faq.q2.question">Cuanto cuesta?</span>
                         <i class="fas fa-chevron-down"></i>
                     </button>
                     <div class="faq-answer">
-                        <p data-i18n-membership="faq.q2.answer">Si, por supuesto. Tenemos la categoria de Socio Simpatizante pensada para quienes quieren apoyar al club sin necesidad de jugar. Disfrutas de todos los beneficios sociales y tienes voz y voto en las asambleas.</p>
+                        <p data-i18n-membership="faq.q2.answer">El socio normal cuesta 50&#8364;/ano, pagados en 2 cuotas de 25&#8364; (enero y julio). El socio familiar es gratis (al federar un menor). El socio protector aporta una cantidad libre desde 50&#8364;.</p>
                     </div>
                 </div>
 
                 <div class="faq-item">
                     <button class="faq-question" onclick="this.parentElement.classList.toggle('active')">
-                        <span data-i18n-membership="faq.q3.question">Como funciona el carnet digital?</span>
+                        <span data-i18n-membership="faq.q3.question">Que es un socio familiar?</span>
                         <i class="fas fa-chevron-down"></i>
                     </button>
                     <div class="faq-answer">
-                        <p data-i18n-membership="faq.q3.answer">Una vez seas socio, recibiras tu carnet digital con un codigo QR unico. Proximamente podras anadirlo a Apple Wallet o Google Wallet para tenerlo siempre disponible en tu movil.</p>
+                        <p data-i18n-membership="faq.q3.answer">Al federar un menor en el club, el padre, madre o tutor recibe automaticamente el alta como socio familiar de forma gratuita, con su propio carnet digital.</p>
                     </div>
                 </div>
 
                 <div class="faq-item">
                     <button class="faq-question" onclick="this.parentElement.classList.toggle('active')">
-                        <span data-i18n-membership="faq.q4.question">Que incluye la membresia familiar?</span>
+                        <span data-i18n-membership="faq.q4.question">Que es un socio protector?</span>
                         <i class="fas fa-chevron-down"></i>
                     </button>
                     <div class="faq-answer">
-                        <p data-i18n-membership="faq.q4.answer">La membresia familiar incluye a todos los miembros de la familia. Cada uno recibe su propio carnet digital y acceso a eventos familiares, ademas de descuentos en la escuela de rugby para los mas pequenos.</p>
+                        <p data-i18n-membership="faq.q4.answer">Es un socio que aporta una cantidad libre (desde 50&#8364;) para apoyar al club. Disfruta de las mismas ventajas que el socio normal mas un reconocimiento especial.</p>
                     </div>
                 </div>
 
                 <div class="faq-item">
                     <button class="faq-question" onclick="this.parentElement.classList.toggle('active')">
-                        <span data-i18n-membership="faq.q5.question">Puedo darme de baja cuando quiera?</span>
+                        <span data-i18n-membership="faq.q5.question">Como funciona el gimnasio?</span>
                         <i class="fas fa-chevron-down"></i>
                     </button>
                     <div class="faq-answer">
-                        <p data-i18n-membership="faq.q5.answer">Si, la membresia es por temporada y puedes decidir no renovar al final de cada periodo. No hay permanencia obligatoria.</p>
+                        <p data-i18n-membership="faq.q5.answer">Cualquier tipo de socio puede anadir la opcion de gimnasio por 10&#8364;/mes adicionales. Contratable directamente desde la web.</p>
                     </div>
                 </div>
 
                 <div class="faq-item">
                     <button class="faq-question" onclick="this.parentElement.classList.toggle('active')">
-                        <span data-i18n-membership="faq.q6.question">Hay descuentos para socios en la tienda?</span>
+                        <span data-i18n-membership="faq.q6.question">Como funciona la numeracion?</span>
                         <i class="fas fa-chevron-down"></i>
                     </button>
                     <div class="faq-answer">
-                        <p data-i18n-membership="faq.q6.answer">Si, todos los socios disfrutan de descuentos exclusivos en productos de la tienda oficial del club, incluyendo camisetas, sudaderas y merchandising.</p>
+                        <p data-i18n-membership="faq.q6.answer">Cada socio recibe un numero unico correlativo. Los jugadores llevan prefijo J, los familiares F, los protectores P, y los socios normales no llevan prefijo.</p>
                     </div>
                 </div>
             </div>
         </div>
     </section>
-    </div>
-    <!-- End hidden until launch -->
 
     <!-- Footer -->
     <footer class="footer">
@@ -458,45 +485,50 @@
 
                 const translations = {
                     es: {
-                        'hero.title': 'Hazte Socio',
-                        'hero.subtitle': 'Forma parte de la familia del rugby en Menorca y disfruta de beneficios exclusivos',
-                        'hero.coming_soon': 'Proximamente',
-                        'hero.cta': 'Quiero ser Socio',
+                        'hero.title': 'S\'Empenta des Menorca Rugby: Hazte socio!',
+                        'hero.subtitle': 'No importa si juegas, si empujas desde la grada o si vienes por el tercer tiempo. En este club, todos somos parte de la misma mele.',
+                        'hero.cta': 'Elige tu carnet',
                         'benefits.title': 'Beneficios de ser Socio',
                         'benefits.subtitle': 'Descubre todo lo que te espera al unirte a nuestra familia',
-                        'benefits.access.title': 'Acceso Preferente',
-                        'benefits.access.desc': 'Entrada prioritaria a todos los partidos y eventos del club',
+                        'benefits.identity.title': 'Identidad',
+                        'benefits.identity.desc': 'Carnet digital personalizado con foto y numero unico',
                         'benefits.discounts.title': 'Descuentos',
-                        'benefits.discounts.desc': 'Descuentos exclusivos en la tienda oficial y actividades del club',
-                        'benefits.vote.title': 'Voz y Voto',
-                        'benefits.vote.desc': 'Participa en las decisiones del club y en la asamblea de socios',
-                        'benefits.community.title': 'Comunidad',
-                        'benefits.community.desc': 'Forma parte de una comunidad apasionada por el rugby',
-                        'benefits.events.title': 'Eventos Exclusivos',
-                        'benefits.events.desc': 'Acceso a cenas, fiestas y eventos sociales solo para socios',
-                        'benefits.card.title': 'Carnet Digital',
-                        'benefits.card.desc': 'Tu carnet de socio siempre en tu movil, con tecnologia wallet',
-                        'types.title': 'Tipos de Membresia',
-                        'types.subtitle': 'Elige la opcion que mejor se adapte a ti',
-                        'types.player.title': 'Socio Jugador',
-                        'types.player.f1': 'Acceso a entrenamientos y competiciones',
-                        'types.player.f2': 'Equipamiento oficial del club',
-                        'types.player.f3': 'Seguro deportivo incluido',
-                        'types.player.f4': 'Carnet digital de socio',
-                        'types.player.f5': 'Descuentos en tienda',
-                        'types.supporter.title': 'Socio Simpatizante',
-                        'types.supporter.f1': 'Acceso preferente a partidos',
-                        'types.supporter.f2': 'Voz y voto en asambleas',
-                        'types.supporter.f3': 'Carnet digital de socio',
-                        'types.supporter.f4': 'Descuentos en tienda y eventos',
-                        'types.supporter.f5': 'Boletin informativo exclusivo',
+                        'benefits.discounts.desc': '10% en ropa oficial y material del club',
+                        'benefits.hospitality.title': 'Hospitalidad',
+                        'benefits.hospitality.desc': 'Primera consumicion gratis en partidos de casa',
+                        'benefits.health.title': 'Salud',
+                        'benefits.health.desc': 'Opcion de gimnasio por solo 10\u20AC/mes',
+                        'benefits.info.title': 'Informacion',
+                        'benefits.info.desc': 'Newsletter mensual con cronicas, fichajes y eventos',
+                        'types.title': 'Elige tu carnet',
+                        'types.subtitle': 'Cuatro formas de ser parte de la mele',
+                        'types.normal.title': 'Socio',
+                        'types.normal.price_detail': '/ano (2x25\u20AC)',
+                        'types.normal.f1': '10% dto. en ropa oficial',
+                        'types.normal.f2': '1a consumicion gratis en partidos de casa',
+                        'types.normal.f3': 'Opcion gimnasio 10\u20AC/mes',
+                        'types.normal.f4': 'Newsletter mensual',
+                        'types.normal.f5': 'Carnet digital personalizado',
+                        'types.normal.cta': 'Hacerme socio',
                         'types.family.title': 'Socio Familiar',
-                        'types.family.f1': 'Incluye a toda la familia',
-                        'types.family.f2': 'Acceso a eventos familiares',
-                        'types.family.f3': 'Carnets digitales para todos',
-                        'types.family.f4': 'Descuentos en escuela de rugby',
-                        'types.family.f5': 'Actividades para ninos y jovenes',
-                        'types.cta': 'Me interesa',
+                        'types.family.badge': 'Gratis',
+                        'types.family.f1': 'Alta automatica al federar menor',
+                        'types.family.f2': 'Carnet digital personalizado',
+                        'types.family.f3': 'Opcion gimnasio 10\u20AC/mes',
+                        'types.family.cta': 'Contratar gimnasio',
+                        'types.protector.title': 'Socio Protector',
+                        'types.protector.price_label': 'Desde',
+                        'types.protector.price_detail': '/ano',
+                        'types.protector.badge': 'Cantidad libre',
+                        'types.protector.f1': 'Todo lo del socio normal',
+                        'types.protector.f2': 'Reconocimiento especial del club',
+                        'types.protector.cta': 'Hacerme protector',
+                        'types.player.title': 'Socio Jugador',
+                        'types.player.badge': 'Incluido con ficha',
+                        'types.player.f1': 'Se asigna al federarse',
+                        'types.player.f2': 'Prefijo J en tu numero de socio',
+                        'types.player.f3': 'Carnet digital personalizado',
+                        'types.player.info': 'Tu numero se asigna con tu ficha federativa',
                         'card.title': 'Tu Carnet Digital',
                         'card.subtitle': 'Lleva tu carnet de socio siempre contigo en tu movil',
                         'card.coming_soon': 'Proximamente',
@@ -505,9 +537,16 @@
                         'card.f3': '<strong>Acceso instantaneo</strong> sin esperas ni papeleos en los eventos',
                         'card.f4': '<strong>Diseno exclusivo</strong> con los colores y el escudo del club',
                         'card.f5': '<strong>Compatible con wallet</strong> de Apple y Google (proximamente)',
-                        'register.title': 'Quiero ser Socio',
-                        'register.desc': 'Escribenos un email y te informaremos de todo lo que necesitas para hacerte socio del Menorca Rugby Club',
-                        'register.cta': 'Contactar por Email',
+                        'howto.title': 'Como funciona',
+                        'howto.subtitle': 'En 4 sencillos pasos',
+                        'howto.step1.title': 'Elige tu tipo de socio',
+                        'howto.step1.desc': 'Revisa las opciones y decide cual encaja contigo',
+                        'howto.step2.title': 'Haz clic en "Hacerme socio"',
+                        'howto.step2.desc': 'Te llevara al pago seguro con Stripe',
+                        'howto.step3.title': 'Completa el pago con tarjeta',
+                        'howto.step3.desc': 'Proceso rapido y 100% seguro',
+                        'howto.step4.title': 'Recibe tu carnet digital',
+                        'howto.step4.desc': 'Por email junto a la guia de bienvenida. El club te contactara para tu foto y datos del carnet.',
                         'testimonials.title': 'Lo que dicen nuestros socios',
                         'testimonials.subtitle': 'Historias de nuestra comunidad',
                         'testimonials.t1.text': 'Ser socio del Menorca Rugby es mucho mas que apoyar un equipo. Es ser parte de una familia que comparte los mismos valores de respeto y companerismo.',
@@ -522,58 +561,63 @@
                         'faq.title': 'Preguntas Frecuentes',
                         'faq.subtitle': 'Todo lo que necesitas saber sobre ser socio',
                         'faq.q1.question': 'Como me hago socio?',
-                        'faq.q1.answer': 'Envia un email a hola@menorcarugbyclub.com indicando tu interes y te enviaremos toda la informacion necesaria para completar tu inscripcion como socio.',
-                        'faq.q2.question': 'Puedo ser socio sin jugar al rugby?',
-                        'faq.q2.answer': 'Si, por supuesto. Tenemos la categoria de Socio Simpatizante pensada para quienes quieren apoyar al club sin necesidad de jugar. Disfrutas de todos los beneficios sociales y tienes voz y voto en las asambleas.',
-                        'faq.q3.question': 'Como funciona el carnet digital?',
-                        'faq.q3.answer': 'Una vez seas socio, recibiras tu carnet digital con un codigo QR unico. Proximamente podras anadirlo a Apple Wallet o Google Wallet para tenerlo siempre disponible en tu movil.',
-                        'faq.q4.question': 'Que incluye la membresia familiar?',
-                        'faq.q4.answer': 'La membresia familiar incluye a todos los miembros de la familia. Cada uno recibe su propio carnet digital y acceso a eventos familiares, ademas de descuentos en la escuela de rugby para los mas pequenos.',
-                        'faq.q5.question': 'Puedo darme de baja cuando quiera?',
-                        'faq.q5.answer': 'Si, la membresia es por temporada y puedes decidir no renovar al final de cada periodo. No hay permanencia obligatoria.',
-                        'faq.q6.question': 'Hay descuentos para socios en la tienda?',
-                        'faq.q6.answer': 'Si, todos los socios disfrutan de descuentos exclusivos en productos de la tienda oficial del club, incluyendo camisetas, sudaderas y merchandising.'
+                        'faq.q1.answer': 'Elige tu tipo de socio, haz clic en "Hacerme socio", completa el pago seguro con Stripe y recibiras tu carnet digital por email.',
+                        'faq.q2.question': 'Cuanto cuesta?',
+                        'faq.q2.answer': 'El socio normal cuesta 50\u20AC/ano, pagados en 2 cuotas de 25\u20AC (enero y julio). El socio familiar es gratis (al federar un menor). El socio protector aporta una cantidad libre desde 50\u20AC.',
+                        'faq.q3.question': 'Que es un socio familiar?',
+                        'faq.q3.answer': 'Al federar un menor en el club, el padre, madre o tutor recibe automaticamente el alta como socio familiar de forma gratuita, con su propio carnet digital.',
+                        'faq.q4.question': 'Que es un socio protector?',
+                        'faq.q4.answer': 'Es un socio que aporta una cantidad libre (desde 50\u20AC) para apoyar al club. Disfruta de las mismas ventajas que el socio normal mas un reconocimiento especial.',
+                        'faq.q5.question': 'Como funciona el gimnasio?',
+                        'faq.q5.answer': 'Cualquier tipo de socio puede anadir la opcion de gimnasio por 10\u20AC/mes adicionales. Contratable directamente desde la web.',
+                        'faq.q6.question': 'Como funciona la numeracion?',
+                        'faq.q6.answer': 'Cada socio recibe un numero unico correlativo. Los jugadores llevan prefijo J, los familiares F, los protectores P, y los socios normales no llevan prefijo.'
                     },
                     ca: {
-                        'hero.title': 'Fes-te Soci',
-                        'hero.subtitle': 'Forma part de la familia del rugby a Menorca i gaudeix de beneficis exclusius',
-                        'hero.coming_soon': 'Properament',
-                        'hero.cta': 'Vull ser Soci',
+                        'hero.title': 'S\'Empenta des Menorca Rugby: Fes-te soci!',
+                        'hero.subtitle': 'No importa si jugues, si empentes des de la grada o si vens pel tercer temps. En aquest club, tots som part de la mateixa mele.',
+                        'hero.cta': 'Tria el teu carnet',
                         'benefits.title': 'Beneficis de ser Soci',
                         'benefits.subtitle': 'Descobreix tot el que t\'espera en unir-te a la nostra familia',
-                        'benefits.access.title': 'Acces Preferent',
-                        'benefits.access.desc': 'Entrada prioritaria a tots els partits i esdeveniments del club',
+                        'benefits.identity.title': 'Identitat',
+                        'benefits.identity.desc': 'Carnet digital personalitzat amb foto i numero unic',
                         'benefits.discounts.title': 'Descomptes',
-                        'benefits.discounts.desc': 'Descomptes exclusius a la botiga oficial i activitats del club',
-                        'benefits.vote.title': 'Veu i Vot',
-                        'benefits.vote.desc': 'Participa en les decisions del club i en l\'assemblea de socis',
-                        'benefits.community.title': 'Comunitat',
-                        'benefits.community.desc': 'Forma part d\'una comunitat apassionada pel rugby',
-                        'benefits.events.title': 'Esdeveniments Exclusius',
-                        'benefits.events.desc': 'Acces a sopars, festes i esdeveniments socials nomes per a socis',
-                        'benefits.card.title': 'Carnet Digital',
-                        'benefits.card.desc': 'El teu carnet de soci sempre al teu mobil, amb tecnologia wallet',
-                        'types.title': 'Tipus de Membresia',
-                        'types.subtitle': 'Tria l\'opcio que millor s\'adapti a tu',
-                        'types.player.title': 'Soci Jugador',
-                        'types.player.f1': 'Acces a entrenaments i competicions',
-                        'types.player.f2': 'Equipament oficial del club',
-                        'types.player.f3': 'Asseguranca esportiva inclosa',
-                        'types.player.f4': 'Carnet digital de soci',
-                        'types.player.f5': 'Descomptes a la botiga',
-                        'types.supporter.title': 'Soci Simpatitzant',
-                        'types.supporter.f1': 'Acces preferent a partits',
-                        'types.supporter.f2': 'Veu i vot a les assemblees',
-                        'types.supporter.f3': 'Carnet digital de soci',
-                        'types.supporter.f4': 'Descomptes a botiga i esdeveniments',
-                        'types.supporter.f5': 'Butlleti informatiu exclusiu',
+                        'benefits.discounts.desc': '10% en roba oficial i material del club',
+                        'benefits.hospitality.title': 'Hospitalitat',
+                        'benefits.hospitality.desc': 'Primera consumicio gratis en partits de casa',
+                        'benefits.health.title': 'Salut',
+                        'benefits.health.desc': 'Opcio de gimnas per nomes 10\u20AC/mes',
+                        'benefits.info.title': 'Informacio',
+                        'benefits.info.desc': 'Newsletter mensual amb croniques, fitxatges i esdeveniments',
+                        'types.title': 'Tria el teu carnet',
+                        'types.subtitle': 'Quatre formes de ser part de la mele',
+                        'types.normal.title': 'Soci',
+                        'types.normal.price_detail': '/any (2x25\u20AC)',
+                        'types.normal.f1': '10% dto. en roba oficial',
+                        'types.normal.f2': '1a consumicio gratis en partits de casa',
+                        'types.normal.f3': 'Opcio gimnas 10\u20AC/mes',
+                        'types.normal.f4': 'Newsletter mensual',
+                        'types.normal.f5': 'Carnet digital personalitzat',
+                        'types.normal.cta': 'Fer-me soci',
                         'types.family.title': 'Soci Familiar',
-                        'types.family.f1': 'Inclou tota la familia',
-                        'types.family.f2': 'Acces a esdeveniments familiars',
-                        'types.family.f3': 'Carnets digitals per a tots',
-                        'types.family.f4': 'Descomptes a l\'escola de rugby',
-                        'types.family.f5': 'Activitats per a nens i joves',
-                        'types.cta': 'M\'interessa',
+                        'types.family.badge': 'Gratis',
+                        'types.family.f1': 'Alta automatica en federar menor',
+                        'types.family.f2': 'Carnet digital personalitzat',
+                        'types.family.f3': 'Opcio gimnas 10\u20AC/mes',
+                        'types.family.cta': 'Contractar gimnas',
+                        'types.protector.title': 'Soci Protector',
+                        'types.protector.price_label': 'Des de',
+                        'types.protector.price_detail': '/any',
+                        'types.protector.badge': 'Quantitat lliure',
+                        'types.protector.f1': 'Tot el del soci normal',
+                        'types.protector.f2': 'Reconeixement especial del club',
+                        'types.protector.cta': 'Fer-me protector',
+                        'types.player.title': 'Soci Jugador',
+                        'types.player.badge': 'Inclos amb fitxa',
+                        'types.player.f1': 'S\'assigna en federar-se',
+                        'types.player.f2': 'Prefix J al teu numero de soci',
+                        'types.player.f3': 'Carnet digital personalitzat',
+                        'types.player.info': 'El teu numero s\'assigna amb la teva fitxa federativa',
                         'card.title': 'El teu Carnet Digital',
                         'card.subtitle': 'Porta el teu carnet de soci sempre amb tu al teu mobil',
                         'card.coming_soon': 'Properament',
@@ -582,9 +626,16 @@
                         'card.f3': '<strong>Acces instantani</strong> sense esperes ni paperassa als esdeveniments',
                         'card.f4': '<strong>Disseny exclusiu</strong> amb els colors i l\'escut del club',
                         'card.f5': '<strong>Compatible amb wallet</strong> d\'Apple i Google (properament)',
-                        'register.title': 'Vull ser Soci',
-                        'register.desc': 'Escriu-nos un email i t\'informarem de tot el que necessites per fer-te soci del Menorca Rugby Club',
-                        'register.cta': 'Contactar per Email',
+                        'howto.title': 'Com funciona',
+                        'howto.subtitle': 'En 4 senzills passos',
+                        'howto.step1.title': 'Tria el teu tipus de soci',
+                        'howto.step1.desc': 'Revisa les opcions i decideix quina encaixa amb tu',
+                        'howto.step2.title': 'Fes clic a "Fer-me soci"',
+                        'howto.step2.desc': 'Et portara al pagament segur amb Stripe',
+                        'howto.step3.title': 'Completa el pagament amb targeta',
+                        'howto.step3.desc': 'Proces rapid i 100% segur',
+                        'howto.step4.title': 'Rep el teu carnet digital',
+                        'howto.step4.desc': 'Per email juntament amb la guia de benvinguda. El club et contactara per la teva foto i dades del carnet.',
                         'testimonials.title': 'El que diuen els nostres socis',
                         'testimonials.subtitle': 'Histories de la nostra comunitat',
                         'testimonials.t1.text': 'Ser soci del Menorca Rugby es molt mes que recolzar un equip. Es ser part d\'una familia que comparteix els mateixos valors de respecte i companyerisme.',
@@ -599,58 +650,63 @@
                         'faq.title': 'Preguntes Frequents',
                         'faq.subtitle': 'Tot el que necessites saber sobre ser soci',
                         'faq.q1.question': 'Com em faig soci?',
-                        'faq.q1.answer': 'Envia un email a hola@menorcarugbyclub.com indicant el teu interes i t\'enviarem tota la informacio necessaria per completar la teva inscripcio com a soci.',
-                        'faq.q2.question': 'Puc ser soci sense jugar a rugby?',
-                        'faq.q2.answer': 'Si, es clar. Tenim la categoria de Soci Simpatitzant pensada per a qui vol recolzar el club sense necessitat de jugar.',
-                        'faq.q3.question': 'Com funciona el carnet digital?',
-                        'faq.q3.answer': 'Un cop siguis soci, rebras el teu carnet digital amb un codi QR unic. Properament podras afegir-lo a Apple Wallet o Google Wallet.',
-                        'faq.q4.question': 'Que inclou la membresia familiar?',
-                        'faq.q4.answer': 'La membresia familiar inclou tots els membres de la familia. Cadascun rep el seu propi carnet digital i acces a esdeveniments familiars.',
-                        'faq.q5.question': 'Puc donar-me de baixa quan vulgui?',
-                        'faq.q5.answer': 'Si, la membresia es per temporada i pots decidir no renovar al final de cada periode. No hi ha permanencia obligatoria.',
-                        'faq.q6.question': 'Hi ha descomptes per a socis a la botiga?',
-                        'faq.q6.answer': 'Si, tots els socis gaudeixen de descomptes exclusius en productes de la botiga oficial del club.'
+                        'faq.q1.answer': 'Tria el teu tipus de soci, fes clic a "Fer-me soci", completa el pagament segur amb Stripe i rebras el teu carnet digital per email.',
+                        'faq.q2.question': 'Quant costa?',
+                        'faq.q2.answer': 'El soci normal costa 50\u20AC/any, pagats en 2 quotes de 25\u20AC (gener i juliol). El soci familiar es gratis (en federar un menor). El soci protector aporta una quantitat lliure des de 50\u20AC.',
+                        'faq.q3.question': 'Que es un soci familiar?',
+                        'faq.q3.answer': 'En federar un menor al club, el pare, mare o tutor rep automaticament l\'alta com a soci familiar de forma gratuita, amb el seu propi carnet digital.',
+                        'faq.q4.question': 'Que es un soci protector?',
+                        'faq.q4.answer': 'Es un soci que aporta una quantitat lliure (des de 50\u20AC) per recolzar el club. Gaudeix de les mateixes avantatges que el soci normal mes un reconeixement especial.',
+                        'faq.q5.question': 'Com funciona el gimnas?',
+                        'faq.q5.answer': 'Qualsevol tipus de soci pot afegir l\'opcio de gimnas per 10\u20AC/mes addicionals. Contractable directament des de la web.',
+                        'faq.q6.question': 'Com funciona la numeracio?',
+                        'faq.q6.answer': 'Cada soci rep un numero unic correlatiu. Els jugadors porten prefix J, els familiars F, els protectors P, i els socis normals no porten prefix.'
                     },
                     en: {
-                        'hero.title': 'Become a Member',
-                        'hero.subtitle': 'Join the rugby family in Menorca and enjoy exclusive benefits',
-                        'hero.coming_soon': 'Coming Soon',
-                        'hero.cta': 'I Want to Join',
+                        'hero.title': 'S\'Empenta des Menorca Rugby: Become a member!',
+                        'hero.subtitle': 'It doesn\'t matter if you play, push from the stands or come for the third half. In this club, we\'re all part of the same scrum.',
+                        'hero.cta': 'Choose your card',
                         'benefits.title': 'Member Benefits',
                         'benefits.subtitle': 'Discover everything that awaits you when you join our family',
-                        'benefits.access.title': 'Priority Access',
-                        'benefits.access.desc': 'Priority entry to all matches and club events',
+                        'benefits.identity.title': 'Identity',
+                        'benefits.identity.desc': 'Personalized digital card with photo and unique number',
                         'benefits.discounts.title': 'Discounts',
-                        'benefits.discounts.desc': 'Exclusive discounts at the official store and club activities',
-                        'benefits.vote.title': 'Voice & Vote',
-                        'benefits.vote.desc': 'Participate in club decisions and the members assembly',
-                        'benefits.community.title': 'Community',
-                        'benefits.community.desc': 'Be part of a community passionate about rugby',
-                        'benefits.events.title': 'Exclusive Events',
-                        'benefits.events.desc': 'Access to dinners, parties and social events for members only',
-                        'benefits.card.title': 'Digital Card',
-                        'benefits.card.desc': 'Your membership card always on your phone, with wallet technology',
-                        'types.title': 'Membership Types',
-                        'types.subtitle': 'Choose the option that suits you best',
-                        'types.player.title': 'Player Member',
-                        'types.player.f1': 'Access to training and competitions',
-                        'types.player.f2': 'Official club equipment',
-                        'types.player.f3': 'Sports insurance included',
-                        'types.player.f4': 'Digital membership card',
-                        'types.player.f5': 'Store discounts',
-                        'types.supporter.title': 'Supporter Member',
-                        'types.supporter.f1': 'Priority access to matches',
-                        'types.supporter.f2': 'Voice and vote in assemblies',
-                        'types.supporter.f3': 'Digital membership card',
-                        'types.supporter.f4': 'Store and event discounts',
-                        'types.supporter.f5': 'Exclusive newsletter',
+                        'benefits.discounts.desc': '10% off official clothing and club gear',
+                        'benefits.hospitality.title': 'Hospitality',
+                        'benefits.hospitality.desc': 'First drink free at home matches',
+                        'benefits.health.title': 'Health',
+                        'benefits.health.desc': 'Gym option for just \u20AC10/month',
+                        'benefits.info.title': 'Information',
+                        'benefits.info.desc': 'Monthly newsletter with reports, signings and events',
+                        'types.title': 'Choose your card',
+                        'types.subtitle': 'Four ways to be part of the scrum',
+                        'types.normal.title': 'Member',
+                        'types.normal.price_detail': '/year (2x\u20AC25)',
+                        'types.normal.f1': '10% off official clothing',
+                        'types.normal.f2': 'First drink free at home matches',
+                        'types.normal.f3': 'Gym option \u20AC10/month',
+                        'types.normal.f4': 'Monthly newsletter',
+                        'types.normal.f5': 'Personalized digital card',
+                        'types.normal.cta': 'Become a member',
                         'types.family.title': 'Family Member',
-                        'types.family.f1': 'Includes the whole family',
-                        'types.family.f2': 'Access to family events',
-                        'types.family.f3': 'Digital cards for everyone',
-                        'types.family.f4': 'Rugby school discounts',
-                        'types.family.f5': 'Activities for children and youth',
-                        'types.cta': 'I\'m interested',
+                        'types.family.badge': 'Free',
+                        'types.family.f1': 'Automatic registration when registering a minor',
+                        'types.family.f2': 'Personalized digital card',
+                        'types.family.f3': 'Gym option \u20AC10/month',
+                        'types.family.cta': 'Subscribe to gym',
+                        'types.protector.title': 'Patron Member',
+                        'types.protector.price_label': 'From',
+                        'types.protector.price_detail': '/year',
+                        'types.protector.badge': 'Open amount',
+                        'types.protector.f1': 'All standard member benefits',
+                        'types.protector.f2': 'Special club recognition',
+                        'types.protector.cta': 'Become a patron',
+                        'types.player.title': 'Player Member',
+                        'types.player.badge': 'Included with license',
+                        'types.player.f1': 'Assigned when registering with federation',
+                        'types.player.f2': 'J prefix on your member number',
+                        'types.player.f3': 'Personalized digital card',
+                        'types.player.info': 'Your number is assigned with your federation license',
                         'card.title': 'Your Digital Card',
                         'card.subtitle': 'Carry your membership card always with you on your phone',
                         'card.coming_soon': 'Coming Soon',
@@ -659,9 +715,16 @@
                         'card.f3': '<strong>Instant access</strong> no waiting or paperwork at events',
                         'card.f4': '<strong>Exclusive design</strong> with the club colors and crest',
                         'card.f5': '<strong>Wallet compatible</strong> with Apple and Google (coming soon)',
-                        'register.title': 'I Want to Join',
-                        'register.desc': 'Send us an email and we will inform you of everything you need to become a member of Menorca Rugby Club',
-                        'register.cta': 'Contact by Email',
+                        'howto.title': 'How it works',
+                        'howto.subtitle': 'In 4 simple steps',
+                        'howto.step1.title': 'Choose your member type',
+                        'howto.step1.desc': 'Review the options and decide which one fits you',
+                        'howto.step2.title': 'Click "Become a member"',
+                        'howto.step2.desc': 'It will take you to secure payment with Stripe',
+                        'howto.step3.title': 'Complete card payment',
+                        'howto.step3.desc': 'Fast and 100% secure process',
+                        'howto.step4.title': 'Receive your digital card',
+                        'howto.step4.desc': 'By email along with the welcome guide. The club will contact you for your photo and card details.',
                         'testimonials.title': 'What our members say',
                         'testimonials.subtitle': 'Stories from our community',
                         'testimonials.t1.text': 'Being a member of Menorca Rugby is much more than supporting a team. It\'s being part of a family that shares the same values of respect and fellowship.',
@@ -676,58 +739,63 @@
                         'faq.title': 'Frequently Asked Questions',
                         'faq.subtitle': 'Everything you need to know about membership',
                         'faq.q1.question': 'How do I become a member?',
-                        'faq.q1.answer': 'Send an email to hola@menorcarugbyclub.com indicating your interest and we will send you all the information needed to complete your registration.',
-                        'faq.q2.question': 'Can I be a member without playing rugby?',
-                        'faq.q2.answer': 'Yes, of course. We have the Supporter Member category designed for those who want to support the club without playing.',
-                        'faq.q3.question': 'How does the digital card work?',
-                        'faq.q3.answer': 'Once you are a member, you will receive your digital card with a unique QR code. Soon you can add it to Apple Wallet or Google Wallet.',
-                        'faq.q4.question': 'What does family membership include?',
-                        'faq.q4.answer': 'Family membership includes all family members. Each receives their own digital card and access to family events, plus rugby school discounts.',
-                        'faq.q5.question': 'Can I cancel anytime?',
-                        'faq.q5.answer': 'Yes, membership is seasonal and you can choose not to renew at the end of each period. There is no mandatory commitment.',
-                        'faq.q6.question': 'Are there member discounts at the store?',
-                        'faq.q6.answer': 'Yes, all members enjoy exclusive discounts on products from the official club store, including jerseys, hoodies and merchandise.'
+                        'faq.q1.answer': 'Choose your member type, click "Become a member", complete the secure payment with Stripe and you\'ll receive your digital card by email.',
+                        'faq.q2.question': 'How much does it cost?',
+                        'faq.q2.answer': 'Standard membership is \u20AC50/year, paid in 2 installments of \u20AC25 (January and July). Family membership is free (when registering a minor). Patron membership is an open amount from \u20AC50.',
+                        'faq.q3.question': 'What is a family member?',
+                        'faq.q3.answer': 'When registering a minor with the club, the parent or guardian automatically receives free family membership with their own digital card.',
+                        'faq.q4.question': 'What is a patron member?',
+                        'faq.q4.answer': 'A member who contributes an open amount (from \u20AC50) to support the club. Enjoys all standard member benefits plus special recognition.',
+                        'faq.q5.question': 'How does the gym work?',
+                        'faq.q5.answer': 'Any member type can add the gym option for an additional \u20AC10/month. Available to subscribe directly from the website.',
+                        'faq.q6.question': 'How does the numbering work?',
+                        'faq.q6.answer': 'Each member receives a unique sequential number. Players have the J prefix, family members F, patrons P, and standard members have no prefix.'
                     },
                     fr: {
-                        'hero.title': 'Devenir Membre',
-                        'hero.subtitle': 'Rejoignez la famille du rugby a Minorque et profitez d\'avantages exclusifs',
-                        'hero.coming_soon': 'Bientot',
-                        'hero.cta': 'Je veux devenir Membre',
+                        'hero.title': 'S\'Empenta des Menorca Rugby: Devenez membre!',
+                        'hero.subtitle': 'Peu importe si vous jouez, si vous poussez depuis les tribunes ou si vous venez pour le troisieme mi-temps. Dans ce club, nous faisons tous partie de la meme melee.',
+                        'hero.cta': 'Choisissez votre carte',
                         'benefits.title': 'Avantages Membres',
                         'benefits.subtitle': 'Decouvrez tout ce qui vous attend en rejoignant notre famille',
-                        'benefits.access.title': 'Acces Prioritaire',
-                        'benefits.access.desc': 'Entree prioritaire a tous les matchs et evenements du club',
+                        'benefits.identity.title': 'Identite',
+                        'benefits.identity.desc': 'Carte numerique personnalisee avec photo et numero unique',
                         'benefits.discounts.title': 'Reductions',
-                        'benefits.discounts.desc': 'Reductions exclusives a la boutique officielle et activites du club',
-                        'benefits.vote.title': 'Voix et Vote',
-                        'benefits.vote.desc': 'Participez aux decisions du club et a l\'assemblee des membres',
-                        'benefits.community.title': 'Communaute',
-                        'benefits.community.desc': 'Faites partie d\'une communaute passionnee par le rugby',
-                        'benefits.events.title': 'Evenements Exclusifs',
-                        'benefits.events.desc': 'Acces aux diners, fetes et evenements sociaux reserves aux membres',
-                        'benefits.card.title': 'Carte Numerique',
-                        'benefits.card.desc': 'Votre carte de membre toujours sur votre telephone, avec la technologie wallet',
-                        'types.title': 'Types d\'Adhesion',
-                        'types.subtitle': 'Choisissez l\'option qui vous convient le mieux',
-                        'types.player.title': 'Membre Joueur',
-                        'types.player.f1': 'Acces aux entrainements et competitions',
-                        'types.player.f2': 'Equipement officiel du club',
-                        'types.player.f3': 'Assurance sportive incluse',
-                        'types.player.f4': 'Carte numerique de membre',
-                        'types.player.f5': 'Reductions en boutique',
-                        'types.supporter.title': 'Membre Sympathisant',
-                        'types.supporter.f1': 'Acces prioritaire aux matchs',
-                        'types.supporter.f2': 'Voix et vote aux assemblees',
-                        'types.supporter.f3': 'Carte numerique de membre',
-                        'types.supporter.f4': 'Reductions boutique et evenements',
-                        'types.supporter.f5': 'Newsletter exclusive',
+                        'benefits.discounts.desc': '10% sur les vetements officiels et le materiel du club',
+                        'benefits.hospitality.title': 'Hospitalite',
+                        'benefits.hospitality.desc': 'Premiere consommation gratuite aux matchs a domicile',
+                        'benefits.health.title': 'Sante',
+                        'benefits.health.desc': 'Option salle de sport pour seulement 10\u20AC/mois',
+                        'benefits.info.title': 'Information',
+                        'benefits.info.desc': 'Newsletter mensuelle avec chroniques, recrutements et evenements',
+                        'types.title': 'Choisissez votre carte',
+                        'types.subtitle': 'Quatre facons de faire partie de la melee',
+                        'types.normal.title': 'Membre',
+                        'types.normal.price_detail': '/an (2x25\u20AC)',
+                        'types.normal.f1': '10% de reduction sur les vetements officiels',
+                        'types.normal.f2': '1ere consommation gratuite aux matchs a domicile',
+                        'types.normal.f3': 'Option salle de sport 10\u20AC/mois',
+                        'types.normal.f4': 'Newsletter mensuelle',
+                        'types.normal.f5': 'Carte numerique personnalisee',
+                        'types.normal.cta': 'Devenir membre',
                         'types.family.title': 'Membre Familial',
-                        'types.family.f1': 'Inclut toute la famille',
-                        'types.family.f2': 'Acces aux evenements familiaux',
-                        'types.family.f3': 'Cartes numeriques pour tous',
-                        'types.family.f4': 'Reductions a l\'ecole de rugby',
-                        'types.family.f5': 'Activites pour enfants et jeunes',
-                        'types.cta': 'Ca m\'interesse',
+                        'types.family.badge': 'Gratuit',
+                        'types.family.f1': 'Inscription automatique en federant un mineur',
+                        'types.family.f2': 'Carte numerique personnalisee',
+                        'types.family.f3': 'Option salle de sport 10\u20AC/mois',
+                        'types.family.cta': 'S\'abonner a la salle',
+                        'types.protector.title': 'Membre Protecteur',
+                        'types.protector.price_label': 'A partir de',
+                        'types.protector.price_detail': '/an',
+                        'types.protector.badge': 'Montant libre',
+                        'types.protector.f1': 'Tous les avantages du membre standard',
+                        'types.protector.f2': 'Reconnaissance speciale du club',
+                        'types.protector.cta': 'Devenir protecteur',
+                        'types.player.title': 'Membre Joueur',
+                        'types.player.badge': 'Inclus avec la licence',
+                        'types.player.f1': 'Attribue lors de la federation',
+                        'types.player.f2': 'Prefixe J sur votre numero de membre',
+                        'types.player.f3': 'Carte numerique personnalisee',
+                        'types.player.info': 'Votre numero est attribue avec votre licence federale',
                         'card.title': 'Votre Carte Numerique',
                         'card.subtitle': 'Portez votre carte de membre toujours avec vous sur votre telephone',
                         'card.coming_soon': 'Bientot',
@@ -736,9 +804,16 @@
                         'card.f3': '<strong>Acces instantane</strong> sans attente ni paperasse aux evenements',
                         'card.f4': '<strong>Design exclusif</strong> avec les couleurs et l\'ecusson du club',
                         'card.f5': '<strong>Compatible wallet</strong> Apple et Google (bientot)',
-                        'register.title': 'Je veux devenir Membre',
-                        'register.desc': 'Envoyez-nous un email et nous vous informerons de tout ce dont vous avez besoin pour devenir membre du Menorca Rugby Club',
-                        'register.cta': 'Contacter par Email',
+                        'howto.title': 'Comment ca marche',
+                        'howto.subtitle': 'En 4 etapes simples',
+                        'howto.step1.title': 'Choisissez votre type de membre',
+                        'howto.step1.desc': 'Examinez les options et decidez laquelle vous convient',
+                        'howto.step2.title': 'Cliquez sur "Devenir membre"',
+                        'howto.step2.desc': 'Vous serez redirige vers le paiement securise avec Stripe',
+                        'howto.step3.title': 'Completez le paiement par carte',
+                        'howto.step3.desc': 'Processus rapide et 100% securise',
+                        'howto.step4.title': 'Recevez votre carte numerique',
+                        'howto.step4.desc': 'Par email avec le guide de bienvenue. Le club vous contactera pour votre photo et les donnees de la carte.',
                         'testimonials.title': 'Ce que disent nos membres',
                         'testimonials.subtitle': 'Histoires de notre communaute',
                         'testimonials.t1.text': 'Etre membre du Menorca Rugby c\'est bien plus que soutenir une equipe. C\'est faire partie d\'une famille qui partage les memes valeurs de respect et camaraderie.',
@@ -753,58 +828,63 @@
                         'faq.title': 'Questions Frequentes',
                         'faq.subtitle': 'Tout ce que vous devez savoir sur l\'adhesion',
                         'faq.q1.question': 'Comment devenir membre?',
-                        'faq.q1.answer': 'Envoyez un email a hola@menorcarugbyclub.com indiquant votre interet et nous vous enverrons toute l\'information necessaire.',
-                        'faq.q2.question': 'Puis-je etre membre sans jouer au rugby?',
-                        'faq.q2.answer': 'Oui, bien sur. Nous avons la categorie Membre Sympathisant pour ceux qui veulent soutenir le club sans jouer.',
-                        'faq.q3.question': 'Comment fonctionne la carte numerique?',
-                        'faq.q3.answer': 'Une fois membre, vous recevrez votre carte numerique avec un code QR unique. Bientot vous pourrez l\'ajouter a Apple Wallet ou Google Wallet.',
-                        'faq.q4.question': 'Que comprend l\'adhesion familiale?',
-                        'faq.q4.answer': 'L\'adhesion familiale inclut tous les membres de la famille. Chacun recoit sa propre carte numerique et acces aux evenements familiaux.',
-                        'faq.q5.question': 'Puis-je annuler quand je veux?',
-                        'faq.q5.answer': 'Oui, l\'adhesion est saisonniere et vous pouvez decider de ne pas renouveler. Il n\'y a pas d\'engagement obligatoire.',
-                        'faq.q6.question': 'Y a-t-il des reductions membres en boutique?',
-                        'faq.q6.answer': 'Oui, tous les membres beneficient de reductions exclusives sur les produits de la boutique officielle du club.'
+                        'faq.q1.answer': 'Choisissez votre type de membre, cliquez sur "Devenir membre", completez le paiement securise avec Stripe et vous recevrez votre carte numerique par email.',
+                        'faq.q2.question': 'Combien ca coute?',
+                        'faq.q2.answer': 'Le membre standard coute 50\u20AC/an, payes en 2 versements de 25\u20AC (janvier et juillet). Le membre familial est gratuit (en federant un mineur). Le membre protecteur apporte un montant libre a partir de 50\u20AC.',
+                        'faq.q3.question': 'Qu\'est-ce qu\'un membre familial?',
+                        'faq.q3.answer': 'En federant un mineur au club, le parent ou tuteur recoit automatiquement l\'inscription comme membre familial gratuitement, avec sa propre carte numerique.',
+                        'faq.q4.question': 'Qu\'est-ce qu\'un membre protecteur?',
+                        'faq.q4.answer': 'C\'est un membre qui apporte un montant libre (a partir de 50\u20AC) pour soutenir le club. Il profite des memes avantages que le membre standard plus une reconnaissance speciale.',
+                        'faq.q5.question': 'Comment fonctionne la salle de sport?',
+                        'faq.q5.answer': 'Tout type de membre peut ajouter l\'option salle de sport pour 10\u20AC/mois supplementaires. Abonnement directement depuis le site web.',
+                        'faq.q6.question': 'Comment fonctionne la numerotation?',
+                        'faq.q6.answer': 'Chaque membre recoit un numero unique correlatif. Les joueurs portent le prefixe J, les familiaux F, les protecteurs P, et les membres standards n\'ont pas de prefixe.'
                     },
                     it: {
-                        'hero.title': 'Diventa Socio',
-                        'hero.subtitle': 'Entra a far parte della famiglia del rugby a Minorca e goditi vantaggi esclusivi',
-                        'hero.coming_soon': 'Prossimamente',
-                        'hero.cta': 'Voglio diventare Socio',
+                        'hero.title': 'S\'Empenta des Menorca Rugby: Diventa socio!',
+                        'hero.subtitle': 'Non importa se giochi, se spingi dalla tribuna o se vieni per il terzo tempo. In questo club, siamo tutti parte della stessa mischia.',
+                        'hero.cta': 'Scegli la tua tessera',
                         'benefits.title': 'Vantaggi di essere Socio',
                         'benefits.subtitle': 'Scopri tutto quello che ti aspetta unendoti alla nostra famiglia',
-                        'benefits.access.title': 'Accesso Prioritario',
-                        'benefits.access.desc': 'Ingresso prioritario a tutte le partite e gli eventi del club',
+                        'benefits.identity.title': 'Identita',
+                        'benefits.identity.desc': 'Tessera digitale personalizzata con foto e numero unico',
                         'benefits.discounts.title': 'Sconti',
-                        'benefits.discounts.desc': 'Sconti esclusivi nel negozio ufficiale e nelle attivita del club',
-                        'benefits.vote.title': 'Voce e Voto',
-                        'benefits.vote.desc': 'Partecipa alle decisioni del club e all\'assemblea dei soci',
-                        'benefits.community.title': 'Comunita',
-                        'benefits.community.desc': 'Fai parte di una comunita appassionata di rugby',
-                        'benefits.events.title': 'Eventi Esclusivi',
-                        'benefits.events.desc': 'Accesso a cene, feste ed eventi sociali riservati ai soci',
-                        'benefits.card.title': 'Tessera Digitale',
-                        'benefits.card.desc': 'La tua tessera di socio sempre sul tuo cellulare, con tecnologia wallet',
-                        'types.title': 'Tipi di Adesione',
-                        'types.subtitle': 'Scegli l\'opzione piu adatta a te',
-                        'types.player.title': 'Socio Giocatore',
-                        'types.player.f1': 'Accesso ad allenamenti e competizioni',
-                        'types.player.f2': 'Equipaggiamento ufficiale del club',
-                        'types.player.f3': 'Assicurazione sportiva inclusa',
-                        'types.player.f4': 'Tessera digitale di socio',
-                        'types.player.f5': 'Sconti in negozio',
-                        'types.supporter.title': 'Socio Simpatizzante',
-                        'types.supporter.f1': 'Accesso prioritario alle partite',
-                        'types.supporter.f2': 'Voce e voto nelle assemblee',
-                        'types.supporter.f3': 'Tessera digitale di socio',
-                        'types.supporter.f4': 'Sconti in negozio e agli eventi',
-                        'types.supporter.f5': 'Newsletter esclusiva',
+                        'benefits.discounts.desc': '10% sull\'abbigliamento ufficiale e materiale del club',
+                        'benefits.hospitality.title': 'Ospitalita',
+                        'benefits.hospitality.desc': 'Prima consumazione gratis nelle partite in casa',
+                        'benefits.health.title': 'Salute',
+                        'benefits.health.desc': 'Opzione palestra per soli 10\u20AC/mese',
+                        'benefits.info.title': 'Informazione',
+                        'benefits.info.desc': 'Newsletter mensile con cronache, acquisti e eventi',
+                        'types.title': 'Scegli la tua tessera',
+                        'types.subtitle': 'Quattro modi per far parte della mischia',
+                        'types.normal.title': 'Socio',
+                        'types.normal.price_detail': '/anno (2x25\u20AC)',
+                        'types.normal.f1': '10% di sconto sull\'abbigliamento ufficiale',
+                        'types.normal.f2': '1a consumazione gratis nelle partite in casa',
+                        'types.normal.f3': 'Opzione palestra 10\u20AC/mese',
+                        'types.normal.f4': 'Newsletter mensile',
+                        'types.normal.f5': 'Tessera digitale personalizzata',
+                        'types.normal.cta': 'Diventa socio',
                         'types.family.title': 'Socio Familiare',
-                        'types.family.f1': 'Include tutta la famiglia',
-                        'types.family.f2': 'Accesso a eventi familiari',
-                        'types.family.f3': 'Tessere digitali per tutti',
-                        'types.family.f4': 'Sconti nella scuola di rugby',
-                        'types.family.f5': 'Attivita per bambini e giovani',
-                        'types.cta': 'Mi interessa',
+                        'types.family.badge': 'Gratis',
+                        'types.family.f1': 'Iscrizione automatica federando un minore',
+                        'types.family.f2': 'Tessera digitale personalizzata',
+                        'types.family.f3': 'Opzione palestra 10\u20AC/mese',
+                        'types.family.cta': 'Abbonarsi alla palestra',
+                        'types.protector.title': 'Socio Protettore',
+                        'types.protector.price_label': 'Da',
+                        'types.protector.price_detail': '/anno',
+                        'types.protector.badge': 'Importo libero',
+                        'types.protector.f1': 'Tutti i vantaggi del socio normale',
+                        'types.protector.f2': 'Riconoscimento speciale del club',
+                        'types.protector.cta': 'Diventa protettore',
+                        'types.player.title': 'Socio Giocatore',
+                        'types.player.badge': 'Incluso con la tessera federale',
+                        'types.player.f1': 'Assegnato al momento della federazione',
+                        'types.player.f2': 'Prefisso J nel tuo numero di socio',
+                        'types.player.f3': 'Tessera digitale personalizzata',
+                        'types.player.info': 'Il tuo numero viene assegnato con la tessera federale',
                         'card.title': 'La tua Tessera Digitale',
                         'card.subtitle': 'Porta la tua tessera di socio sempre con te sul tuo cellulare',
                         'card.coming_soon': 'Prossimamente',
@@ -813,9 +893,16 @@
                         'card.f3': '<strong>Accesso istantaneo</strong> senza attese ne scartoffie agli eventi',
                         'card.f4': '<strong>Design esclusivo</strong> con i colori e lo stemma del club',
                         'card.f5': '<strong>Compatibile con wallet</strong> di Apple e Google (prossimamente)',
-                        'register.title': 'Voglio diventare Socio',
-                        'register.desc': 'Scrivici un\'email e ti informeremo di tutto quello che ti serve per diventare socio del Menorca Rugby Club',
-                        'register.cta': 'Contatta via Email',
+                        'howto.title': 'Come funziona',
+                        'howto.subtitle': 'In 4 semplici passi',
+                        'howto.step1.title': 'Scegli il tuo tipo di socio',
+                        'howto.step1.desc': 'Rivedi le opzioni e decidi quale fa per te',
+                        'howto.step2.title': 'Clicca su "Diventa socio"',
+                        'howto.step2.desc': 'Ti portera al pagamento sicuro con Stripe',
+                        'howto.step3.title': 'Completa il pagamento con carta',
+                        'howto.step3.desc': 'Processo rapido e 100% sicuro',
+                        'howto.step4.title': 'Ricevi la tua tessera digitale',
+                        'howto.step4.desc': 'Via email insieme alla guida di benvenuto. Il club ti contattera per la tua foto e i dati della tessera.',
                         'testimonials.title': 'Cosa dicono i nostri soci',
                         'testimonials.subtitle': 'Storie dalla nostra comunita',
                         'testimonials.t1.text': 'Essere socio del Menorca Rugby e molto di piu che sostenere una squadra. E far parte di una famiglia che condivide gli stessi valori di rispetto e cameratismo.',
@@ -830,58 +917,63 @@
                         'faq.title': 'Domande Frequenti',
                         'faq.subtitle': 'Tutto quello che devi sapere sull\'adesione',
                         'faq.q1.question': 'Come divento socio?',
-                        'faq.q1.answer': 'Invia un\'email a hola@menorcarugbyclub.com indicando il tuo interesse e ti invieremo tutte le informazioni necessarie.',
-                        'faq.q2.question': 'Posso essere socio senza giocare a rugby?',
-                        'faq.q2.answer': 'Si, certo. Abbiamo la categoria Socio Simpatizzante pensata per chi vuole sostenere il club senza giocare.',
-                        'faq.q3.question': 'Come funziona la tessera digitale?',
-                        'faq.q3.answer': 'Una volta socio, riceverai la tua tessera digitale con un codice QR unico. Prossimamente potrai aggiungerla ad Apple Wallet o Google Wallet.',
-                        'faq.q4.question': 'Cosa include l\'adesione familiare?',
-                        'faq.q4.answer': 'L\'adesione familiare include tutti i membri della famiglia. Ognuno riceve la propria tessera digitale e accesso a eventi familiari.',
-                        'faq.q5.question': 'Posso cancellarmi quando voglio?',
-                        'faq.q5.answer': 'Si, l\'adesione e stagionale e puoi decidere di non rinnovare alla fine di ogni periodo. Non c\'e impegno obbligatorio.',
-                        'faq.q6.question': 'Ci sono sconti per i soci in negozio?',
-                        'faq.q6.answer': 'Si, tutti i soci godono di sconti esclusivi sui prodotti del negozio ufficiale del club.'
+                        'faq.q1.answer': 'Scegli il tuo tipo di socio, clicca su "Diventa socio", completa il pagamento sicuro con Stripe e riceverai la tua tessera digitale via email.',
+                        'faq.q2.question': 'Quanto costa?',
+                        'faq.q2.answer': 'Il socio normale costa 50\u20AC/anno, pagati in 2 rate da 25\u20AC (gennaio e luglio). Il socio familiare e gratis (federando un minore). Il socio protettore apporta un importo libero da 50\u20AC.',
+                        'faq.q3.question': 'Cos\'e un socio familiare?',
+                        'faq.q3.answer': 'Federando un minore nel club, il genitore o tutore riceve automaticamente l\'iscrizione come socio familiare gratuitamente, con la propria tessera digitale.',
+                        'faq.q4.question': 'Cos\'e un socio protettore?',
+                        'faq.q4.answer': 'E un socio che apporta un importo libero (da 50\u20AC) per sostenere il club. Gode degli stessi vantaggi del socio normale piu un riconoscimento speciale.',
+                        'faq.q5.question': 'Come funziona la palestra?',
+                        'faq.q5.answer': 'Qualsiasi tipo di socio puo aggiungere l\'opzione palestra per 10\u20AC/mese aggiuntivi. Sottoscrivibile direttamente dal sito web.',
+                        'faq.q6.question': 'Come funziona la numerazione?',
+                        'faq.q6.answer': 'Ogni socio riceve un numero unico correlativo. I giocatori portano il prefisso J, i familiari F, i protettori P, e i soci normali non hanno prefisso.'
                     },
                     pt: {
-                        'hero.title': 'Torna-te Socio',
-                        'hero.subtitle': 'Faz parte da familia do rugby em Menorca e desfruta de beneficios exclusivos',
-                        'hero.coming_soon': 'Em breve',
-                        'hero.cta': 'Quero ser Socio',
+                        'hero.title': 'S\'Empenta des Menorca Rugby: Torna-te socio!',
+                        'hero.subtitle': 'Nao importa se jogas, se empurras da bancada ou se vens pelo terceiro tempo. Neste clube, todos somos parte da mesma formacao.',
+                        'hero.cta': 'Escolhe o teu cartao',
                         'benefits.title': 'Beneficios de ser Socio',
                         'benefits.subtitle': 'Descobre tudo o que te espera ao juntares-te a nossa familia',
-                        'benefits.access.title': 'Acesso Preferencial',
-                        'benefits.access.desc': 'Entrada prioritaria a todos os jogos e eventos do clube',
+                        'benefits.identity.title': 'Identidade',
+                        'benefits.identity.desc': 'Cartao digital personalizado com foto e numero unico',
                         'benefits.discounts.title': 'Descontos',
-                        'benefits.discounts.desc': 'Descontos exclusivos na loja oficial e atividades do clube',
-                        'benefits.vote.title': 'Voz e Voto',
-                        'benefits.vote.desc': 'Participa nas decisoes do clube e na assembleia de socios',
-                        'benefits.community.title': 'Comunidade',
-                        'benefits.community.desc': 'Faz parte de uma comunidade apaixonada por rugby',
-                        'benefits.events.title': 'Eventos Exclusivos',
-                        'benefits.events.desc': 'Acesso a jantares, festas e eventos sociais so para socios',
-                        'benefits.card.title': 'Cartao Digital',
-                        'benefits.card.desc': 'O teu cartao de socio sempre no teu telemovel, com tecnologia wallet',
-                        'types.title': 'Tipos de Adesao',
-                        'types.subtitle': 'Escolhe a opcao que melhor se adapta a ti',
-                        'types.player.title': 'Socio Jogador',
-                        'types.player.f1': 'Acesso a treinos e competicoes',
-                        'types.player.f2': 'Equipamento oficial do clube',
-                        'types.player.f3': 'Seguro desportivo incluido',
-                        'types.player.f4': 'Cartao digital de socio',
-                        'types.player.f5': 'Descontos na loja',
-                        'types.supporter.title': 'Socio Simpatizante',
-                        'types.supporter.f1': 'Acesso preferencial a jogos',
-                        'types.supporter.f2': 'Voz e voto nas assembleias',
-                        'types.supporter.f3': 'Cartao digital de socio',
-                        'types.supporter.f4': 'Descontos na loja e eventos',
-                        'types.supporter.f5': 'Newsletter exclusiva',
+                        'benefits.discounts.desc': '10% em roupa oficial e material do clube',
+                        'benefits.hospitality.title': 'Hospitalidade',
+                        'benefits.hospitality.desc': 'Primeira consumicao gratis nos jogos em casa',
+                        'benefits.health.title': 'Saude',
+                        'benefits.health.desc': 'Opcao de ginasio por apenas 10\u20AC/mes',
+                        'benefits.info.title': 'Informacao',
+                        'benefits.info.desc': 'Newsletter mensal com cronicas, contratacoes e eventos',
+                        'types.title': 'Escolhe o teu cartao',
+                        'types.subtitle': 'Quatro formas de fazer parte da formacao',
+                        'types.normal.title': 'Socio',
+                        'types.normal.price_detail': '/ano (2x25\u20AC)',
+                        'types.normal.f1': '10% dto. em roupa oficial',
+                        'types.normal.f2': '1a consumicao gratis nos jogos em casa',
+                        'types.normal.f3': 'Opcao ginasio 10\u20AC/mes',
+                        'types.normal.f4': 'Newsletter mensal',
+                        'types.normal.f5': 'Cartao digital personalizado',
+                        'types.normal.cta': 'Tornar-me socio',
                         'types.family.title': 'Socio Familiar',
-                        'types.family.f1': 'Inclui toda a familia',
-                        'types.family.f2': 'Acesso a eventos familiares',
-                        'types.family.f3': 'Cartoes digitais para todos',
-                        'types.family.f4': 'Descontos na escola de rugby',
-                        'types.family.f5': 'Atividades para criancas e jovens',
-                        'types.cta': 'Tenho interesse',
+                        'types.family.badge': 'Gratis',
+                        'types.family.f1': 'Inscricao automatica ao federar menor',
+                        'types.family.f2': 'Cartao digital personalizado',
+                        'types.family.f3': 'Opcao ginasio 10\u20AC/mes',
+                        'types.family.cta': 'Subscrever ginasio',
+                        'types.protector.title': 'Socio Protetor',
+                        'types.protector.price_label': 'Desde',
+                        'types.protector.price_detail': '/ano',
+                        'types.protector.badge': 'Valor livre',
+                        'types.protector.f1': 'Tudo do socio normal',
+                        'types.protector.f2': 'Reconhecimento especial do clube',
+                        'types.protector.cta': 'Tornar-me protetor',
+                        'types.player.title': 'Socio Jogador',
+                        'types.player.badge': 'Incluido com ficha',
+                        'types.player.f1': 'Atribuido ao federar-se',
+                        'types.player.f2': 'Prefixo J no teu numero de socio',
+                        'types.player.f3': 'Cartao digital personalizado',
+                        'types.player.info': 'O teu numero e atribuido com a tua ficha federativa',
                         'card.title': 'O teu Cartao Digital',
                         'card.subtitle': 'Leva o teu cartao de socio sempre contigo no teu telemovel',
                         'card.coming_soon': 'Em breve',
@@ -890,9 +982,16 @@
                         'card.f3': '<strong>Acesso instantaneo</strong> sem esperas nem papelada nos eventos',
                         'card.f4': '<strong>Design exclusivo</strong> com as cores e o brasao do clube',
                         'card.f5': '<strong>Compativel com wallet</strong> da Apple e Google (em breve)',
-                        'register.title': 'Quero ser Socio',
-                        'register.desc': 'Escreve-nos um email e informaremos-te de tudo o que precisas para te tornares socio do Menorca Rugby Club',
-                        'register.cta': 'Contactar por Email',
+                        'howto.title': 'Como funciona',
+                        'howto.subtitle': 'Em 4 passos simples',
+                        'howto.step1.title': 'Escolhe o teu tipo de socio',
+                        'howto.step1.desc': 'Revisa as opcoes e decide qual se encaixa contigo',
+                        'howto.step2.title': 'Clica em "Tornar-me socio"',
+                        'howto.step2.desc': 'Leva-te ao pagamento seguro com Stripe',
+                        'howto.step3.title': 'Completa o pagamento com cartao',
+                        'howto.step3.desc': 'Processo rapido e 100% seguro',
+                        'howto.step4.title': 'Recebe o teu cartao digital',
+                        'howto.step4.desc': 'Por email juntamente com o guia de boas-vindas. O clube contactar-te-a para a tua foto e dados do cartao.',
                         'testimonials.title': 'O que dizem os nossos socios',
                         'testimonials.subtitle': 'Historias da nossa comunidade',
                         'testimonials.t1.text': 'Ser socio do Menorca Rugby e muito mais do que apoiar uma equipa. E ser parte de uma familia que partilha os mesmos valores de respeito e companheirismo.',
@@ -907,17 +1006,17 @@
                         'faq.title': 'Perguntas Frequentes',
                         'faq.subtitle': 'Tudo o que precisas saber sobre ser socio',
                         'faq.q1.question': 'Como me torno socio?',
-                        'faq.q1.answer': 'Envia um email para hola@menorcarugbyclub.com indicando o teu interesse e enviaremos toda a informacao necessaria.',
-                        'faq.q2.question': 'Posso ser socio sem jogar rugby?',
-                        'faq.q2.answer': 'Sim, claro. Temos a categoria de Socio Simpatizante pensada para quem quer apoiar o clube sem jogar.',
-                        'faq.q3.question': 'Como funciona o cartao digital?',
-                        'faq.q3.answer': 'Uma vez socio, recebes o teu cartao digital com um codigo QR unico. Em breve poderas adiciona-lo ao Apple Wallet ou Google Wallet.',
-                        'faq.q4.question': 'O que inclui a adesao familiar?',
-                        'faq.q4.answer': 'A adesao familiar inclui todos os membros da familia. Cada um recebe o seu proprio cartao digital e acesso a eventos familiares.',
-                        'faq.q5.question': 'Posso cancelar quando quiser?',
-                        'faq.q5.answer': 'Sim, a adesao e por temporada e podes decidir nao renovar no final de cada periodo. Nao ha compromisso obrigatorio.',
-                        'faq.q6.question': 'Ha descontos para socios na loja?',
-                        'faq.q6.answer': 'Sim, todos os socios desfrutam de descontos exclusivos em produtos da loja oficial do clube.'
+                        'faq.q1.answer': 'Escolhe o teu tipo de socio, clica em "Tornar-me socio", completa o pagamento seguro com Stripe e recebes o teu cartao digital por email.',
+                        'faq.q2.question': 'Quanto custa?',
+                        'faq.q2.answer': 'O socio normal custa 50\u20AC/ano, pagos em 2 prestacoes de 25\u20AC (janeiro e julho). O socio familiar e gratis (ao federar um menor). O socio protetor contribui com um valor livre desde 50\u20AC.',
+                        'faq.q3.question': 'O que e um socio familiar?',
+                        'faq.q3.answer': 'Ao federar um menor no clube, o pai, mae ou tutor recebe automaticamente a inscricao como socio familiar de forma gratuita, com o seu proprio cartao digital.',
+                        'faq.q4.question': 'O que e um socio protetor?',
+                        'faq.q4.answer': 'E um socio que contribui com um valor livre (desde 50\u20AC) para apoiar o clube. Desfruta das mesmas vantagens que o socio normal mais um reconhecimento especial.',
+                        'faq.q5.question': 'Como funciona o ginasio?',
+                        'faq.q5.answer': 'Qualquer tipo de socio pode adicionar a opcao de ginasio por 10\u20AC/mes adicionais. Subscricao diretamente pelo site.',
+                        'faq.q6.question': 'Como funciona a numeracao?',
+                        'faq.q6.answer': 'Cada socio recebe um numero unico correlativo. Os jogadores levam prefixo J, os familiares F, os protetores P, e os socios normais nao levam prefixo.'
                     }
                 };
 
