@@ -54,9 +54,7 @@
             margin-bottom: 1.5rem;
         }
 
-        .admin-login-logo img {
-            height: 60px;
-        }
+        .admin-login-logo img { height: 60px; }
 
         .admin-login-title {
             text-align: center;
@@ -156,6 +154,56 @@
             margin: 0 auto;
         }
 
+        /* Tabs */
+        .admin-tabs {
+            display: flex;
+            gap: 0;
+            margin-bottom: 1.5rem;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .admin-tab {
+            padding: 0.75rem 1.5rem;
+            background: none;
+            border: none;
+            font-family: inherit;
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: #888;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -2px;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .admin-tab:hover { color: #182B49; }
+
+        .admin-tab.active {
+            color: #182B49;
+            border-bottom-color: #FFC72C;
+        }
+
+        .admin-tab .tab-count {
+            background: #e0e0e0;
+            color: #555;
+            font-size: 0.7rem;
+            padding: 0.15rem 0.5rem;
+            border-radius: 10px;
+            font-weight: 700;
+        }
+
+        .admin-tab.active .tab-count {
+            background: #FFC72C;
+            color: #182B49;
+        }
+
+        .admin-tab-panel { display: none; }
+        .admin-tab-panel.active { display: block; }
+
+        /* Stats */
         .admin-stats {
             display: flex;
             gap: 1rem;
@@ -168,7 +216,7 @@
             border-radius: 10px;
             padding: 1.2rem 1.5rem;
             box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-            min-width: 150px;
+            min-width: 140px;
         }
 
         .admin-stat-number {
@@ -183,6 +231,7 @@
             font-weight: 500;
         }
 
+        /* Table */
         .admin-table-wrapper {
             background: #fff;
             border-radius: 10px;
@@ -223,14 +272,14 @@
         table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 0.88rem;
+            font-size: 0.85rem;
         }
 
         thead th {
             text-align: left;
             padding: 0.75rem 1rem;
             font-weight: 600;
-            font-size: 0.75rem;
+            font-size: 0.72rem;
             text-transform: uppercase;
             letter-spacing: 0.5px;
             color: #888;
@@ -250,15 +299,21 @@
             display: inline-block;
             padding: 0.2rem 0.6rem;
             border-radius: 20px;
-            font-size: 0.75rem;
+            font-size: 0.72rem;
             font-weight: 600;
             text-transform: capitalize;
+            white-space: nowrap;
         }
 
         .admin-badge--normal { background: #e3f2fd; color: #1565c0; }
         .admin-badge--protector { background: #fff3e0; color: #e65100; }
         .admin-badge--gym { background: #e8f5e9; color: #2e7d32; }
         .admin-badge--jugador { background: #f3e5f5; color: #6a1b9a; }
+        .admin-badge--familiar { background: #fce4ec; color: #c62828; }
+        .admin-badge--available { background: #e8f5e9; color: #2e7d32; }
+        .admin-badge--injured { background: #fdecea; color: #b71c1c; }
+        .admin-badge--suspended { background: #fff3e0; color: #e65100; }
+        .admin-badge--inactive { background: #f5f5f5; color: #999; }
 
         .admin-foto-thumb {
             width: 36px;
@@ -330,16 +385,14 @@
             padding: 1rem;
         }
 
-        .admin-modal-overlay.is-active {
-            display: flex;
-        }
+        .admin-modal-overlay.is-active { display: flex; }
 
         .admin-modal {
             background: #fff;
             border-radius: 12px;
             padding: 2rem;
             width: 100%;
-            max-width: 480px;
+            max-width: 500px;
             position: relative;
             max-height: 90vh;
             overflow-y: auto;
@@ -490,12 +543,20 @@
         .admin-modal-msg.success { display: block; color: #2e7d32; }
         .admin-modal-msg.error { display: block; color: #b71c1c; }
 
+        .familiar-de-cell {
+            font-size: 0.8rem;
+            color: #666;
+            font-style: italic;
+        }
+
         @media (max-width: 768px) {
             .admin-header { padding: 1rem; }
             .admin-content { padding: 1rem; }
             .admin-stats { flex-direction: column; }
             .admin-stat { min-width: unset; }
             .admin-modal-row { grid-template-columns: 1fr; }
+            .admin-tabs { overflow-x: auto; }
+            .admin-tab { padding: 0.6rem 1rem; font-size: 0.85rem; }
         }
     </style>
 </head>
@@ -521,7 +582,7 @@
         <header class="admin-header">
             <div class="admin-header-left">
                 <img src="assets/images/static/logo.png" alt="MRC">
-                <h1>Panel de Socios</h1>
+                <h1>Panel Admin</h1>
             </div>
             <button class="admin-logout" id="logoutBtn">
                 <i class="fas fa-sign-out-alt"></i> Cerrar sesion
@@ -529,18 +590,44 @@
         </header>
 
         <div class="admin-content">
-            <div class="admin-stats" id="statsRow"></div>
+            <!-- Tabs -->
+            <div class="admin-tabs">
+                <button class="admin-tab active" data-tab="socios">
+                    <i class="fas fa-id-card"></i> Socios <span class="tab-count" id="sociosCount">0</span>
+                </button>
+                <button class="admin-tab" data-tab="jugadores">
+                    <i class="fas fa-football-ball"></i> Jugadores <span class="tab-count" id="jugadoresCount">0</span>
+                </button>
+            </div>
 
-            <div class="admin-table-wrapper">
-                <div class="admin-table-header">
-                    <h2>Socios registrados</h2>
-                    <button class="admin-refresh" id="refreshBtn">
-                        <i class="fas fa-sync-alt"></i> Actualizar
-                    </button>
+            <!-- Socios Panel -->
+            <div class="admin-tab-panel active" id="panel-socios">
+                <div class="admin-stats" id="sociosStats"></div>
+                <div class="admin-table-wrapper">
+                    <div class="admin-table-header">
+                        <h2>Socios registrados</h2>
+                        <button class="admin-refresh" id="refreshSocios">
+                            <i class="fas fa-sync-alt"></i> Actualizar
+                        </button>
+                    </div>
+                    <div id="sociosTable">
+                        <div class="admin-loading"><i class="fas fa-spinner fa-spin"></i> Cargando...</div>
+                    </div>
                 </div>
-                <div id="tableContainer">
-                    <div class="admin-loading">
-                        <i class="fas fa-spinner fa-spin"></i> Cargando socios...
+            </div>
+
+            <!-- Jugadores Panel -->
+            <div class="admin-tab-panel" id="panel-jugadores">
+                <div class="admin-stats" id="jugadoresStats"></div>
+                <div class="admin-table-wrapper">
+                    <div class="admin-table-header">
+                        <h2>Jugadores registrados</h2>
+                        <button class="admin-refresh" id="refreshJugadores">
+                            <i class="fas fa-sync-alt"></i> Actualizar
+                        </button>
+                    </div>
+                    <div id="jugadoresTable">
+                        <div class="admin-loading"><i class="fas fa-spinner fa-spin"></i> Cargando...</div>
                     </div>
                 </div>
             </div>
@@ -551,7 +638,7 @@
     <div class="admin-modal-overlay" id="fotoModal">
         <div class="admin-modal">
             <button class="admin-modal-close" id="fotoModalClose">&times;</button>
-            <h3 id="fotoModalTitle">Foto del socio</h3>
+            <h3 id="fotoModalTitle">Foto</h3>
             <div class="admin-foto-modal-preview" id="fotoModalPreview"></div>
             <div class="admin-foto-upload-area">
                 <input type="file" id="fotoFileInput" accept="image/*" style="display:none">
@@ -563,7 +650,7 @@
         </div>
     </div>
 
-    <!-- Edit Modal -->
+    <!-- Edit Socio Modal -->
     <div class="admin-modal-overlay" id="editModal">
         <div class="admin-modal">
             <button class="admin-modal-close" id="editModalClose">&times;</button>
@@ -611,6 +698,10 @@
                         </select>
                     </div>
                 </div>
+                <div class="admin-modal-field">
+                    <label>Familiar de</label>
+                    <input type="text" id="editFamiliarDe" placeholder="Nombre del socio/jugador relacionado">
+                </div>
                 <button type="submit" class="admin-modal-save" id="editSaveBtn">
                     <i class="fas fa-save"></i> Guardar cambios
                 </button>
@@ -630,10 +721,9 @@
         const loginError = document.getElementById('loginError');
         const googleLoginBtn = document.getElementById('googleLoginBtn');
         const logoutBtn = document.getElementById('logoutBtn');
-        const refreshBtn = document.getElementById('refreshBtn');
 
-        // Socios data cache
         let sociosData = [];
+        let playersData = [];
 
         // ── Auth ──
         (async () => {
@@ -688,13 +778,24 @@
             loginScreen.style.display = 'flex';
         });
 
-        refreshBtn.addEventListener('click', loadSocios);
-
         async function showDashboard() {
             loginScreen.style.display = 'none';
             dashboard.style.display = 'block';
-            await loadSocios();
+            await Promise.all([loadSocios(), loadPlayers()]);
         }
+
+        // ── Tabs ──
+        document.querySelectorAll('.admin-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.admin-tab-panel').forEach(p => p.classList.remove('active'));
+                tab.classList.add('active');
+                document.getElementById('panel-' + tab.dataset.tab).classList.add('active');
+            });
+        });
+
+        document.getElementById('refreshSocios').addEventListener('click', loadSocios);
+        document.getElementById('refreshJugadores').addEventListener('click', loadPlayers);
 
         // ── Helpers ──
         function escapeHtml(str) {
@@ -712,23 +813,24 @@
             return `${day}/${month}/${year}`;
         }
 
-        // ── Load socios table ──
+        // ── Load Socios ──
         async function loadSocios() {
-            const container = document.getElementById('tableContainer');
+            const container = document.getElementById('sociosTable');
             container.innerHTML = '<div class="admin-loading"><i class="fas fa-spinner fa-spin"></i> Cargando socios...</div>';
 
             const { data, error } = await sb.from('socios').select('*').order('created_at', { ascending: false });
 
             if (error) {
-                container.innerHTML = '<div class="admin-empty"><i class="fas fa-exclamation-triangle"></i> Error al cargar: ' + escapeHtml(error.message) + '</div>';
+                container.innerHTML = '<div class="admin-empty"><i class="fas fa-exclamation-triangle"></i> Error: ' + escapeHtml(error.message) + '</div>';
                 return;
             }
 
             sociosData = data || [];
+            document.getElementById('sociosCount').textContent = sociosData.length;
 
             if (sociosData.length === 0) {
-                container.innerHTML = '<div class="admin-empty"><i class="fas fa-users"></i> No hay socios registrados aun.</div>';
-                document.getElementById('statsRow').innerHTML = '';
+                container.innerHTML = '<div class="admin-empty"><i class="fas fa-users"></i> No hay socios registrados.</div>';
+                document.getElementById('sociosStats').innerHTML = '';
                 return;
             }
 
@@ -738,31 +840,20 @@
                 const t = s.tipo_socio || 'sin tipo';
                 tipos[t] = (tipos[t] || 0) + 1;
             });
-
             let statsHTML = `<div class="admin-stat"><div class="admin-stat-number">${sociosData.length}</div><div class="admin-stat-label">Total socios</div></div>`;
             Object.entries(tipos).forEach(([tipo, count]) => {
                 statsHTML += `<div class="admin-stat"><div class="admin-stat-number">${count}</div><div class="admin-stat-label">${escapeHtml(tipo)}</div></div>`;
             });
-            document.getElementById('statsRow').innerHTML = statsHTML;
+            document.getElementById('sociosStats').innerHTML = statsHTML;
 
             // Table
-            let html = `<table>
-                <thead>
-                    <tr>
-                        <th>Foto</th>
-                        <th>Nombre</th>
-                        <th>Apellido</th>
-                        <th>DNI/NIE/Pasaporte</th>
-                        <th>Email</th>
-                        <th>Tipo</th>
-                        <th>Fecha alta</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>`;
+            let html = `<table><thead><tr>
+                <th>Foto</th><th>Nombre</th><th>Apellido</th><th>DNI/NIE/Pasaporte</th>
+                <th>Email</th><th>Tipo</th><th>Familiar de</th><th>Fecha alta</th><th>Acciones</th>
+            </tr></thead><tbody>`;
 
             sociosData.forEach(s => {
-                const fotoClick = `onclick="openFotoModal('${s.id}')"`;
+                const fotoClick = `onclick="openFotoModal('socio','${s.id}')"`;
                 const foto = s.foto_url
                     ? `<img src="${escapeHtml(s.foto_url)}" class="admin-foto-thumb" alt="Foto" ${fotoClick}>`
                     : `<div class="admin-foto-none" ${fotoClick}><i class="fas fa-user"></i></div>`;
@@ -776,17 +867,86 @@
                     <td>${escapeHtml(s.documento || '')}</td>
                     <td>${escapeHtml(s.email || '')}</td>
                     <td><span class="admin-badge ${badgeClass}">${escapeHtml(tipo)}</span></td>
+                    <td class="familiar-de-cell">${escapeHtml(s.familiar_de || '')}</td>
                     <td>${formatDate(s.created_at)}</td>
-                    <td>
-                        <div class="admin-actions">
-                            <button class="admin-action-btn" onclick="openEditModal('${s.id}')" title="Editar">
-                                <i class="fas fa-pen"></i>
-                            </button>
-                            <button class="admin-action-btn" onclick="openFotoModal('${s.id}')" title="Foto">
-                                <i class="fas fa-camera"></i>
-                            </button>
-                        </div>
-                    </td>
+                    <td><div class="admin-actions">
+                        <button class="admin-action-btn" onclick="openEditModal('${s.id}')" title="Editar"><i class="fas fa-pen"></i></button>
+                        <button class="admin-action-btn" onclick="openFotoModal('socio','${s.id}')" title="Foto"><i class="fas fa-camera"></i></button>
+                    </div></td>
+                </tr>`;
+            });
+
+            html += '</tbody></table>';
+            container.innerHTML = html;
+        }
+
+        // ── Load Players ──
+        async function loadPlayers() {
+            const container = document.getElementById('jugadoresTable');
+            container.innerHTML = '<div class="admin-loading"><i class="fas fa-spinner fa-spin"></i> Cargando jugadores...</div>';
+
+            const { data, error } = await sb.from('players').select('*').order('last_name', { ascending: true });
+
+            if (error) {
+                container.innerHTML = '<div class="admin-empty"><i class="fas fa-exclamation-triangle"></i> Error: ' + escapeHtml(error.message) + '</div>';
+                return;
+            }
+
+            playersData = data || [];
+            document.getElementById('jugadoresCount').textContent = playersData.length;
+
+            if (playersData.length === 0) {
+                container.innerHTML = '<div class="admin-empty"><i class="fas fa-football-ball"></i> No hay jugadores registrados.</div>';
+                document.getElementById('jugadoresStats').innerHTML = '';
+                return;
+            }
+
+            // Stats
+            const categories = {};
+            const statuses = {};
+            playersData.forEach(p => {
+                const c = p.category_primary || 'sin categoria';
+                categories[c] = (categories[c] || 0) + 1;
+                const st = p.status || 'unknown';
+                statuses[st] = (statuses[st] || 0) + 1;
+            });
+
+            let statsHTML = `<div class="admin-stat"><div class="admin-stat-number">${playersData.length}</div><div class="admin-stat-label">Total jugadores</div></div>`;
+            Object.entries(categories).forEach(([cat, count]) => {
+                statsHTML += `<div class="admin-stat"><div class="admin-stat-number">${count}</div><div class="admin-stat-label">${escapeHtml(cat)}</div></div>`;
+            });
+            Object.entries(statuses).forEach(([st, count]) => {
+                statsHTML += `<div class="admin-stat"><div class="admin-stat-number">${count}</div><div class="admin-stat-label">${escapeHtml(st)}</div></div>`;
+            });
+            document.getElementById('jugadoresStats').innerHTML = statsHTML;
+
+            // Table
+            let html = `<table><thead><tr>
+                <th>Foto</th><th>Apellido</th><th>Nombre</th><th>Categoria</th>
+                <th>Estado</th><th>Ficha</th><th>Email</th><th>Telefono</th>
+                <th>Documento</th><th>Genero</th><th>Nac.</th><th>Alta</th>
+            </tr></thead><tbody>`;
+
+            playersData.forEach(p => {
+                const foto = p.photo
+                    ? `<img src="${escapeHtml(p.photo)}" class="admin-foto-thumb" alt="Foto" onclick="openFotoModal('player','${escapeHtml(p.player_id)}')">`
+                    : `<div class="admin-foto-none" onclick="openFotoModal('player','${escapeHtml(p.player_id)}')"><i class="fas fa-user"></i></div>`;
+                const statusClass = `admin-badge--${p.status || 'inactive'}`;
+                const docDisplay = p.tax_number ? `${(p.tax_type || '').toUpperCase()} ${p.tax_number}` : '';
+
+                html += `<tr>
+                    <td>${foto}</td>
+                    <td>${escapeHtml(p.last_name || '')}</td>
+                    <td>${escapeHtml(p.first_name || '')}</td>
+                    <td><span class="admin-badge">${escapeHtml(p.category_primary || '')}</span></td>
+                    <td><span class="admin-badge ${statusClass}">${escapeHtml(p.status || '')}</span></td>
+                    <td>${escapeHtml(p.ficha_number || '')}</td>
+                    <td>${escapeHtml(p.email || '')}</td>
+                    <td>${escapeHtml(p.phone || '')}</td>
+                    <td>${escapeHtml(docDisplay)}</td>
+                    <td>${escapeHtml(p.gender || '')}</td>
+                    <td>${formatDate(p.dob)}</td>
+                    <td>${formatDate(p.created_at)}</td>
                 </tr>`;
             });
 
@@ -802,19 +962,32 @@
         const fotoFileInput = document.getElementById('fotoFileInput');
         const fotoUploadBtn = document.getElementById('fotoUploadBtn');
         const fotoModalMsg = document.getElementById('fotoModalMsg');
-        let currentFotoSocioId = null;
+        let currentFotoId = null;
+        let currentFotoType = null;
 
-        function openFotoModal(id) {
-            const socio = sociosData.find(s => s.id === id);
-            if (!socio) return;
-            currentFotoSocioId = id;
-            fotoModalTitle.textContent = `Foto - ${socio.nombre} ${socio.apellido}`;
+        function openFotoModal(type, id) {
+            currentFotoType = type;
+            currentFotoId = id;
             fotoModalMsg.className = 'admin-modal-msg';
             fotoModalMsg.textContent = '';
             fotoFileInput.value = '';
 
-            if (socio.foto_url) {
-                fotoModalPreview.innerHTML = `<img src="${escapeHtml(socio.foto_url)}" alt="Foto">`;
+            let name = '', photoUrl = '';
+            if (type === 'socio') {
+                const s = sociosData.find(s => s.id === id);
+                if (!s) return;
+                name = `${s.nombre} ${s.apellido}`;
+                photoUrl = s.foto_url;
+            } else {
+                const p = playersData.find(p => p.player_id === id);
+                if (!p) return;
+                name = `${p.first_name} ${p.last_name}`;
+                photoUrl = p.photo;
+            }
+
+            fotoModalTitle.textContent = `Foto - ${name}`;
+            if (photoUrl) {
+                fotoModalPreview.innerHTML = `<img src="${escapeHtml(photoUrl)}" alt="Foto">`;
             } else {
                 fotoModalPreview.innerHTML = `<div class="no-foto"><i class="fas fa-user"></i><span>Sin foto</span></div>`;
             }
@@ -824,7 +997,6 @@
 
         fotoModalClose.addEventListener('click', () => fotoModal.classList.remove('is-active'));
         fotoModal.addEventListener('click', e => { if (e.target === fotoModal) fotoModal.classList.remove('is-active'); });
-
         fotoUploadBtn.addEventListener('click', () => fotoFileInput.click());
 
         fotoFileInput.addEventListener('change', async e => {
@@ -835,9 +1007,8 @@
             fotoUploadBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Subiendo...';
             fotoModalMsg.className = 'admin-modal-msg';
 
-            const socio = sociosData.find(s => s.id === currentFotoSocioId);
             const ext = file.name.split('.').pop();
-            const filePath = `${Date.now()}_${currentFotoSocioId}.${ext}`;
+            const filePath = `${Date.now()}_${currentFotoId}.${ext}`;
 
             const { error: uploadError } = await sb.storage
                 .from('fotos-socios')
@@ -854,7 +1025,14 @@
             const { data: urlData } = sb.storage.from('fotos-socios').getPublicUrl(filePath);
             const foto_url = urlData?.publicUrl || null;
 
-            const { error: updateError } = await sb.from('socios').update({ foto_url }).eq('id', currentFotoSocioId);
+            let updateError;
+            if (currentFotoType === 'socio') {
+                const res = await sb.from('socios').update({ foto_url }).eq('id', currentFotoId);
+                updateError = res.error;
+            } else {
+                const res = await sb.from('players').update({ photo: foto_url }).eq('player_id', currentFotoId);
+                updateError = res.error;
+            }
 
             if (updateError) {
                 fotoModalMsg.textContent = 'Error al guardar: ' + updateError.message;
@@ -862,16 +1040,15 @@
             } else {
                 fotoModalMsg.textContent = 'Foto actualizada correctamente';
                 fotoModalMsg.className = 'admin-modal-msg success';
-                if (socio) socio.foto_url = foto_url;
                 fotoModalPreview.innerHTML = `<img src="${escapeHtml(foto_url)}" alt="Foto">`;
-                loadSocios();
+                if (currentFotoType === 'socio') loadSocios(); else loadPlayers();
             }
 
             fotoUploadBtn.disabled = false;
             fotoUploadBtn.innerHTML = '<i class="fas fa-upload"></i> Subir foto';
         });
 
-        // ── Edit Modal ──
+        // ── Edit Socio Modal ──
         const editModal = document.getElementById('editModal');
         const editModalClose = document.getElementById('editModalClose');
         const editForm = document.getElementById('editForm');
@@ -889,6 +1066,7 @@
             document.getElementById('editFecha').value = formatDate(socio.created_at);
             document.getElementById('editTipo').value = socio.tipo_socio || 'normal';
             document.getElementById('editEstadoPago').value = socio.estado_pago || 'pendiente';
+            document.getElementById('editFamiliarDe').value = socio.familiar_de || '';
 
             editModalMsg.className = 'admin-modal-msg';
             editModalMsg.textContent = '';
@@ -909,7 +1087,8 @@
             const { error } = await sb.from('socios').update({
                 documento: document.getElementById('editDocumento').value.trim(),
                 tipo_socio: document.getElementById('editTipo').value,
-                estado_pago: document.getElementById('editEstadoPago').value
+                estado_pago: document.getElementById('editEstadoPago').value,
+                familiar_de: document.getElementById('editFamiliarDe').value.trim() || null
             }).eq('id', id);
 
             if (error) {
