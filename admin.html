@@ -72,33 +72,6 @@
             margin-bottom: 1.5rem;
         }
 
-        .admin-field {
-            margin-bottom: 1rem;
-        }
-
-        .admin-field label {
-            display: block;
-            font-size: 0.8rem;
-            font-weight: 600;
-            margin-bottom: 0.3rem;
-            color: #182B49;
-        }
-
-        .admin-field input {
-            width: 100%;
-            padding: 0.65rem 0.8rem;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            font-size: 0.95rem;
-            font-family: inherit;
-            transition: border-color 0.2s;
-        }
-
-        .admin-field input:focus {
-            outline: none;
-            border-color: #FFC72C;
-        }
-
         .admin-login-btn {
             width: 100%;
             padding: 0.75rem;
@@ -293,7 +266,11 @@
             border-radius: 50%;
             object-fit: cover;
             border: 2px solid #eee;
+            cursor: pointer;
+            transition: transform 0.2s;
         }
+
+        .admin-foto-thumb:hover { transform: scale(1.15); }
 
         .admin-foto-none {
             width: 36px;
@@ -305,7 +282,11 @@
             justify-content: center;
             color: #ccc;
             font-size: 0.9rem;
+            cursor: pointer;
+            transition: background 0.2s;
         }
+
+        .admin-foto-none:hover { background: #e0e0e0; }
 
         .admin-loading {
             text-align: center;
@@ -319,11 +300,202 @@
             color: #aaa;
         }
 
+        .admin-actions {
+            display: flex;
+            gap: 0.4rem;
+        }
+
+        .admin-action-btn {
+            background: none;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            padding: 0.3rem 0.5rem;
+            cursor: pointer;
+            color: #555;
+            font-size: 0.8rem;
+            transition: all 0.2s;
+        }
+
+        .admin-action-btn:hover { border-color: #182B49; color: #182B49; }
+
+        /* Modal overlay */
+        .admin-modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            padding: 1rem;
+        }
+
+        .admin-modal-overlay.is-active {
+            display: flex;
+        }
+
+        .admin-modal {
+            background: #fff;
+            border-radius: 12px;
+            padding: 2rem;
+            width: 100%;
+            max-width: 480px;
+            position: relative;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .admin-modal-close {
+            position: absolute;
+            top: 0.75rem;
+            right: 1rem;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #999;
+            line-height: 1;
+        }
+
+        .admin-modal-close:hover { color: #333; }
+
+        .admin-modal h3 {
+            font-size: 1.15rem;
+            font-weight: 700;
+            margin-bottom: 1.25rem;
+            padding-right: 2rem;
+        }
+
+        .admin-modal-field {
+            margin-bottom: 1rem;
+        }
+
+        .admin-modal-field label {
+            display: block;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-bottom: 0.3rem;
+            color: #182B49;
+        }
+
+        .admin-modal-field input,
+        .admin-modal-field select {
+            width: 100%;
+            padding: 0.6rem 0.8rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-family: inherit;
+            transition: border-color 0.2s;
+        }
+
+        .admin-modal-field input:focus,
+        .admin-modal-field select:focus {
+            outline: none;
+            border-color: #FFC72C;
+        }
+
+        .admin-modal-field input:read-only {
+            background: #f5f5f5;
+            color: #999;
+            cursor: not-allowed;
+        }
+
+        .admin-modal-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.75rem;
+        }
+
+        /* Foto modal */
+        .admin-foto-modal-preview {
+            text-align: center;
+            margin-bottom: 1.25rem;
+        }
+
+        .admin-foto-modal-preview img {
+            max-width: 200px;
+            max-height: 250px;
+            border-radius: 8px;
+            object-fit: cover;
+            border: 2px solid #eee;
+        }
+
+        .admin-foto-modal-preview .no-foto {
+            width: 150px;
+            height: 180px;
+            background: #f0f0f0;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #bbb;
+            margin: 0 auto;
+            gap: 0.5rem;
+        }
+
+        .admin-foto-modal-preview .no-foto i { font-size: 2.5rem; }
+        .admin-foto-modal-preview .no-foto span { font-size: 0.85rem; }
+
+        .admin-foto-upload-area {
+            text-align: center;
+            margin-top: 1rem;
+        }
+
+        .admin-foto-upload-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.5rem 1.2rem;
+            background: #182B49;
+            color: #FFC72C;
+            border: none;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        .admin-foto-upload-btn:hover { opacity: 0.9; }
+        .admin-foto-upload-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .admin-modal-save {
+            width: 100%;
+            padding: 0.7rem;
+            background: #182B49;
+            color: #FFC72C;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
+            transition: opacity 0.2s;
+            margin-top: 0.5rem;
+        }
+
+        .admin-modal-save:hover { opacity: 0.9; }
+        .admin-modal-save:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .admin-modal-msg {
+            font-size: 0.8rem;
+            text-align: center;
+            margin-top: 0.75rem;
+            display: none;
+        }
+
+        .admin-modal-msg.success { display: block; color: #2e7d32; }
+        .admin-modal-msg.error { display: block; color: #b71c1c; }
+
         @media (max-width: 768px) {
             .admin-header { padding: 1rem; }
             .admin-content { padding: 1rem; }
             .admin-stats { flex-direction: column; }
             .admin-stat { min-width: unset; }
+            .admin-modal-row { grid-template-columns: 1fr; }
         }
     </style>
 </head>
@@ -333,7 +505,7 @@
     <div class="admin-login" id="loginScreen">
         <div class="admin-login-card">
             <div class="admin-login-logo">
-                <img src="assets/images/static/LogoCompleto.png" alt="Menorca Rugby Club">
+                <img src="assets/images/static/logo.png" alt="Menorca Rugby Club">
             </div>
             <h2 class="admin-login-title">Panel de Administracion</h2>
             <p class="admin-login-subtitle">Accede con tu cuenta de Google autorizada</p>
@@ -348,7 +520,7 @@
     <div class="admin-dashboard" id="dashboard">
         <header class="admin-header">
             <div class="admin-header-left">
-                <img src="assets/images/static/LogoCompleto.png" alt="MRC">
+                <img src="assets/images/static/logo.png" alt="MRC">
                 <h1>Panel de Socios</h1>
             </div>
             <button class="admin-logout" id="logoutBtn">
@@ -375,6 +547,78 @@
         </div>
     </div>
 
+    <!-- Foto Modal -->
+    <div class="admin-modal-overlay" id="fotoModal">
+        <div class="admin-modal">
+            <button class="admin-modal-close" id="fotoModalClose">&times;</button>
+            <h3 id="fotoModalTitle">Foto del socio</h3>
+            <div class="admin-foto-modal-preview" id="fotoModalPreview"></div>
+            <div class="admin-foto-upload-area">
+                <input type="file" id="fotoFileInput" accept="image/*" style="display:none">
+                <button class="admin-foto-upload-btn" id="fotoUploadBtn">
+                    <i class="fas fa-upload"></i> Subir foto
+                </button>
+            </div>
+            <div class="admin-modal-msg" id="fotoModalMsg"></div>
+        </div>
+    </div>
+
+    <!-- Edit Modal -->
+    <div class="admin-modal-overlay" id="editModal">
+        <div class="admin-modal">
+            <button class="admin-modal-close" id="editModalClose">&times;</button>
+            <h3>Editar socio</h3>
+            <form id="editForm">
+                <input type="hidden" id="editId">
+                <div class="admin-modal-row">
+                    <div class="admin-modal-field">
+                        <label>Nombre</label>
+                        <input type="text" id="editNombre" readonly>
+                    </div>
+                    <div class="admin-modal-field">
+                        <label>Apellido</label>
+                        <input type="text" id="editApellido" readonly>
+                    </div>
+                </div>
+                <div class="admin-modal-field">
+                    <label>Documento</label>
+                    <input type="text" id="editDocumento" readonly>
+                </div>
+                <div class="admin-modal-field">
+                    <label>Email</label>
+                    <input type="email" id="editEmail" readonly>
+                </div>
+                <div class="admin-modal-field">
+                    <label>Fecha de alta</label>
+                    <input type="text" id="editFecha" readonly>
+                </div>
+                <div class="admin-modal-row">
+                    <div class="admin-modal-field">
+                        <label>Tipo de socio</label>
+                        <select id="editTipo">
+                            <option value="normal">Normal</option>
+                            <option value="protector">Protector</option>
+                            <option value="gym">Gym</option>
+                            <option value="jugador">Jugador</option>
+                            <option value="familiar">Familiar</option>
+                        </select>
+                    </div>
+                    <div class="admin-modal-field">
+                        <label>Estado pago</label>
+                        <select id="editEstadoPago">
+                            <option value="pendiente">Pendiente</option>
+                            <option value="completado">Completado</option>
+                        </select>
+                    </div>
+                </div>
+                <button type="submit" class="admin-modal-save" id="editSaveBtn">
+                    <i class="fas fa-save"></i> Guardar cambios
+                </button>
+            </form>
+            <div class="admin-modal-msg" id="editModalMsg"></div>
+        </div>
+    </div>
+
     <script>
         const SUPABASE_URL = 'https://hvskwugpxtsumesedyvk.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh2c2t3dWdweHRzdW1lc2VkeXZrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjAyMTk2MDgsImV4cCI6MjA3NTc5NTYwOH0.m2jCUOuzwYOhcghabkTQtj-pyBbcoQeSnxZHhRDqjSs';
@@ -388,7 +632,10 @@
         const logoutBtn = document.getElementById('logoutBtn');
         const refreshBtn = document.getElementById('refreshBtn');
 
-        // Check existing session on load (handles redirect back from Google)
+        // Socios data cache
+        let sociosData = [];
+
+        // ── Auth ──
         (async () => {
             const { data: { session } } = await sb.auth.getSession();
             if (session) {
@@ -396,45 +643,38 @@
                 if (authorized) {
                     showDashboard();
                 } else {
-                    loginError.textContent = 'Tu cuenta (' + session.user.email + ') no esta autorizada. Contacta al administrador.';
+                    loginError.textContent = 'Tu cuenta (' + session.user.email + ') no esta autorizada.';
                     loginError.classList.add('visible');
                     await sb.auth.signOut();
                 }
             }
         })();
 
-        // Listen for auth state changes (handles OAuth redirect)
         sb.auth.onAuthStateChange(async (event, session) => {
             if (event === 'SIGNED_IN' && session) {
                 const authorized = await checkAuthorized(session.user.email);
                 if (authorized) {
                     showDashboard();
                 } else {
-                    loginError.textContent = 'Tu cuenta (' + session.user.email + ') no esta autorizada. Contacta al administrador.';
+                    loginError.textContent = 'Tu cuenta (' + session.user.email + ') no esta autorizada.';
                     loginError.classList.add('visible');
                     await sb.auth.signOut();
                 }
             }
         });
 
-        // Check if email is in admin_users table
         async function checkAuthorized(email) {
             const { data, error } = await sb.from('admin_users').select('email').eq('email', email).single();
             return !error && data;
         }
 
-        // Google login
         googleLoginBtn.addEventListener('click', async () => {
             loginError.classList.remove('visible');
             googleLoginBtn.disabled = true;
-
             const { error } = await sb.auth.signInWithOAuth({
                 provider: 'google',
-                options: {
-                    redirectTo: window.location.origin + '/admin'
-                }
+                options: { redirectTo: window.location.origin + '/admin' }
             });
-
             if (error) {
                 loginError.textContent = 'Error al iniciar sesion con Google';
                 loginError.classList.add('visible');
@@ -442,15 +682,12 @@
             }
         });
 
-        // Logout
         logoutBtn.addEventListener('click', async () => {
             await sb.auth.signOut();
             dashboard.style.display = 'none';
             loginScreen.style.display = 'flex';
-            loginForm.reset();
         });
 
-        // Refresh
         refreshBtn.addEventListener('click', loadSocios);
 
         async function showDashboard() {
@@ -459,6 +696,23 @@
             await loadSocios();
         }
 
+        // ── Helpers ──
+        function escapeHtml(str) {
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+
+        function formatDate(dateStr) {
+            if (!dateStr) return '-';
+            const d = new Date(dateStr);
+            const day = String(d.getDate()).padStart(2, '0');
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const year = d.getFullYear();
+            return `${day}/${month}/${year}`;
+        }
+
+        // ── Load socios table ──
         async function loadSocios() {
             const container = document.getElementById('tableContainer');
             container.innerHTML = '<div class="admin-loading"><i class="fas fa-spinner fa-spin"></i> Cargando socios...</div>';
@@ -466,27 +720,28 @@
             const { data, error } = await sb.from('socios').select('*').order('created_at', { ascending: false });
 
             if (error) {
-                container.innerHTML = '<div class="admin-empty"><i class="fas fa-exclamation-triangle"></i> Error al cargar: ' + error.message + '</div>';
+                container.innerHTML = '<div class="admin-empty"><i class="fas fa-exclamation-triangle"></i> Error al cargar: ' + escapeHtml(error.message) + '</div>';
                 return;
             }
 
-            if (!data || data.length === 0) {
+            sociosData = data || [];
+
+            if (sociosData.length === 0) {
                 container.innerHTML = '<div class="admin-empty"><i class="fas fa-users"></i> No hay socios registrados aun.</div>';
                 document.getElementById('statsRow').innerHTML = '';
                 return;
             }
 
             // Stats
-            const total = data.length;
             const tipos = {};
-            data.forEach(s => {
+            sociosData.forEach(s => {
                 const t = s.tipo_socio || 'sin tipo';
                 tipos[t] = (tipos[t] || 0) + 1;
             });
 
-            let statsHTML = `<div class="admin-stat"><div class="admin-stat-number">${total}</div><div class="admin-stat-label">Total socios</div></div>`;
+            let statsHTML = `<div class="admin-stat"><div class="admin-stat-number">${sociosData.length}</div><div class="admin-stat-label">Total socios</div></div>`;
             Object.entries(tipos).forEach(([tipo, count]) => {
-                statsHTML += `<div class="admin-stat"><div class="admin-stat-number">${count}</div><div class="admin-stat-label">${tipo}</div></div>`;
+                statsHTML += `<div class="admin-stat"><div class="admin-stat-number">${count}</div><div class="admin-stat-label">${escapeHtml(tipo)}</div></div>`;
             });
             document.getElementById('statsRow').innerHTML = statsHTML;
 
@@ -500,18 +755,19 @@
                         <th>Documento</th>
                         <th>Email</th>
                         <th>Tipo</th>
-                        <th>Fecha</th>
+                        <th>Fecha alta</th>
+                        <th>Acciones</th>
                     </tr>
                 </thead>
                 <tbody>`;
 
-            data.forEach(s => {
+            sociosData.forEach(s => {
+                const fotoClick = `onclick="openFotoModal('${s.id}')"`;
                 const foto = s.foto_url
-                    ? `<img src="${s.foto_url}" class="admin-foto-thumb" alt="Foto">`
-                    : `<div class="admin-foto-none"><i class="fas fa-user"></i></div>`;
+                    ? `<img src="${escapeHtml(s.foto_url)}" class="admin-foto-thumb" alt="Foto" ${fotoClick}>`
+                    : `<div class="admin-foto-none" ${fotoClick}><i class="fas fa-user"></i></div>`;
                 const tipo = s.tipo_socio || '-';
                 const badgeClass = `admin-badge--${tipo}`;
-                const fecha = s.created_at ? new Date(s.created_at).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' }) : '-';
 
                 html += `<tr>
                     <td>${foto}</td>
@@ -520,7 +776,17 @@
                     <td>${escapeHtml(s.documento || '')}</td>
                     <td>${escapeHtml(s.email || '')}</td>
                     <td><span class="admin-badge ${badgeClass}">${escapeHtml(tipo)}</span></td>
-                    <td>${fecha}</td>
+                    <td>${formatDate(s.created_at)}</td>
+                    <td>
+                        <div class="admin-actions">
+                            <button class="admin-action-btn" onclick="openEditModal('${s.id}')" title="Editar">
+                                <i class="fas fa-pen"></i>
+                            </button>
+                            <button class="admin-action-btn" onclick="openFotoModal('${s.id}')" title="Foto">
+                                <i class="fas fa-camera"></i>
+                            </button>
+                        </div>
+                    </td>
                 </tr>`;
             });
 
@@ -528,11 +794,143 @@
             container.innerHTML = html;
         }
 
-        function escapeHtml(str) {
-            const div = document.createElement('div');
-            div.textContent = str;
-            return div.innerHTML;
+        // ── Foto Modal ──
+        const fotoModal = document.getElementById('fotoModal');
+        const fotoModalClose = document.getElementById('fotoModalClose');
+        const fotoModalPreview = document.getElementById('fotoModalPreview');
+        const fotoModalTitle = document.getElementById('fotoModalTitle');
+        const fotoFileInput = document.getElementById('fotoFileInput');
+        const fotoUploadBtn = document.getElementById('fotoUploadBtn');
+        const fotoModalMsg = document.getElementById('fotoModalMsg');
+        let currentFotoSocioId = null;
+
+        function openFotoModal(id) {
+            const socio = sociosData.find(s => s.id === id);
+            if (!socio) return;
+            currentFotoSocioId = id;
+            fotoModalTitle.textContent = `Foto - ${socio.nombre} ${socio.apellido}`;
+            fotoModalMsg.className = 'admin-modal-msg';
+            fotoModalMsg.textContent = '';
+            fotoFileInput.value = '';
+
+            if (socio.foto_url) {
+                fotoModalPreview.innerHTML = `<img src="${escapeHtml(socio.foto_url)}" alt="Foto">`;
+            } else {
+                fotoModalPreview.innerHTML = `<div class="no-foto"><i class="fas fa-user"></i><span>Sin foto</span></div>`;
+            }
+
+            fotoModal.classList.add('is-active');
         }
+
+        fotoModalClose.addEventListener('click', () => fotoModal.classList.remove('is-active'));
+        fotoModal.addEventListener('click', e => { if (e.target === fotoModal) fotoModal.classList.remove('is-active'); });
+
+        fotoUploadBtn.addEventListener('click', () => fotoFileInput.click());
+
+        fotoFileInput.addEventListener('change', async e => {
+            const file = e.target.files[0];
+            if (!file || !file.type.startsWith('image/')) return;
+
+            fotoUploadBtn.disabled = true;
+            fotoUploadBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Subiendo...';
+            fotoModalMsg.className = 'admin-modal-msg';
+
+            const socio = sociosData.find(s => s.id === currentFotoSocioId);
+            const ext = file.name.split('.').pop();
+            const filePath = `${Date.now()}_${currentFotoSocioId}.${ext}`;
+
+            const { error: uploadError } = await sb.storage
+                .from('fotos-socios')
+                .upload(filePath, file, { cacheControl: '3600', upsert: false });
+
+            if (uploadError) {
+                fotoModalMsg.textContent = 'Error al subir: ' + uploadError.message;
+                fotoModalMsg.className = 'admin-modal-msg error';
+                fotoUploadBtn.disabled = false;
+                fotoUploadBtn.innerHTML = '<i class="fas fa-upload"></i> Subir foto';
+                return;
+            }
+
+            const { data: urlData } = sb.storage.from('fotos-socios').getPublicUrl(filePath);
+            const foto_url = urlData?.publicUrl || null;
+
+            const { error: updateError } = await sb.from('socios').update({ foto_url }).eq('id', currentFotoSocioId);
+
+            if (updateError) {
+                fotoModalMsg.textContent = 'Error al guardar: ' + updateError.message;
+                fotoModalMsg.className = 'admin-modal-msg error';
+            } else {
+                fotoModalMsg.textContent = 'Foto actualizada correctamente';
+                fotoModalMsg.className = 'admin-modal-msg success';
+                if (socio) socio.foto_url = foto_url;
+                fotoModalPreview.innerHTML = `<img src="${escapeHtml(foto_url)}" alt="Foto">`;
+                loadSocios();
+            }
+
+            fotoUploadBtn.disabled = false;
+            fotoUploadBtn.innerHTML = '<i class="fas fa-upload"></i> Subir foto';
+        });
+
+        // ── Edit Modal ──
+        const editModal = document.getElementById('editModal');
+        const editModalClose = document.getElementById('editModalClose');
+        const editForm = document.getElementById('editForm');
+        const editModalMsg = document.getElementById('editModalMsg');
+
+        function openEditModal(id) {
+            const socio = sociosData.find(s => s.id === id);
+            if (!socio) return;
+
+            document.getElementById('editId').value = socio.id;
+            document.getElementById('editNombre').value = socio.nombre || '';
+            document.getElementById('editApellido').value = socio.apellido || '';
+            document.getElementById('editDocumento').value = socio.documento || '';
+            document.getElementById('editEmail').value = socio.email || '';
+            document.getElementById('editFecha').value = formatDate(socio.created_at);
+            document.getElementById('editTipo').value = socio.tipo_socio || 'normal';
+            document.getElementById('editEstadoPago').value = socio.estado_pago || 'pendiente';
+
+            editModalMsg.className = 'admin-modal-msg';
+            editModalMsg.textContent = '';
+            editModal.classList.add('is-active');
+        }
+
+        editModalClose.addEventListener('click', () => editModal.classList.remove('is-active'));
+        editModal.addEventListener('click', e => { if (e.target === editModal) editModal.classList.remove('is-active'); });
+
+        editForm.addEventListener('submit', async e => {
+            e.preventDefault();
+            const id = document.getElementById('editId').value;
+            const saveBtn = document.getElementById('editSaveBtn');
+            saveBtn.disabled = true;
+            saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
+            editModalMsg.className = 'admin-modal-msg';
+
+            const { error } = await sb.from('socios').update({
+                tipo_socio: document.getElementById('editTipo').value,
+                estado_pago: document.getElementById('editEstadoPago').value
+            }).eq('id', id);
+
+            if (error) {
+                editModalMsg.textContent = 'Error al guardar: ' + error.message;
+                editModalMsg.className = 'admin-modal-msg error';
+            } else {
+                editModalMsg.textContent = 'Cambios guardados correctamente';
+                editModalMsg.className = 'admin-modal-msg success';
+                await loadSocios();
+            }
+
+            saveBtn.disabled = false;
+            saveBtn.innerHTML = '<i class="fas fa-save"></i> Guardar cambios';
+        });
+
+        // Close modals with ESC
+        document.addEventListener('keydown', e => {
+            if (e.key === 'Escape') {
+                fotoModal.classList.remove('is-active');
+                editModal.classList.remove('is-active');
+            }
+        });
     </script>
 </body>
 </html>
