@@ -150,7 +150,7 @@
 
         .admin-content {
             padding: 1.5rem 2rem;
-            max-width: 1400px;
+            max-width: 100%;
             margin: 0 auto;
         }
 
@@ -206,7 +206,7 @@
         /* Stats */
         .admin-stats {
             display: flex;
-            gap: 1rem;
+            gap: 0.75rem;
             margin-bottom: 1.5rem;
             flex-wrap: wrap;
         }
@@ -214,22 +214,52 @@
         .admin-stat {
             background: #fff;
             border-radius: 10px;
-            padding: 1.2rem 1.5rem;
+            padding: 1rem 1.25rem;
             box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-            min-width: 140px;
+            min-width: 120px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 2px solid transparent;
+            user-select: none;
+        }
+
+        .admin-stat:hover { border-color: #e0e0e0; }
+
+        .admin-stat.active {
+            border-color: #FFC72C;
+            background: #fffbf0;
         }
 
         .admin-stat-number {
-            font-size: 2rem;
+            font-size: 1.75rem;
             font-weight: 700;
             color: #182B49;
         }
 
         .admin-stat-label {
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             color: #888;
             font-weight: 500;
+            text-transform: capitalize;
         }
+
+        .admin-filter-clear {
+            display: none;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.3rem 0.8rem;
+            background: #FFC72C;
+            color: #182B49;
+            border: none;
+            border-radius: 6px;
+            font-family: inherit;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-bottom: 1rem;
+        }
+
+        .admin-filter-clear.visible { display: inline-flex; }
 
         /* Table */
         .admin-table-wrapper {
@@ -273,11 +303,12 @@
             width: 100%;
             border-collapse: collapse;
             font-size: 0.85rem;
+            table-layout: auto;
         }
 
         thead th {
             text-align: left;
-            padding: 0.75rem 1rem;
+            padding: 0.65rem 0.75rem;
             font-weight: 600;
             font-size: 0.72rem;
             text-transform: uppercase;
@@ -285,12 +316,28 @@
             color: #888;
             border-bottom: 2px solid #eee;
             white-space: nowrap;
+            cursor: pointer;
+            user-select: none;
+            transition: color 0.2s;
         }
 
+        thead th:hover { color: #182B49; }
+
+        thead th .sort-icon {
+            font-size: 0.6rem;
+            margin-left: 0.25rem;
+            opacity: 0.4;
+        }
+
+        thead th.sorted .sort-icon { opacity: 1; color: #FFC72C; }
+        thead th.no-sort { cursor: default; }
+        thead th.no-sort:hover { color: #888; }
+
         tbody td {
-            padding: 0.7rem 1rem;
+            padding: 0.55rem 0.75rem;
             border-bottom: 1px solid #f5f5f5;
             vertical-align: middle;
+            white-space: nowrap;
         }
 
         tbody tr:hover { background: #fafafa; }
@@ -316,8 +363,8 @@
         .admin-badge--inactive { background: #f5f5f5; color: #999; }
 
         .admin-foto-thumb {
-            width: 36px;
-            height: 36px;
+            width: 32px;
+            height: 32px;
             border-radius: 50%;
             object-fit: cover;
             border: 2px solid #eee;
@@ -328,15 +375,15 @@
         .admin-foto-thumb:hover { transform: scale(1.15); }
 
         .admin-foto-none {
-            width: 36px;
-            height: 36px;
+            width: 32px;
+            height: 32px;
             border-radius: 50%;
             background: #f0f0f0;
-            display: flex;
+            display: inline-flex;
             align-items: center;
             justify-content: center;
             color: #ccc;
-            font-size: 0.9rem;
+            font-size: 0.8rem;
             cursor: pointer;
             transition: background 0.2s;
         }
@@ -357,23 +404,23 @@
 
         .admin-actions {
             display: flex;
-            gap: 0.4rem;
+            gap: 0.3rem;
         }
 
         .admin-action-btn {
             background: none;
             border: 1px solid #ddd;
             border-radius: 6px;
-            padding: 0.3rem 0.5rem;
+            padding: 0.25rem 0.45rem;
             cursor: pointer;
             color: #555;
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             transition: all 0.2s;
         }
 
         .admin-action-btn:hover { border-color: #182B49; color: #182B49; }
 
-        /* Modal overlay */
+        /* Modal */
         .admin-modal-overlay {
             position: fixed;
             inset: 0;
@@ -460,7 +507,6 @@
             gap: 0.75rem;
         }
 
-        /* Foto modal */
         .admin-foto-modal-preview {
             text-align: center;
             margin-bottom: 1.25rem;
@@ -549,14 +595,82 @@
             font-style: italic;
         }
 
+        /* Mobile card view */
+        .mobile-cards { display: none; }
+
+        .mobile-card {
+            background: #fff;
+            border-radius: 10px;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+            display: flex;
+            gap: 0.75rem;
+            align-items: flex-start;
+        }
+
+        .mobile-card-foto {
+            flex-shrink: 0;
+        }
+
+        .mobile-card-foto .admin-foto-thumb,
+        .mobile-card-foto .admin-foto-none {
+            width: 44px;
+            height: 44px;
+        }
+
+        .mobile-card-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .mobile-card-name {
+            font-weight: 700;
+            font-size: 0.95rem;
+            margin-bottom: 0.2rem;
+        }
+
+        .mobile-card-detail {
+            font-size: 0.8rem;
+            color: #666;
+            margin-bottom: 0.15rem;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .mobile-card-detail strong {
+            color: #182B49;
+            font-weight: 600;
+        }
+
+        .mobile-card-actions {
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 0.3rem;
+        }
+
         @media (max-width: 768px) {
-            .admin-header { padding: 1rem; }
-            .admin-content { padding: 1rem; }
-            .admin-stats { flex-direction: column; }
-            .admin-stat { min-width: unset; }
+            .admin-header { padding: 0.75rem 1rem; }
+            .admin-header h1 { font-size: 0.95rem; }
+            .admin-content { padding: 0.75rem; }
+            .admin-stats { gap: 0.5rem; }
+            .admin-stat {
+                min-width: unset;
+                flex: 1;
+                padding: 0.75rem;
+                text-align: center;
+            }
+            .admin-stat-number { font-size: 1.4rem; }
+            .admin-stat-label { font-size: 0.68rem; }
             .admin-modal-row { grid-template-columns: 1fr; }
             .admin-tabs { overflow-x: auto; }
             .admin-tab { padding: 0.6rem 1rem; font-size: 0.85rem; }
+            .admin-table-wrapper table { display: none; }
+            .mobile-cards { display: block; padding: 0.75rem; }
+            .admin-table-header h2 { font-size: 0.95rem; }
+            .admin-filter-clear { font-size: 0.75rem; margin-bottom: 0.75rem; }
         }
     </style>
 </head>
@@ -590,7 +704,6 @@
         </header>
 
         <div class="admin-content">
-            <!-- Tabs -->
             <div class="admin-tabs">
                 <button class="admin-tab active" data-tab="socios">
                     <i class="fas fa-id-card"></i> Socios <span class="tab-count" id="sociosCount">0</span>
@@ -603,32 +716,26 @@
             <!-- Socios Panel -->
             <div class="admin-tab-panel active" id="panel-socios">
                 <div class="admin-stats" id="sociosStats"></div>
+                <button class="admin-filter-clear" id="sociosFilterClear"><i class="fas fa-times"></i> Quitar filtro</button>
                 <div class="admin-table-wrapper">
                     <div class="admin-table-header">
-                        <h2>Socios registrados</h2>
-                        <button class="admin-refresh" id="refreshSocios">
-                            <i class="fas fa-sync-alt"></i> Actualizar
-                        </button>
+                        <h2 id="sociosTableTitle">Socios registrados</h2>
+                        <button class="admin-refresh" id="refreshSocios"><i class="fas fa-sync-alt"></i> Actualizar</button>
                     </div>
-                    <div id="sociosTable">
-                        <div class="admin-loading"><i class="fas fa-spinner fa-spin"></i> Cargando...</div>
-                    </div>
+                    <div id="sociosTable"><div class="admin-loading"><i class="fas fa-spinner fa-spin"></i> Cargando...</div></div>
                 </div>
             </div>
 
             <!-- Jugadores Panel -->
             <div class="admin-tab-panel" id="panel-jugadores">
                 <div class="admin-stats" id="jugadoresStats"></div>
+                <button class="admin-filter-clear" id="jugadoresFilterClear"><i class="fas fa-times"></i> Quitar filtro</button>
                 <div class="admin-table-wrapper">
                     <div class="admin-table-header">
-                        <h2>Jugadores registrados</h2>
-                        <button class="admin-refresh" id="refreshJugadores">
-                            <i class="fas fa-sync-alt"></i> Actualizar
-                        </button>
+                        <h2 id="jugadoresTableTitle">Jugadores registrados</h2>
+                        <button class="admin-refresh" id="refreshJugadores"><i class="fas fa-sync-alt"></i> Actualizar</button>
                     </div>
-                    <div id="jugadoresTable">
-                        <div class="admin-loading"><i class="fas fa-spinner fa-spin"></i> Cargando...</div>
-                    </div>
+                    <div id="jugadoresTable"><div class="admin-loading"><i class="fas fa-spinner fa-spin"></i> Cargando...</div></div>
                 </div>
             </div>
         </div>
@@ -642,9 +749,7 @@
             <div class="admin-foto-modal-preview" id="fotoModalPreview"></div>
             <div class="admin-foto-upload-area">
                 <input type="file" id="fotoFileInput" accept="image/*" style="display:none">
-                <button class="admin-foto-upload-btn" id="fotoUploadBtn">
-                    <i class="fas fa-upload"></i> Subir foto
-                </button>
+                <button class="admin-foto-upload-btn" id="fotoUploadBtn"><i class="fas fa-upload"></i> Subir foto</button>
             </div>
             <div class="admin-modal-msg" id="fotoModalMsg"></div>
         </div>
@@ -702,9 +807,7 @@
                     <label>Familiar de</label>
                     <input type="text" id="editFamiliarDe" placeholder="Nombre del socio/jugador relacionado">
                 </div>
-                <button type="submit" class="admin-modal-save" id="editSaveBtn">
-                    <i class="fas fa-save"></i> Guardar cambios
-                </button>
+                <button type="submit" class="admin-modal-save" id="editSaveBtn"><i class="fas fa-save"></i> Guardar cambios</button>
             </form>
             <div class="admin-modal-msg" id="editModalMsg"></div>
         </div>
@@ -724,15 +827,18 @@
 
         let sociosData = [];
         let playersData = [];
+        let sociosFilter = null;
+        let playersFilter = null;
+        let sociosSort = { col: 'created_at', dir: 'desc' };
+        let playersSort = { col: 'last_name', dir: 'asc' };
 
         // ── Auth ──
         (async () => {
             const { data: { session } } = await sb.auth.getSession();
             if (session) {
-                const authorized = await checkAuthorized(session.user.email);
-                if (authorized) {
-                    showDashboard();
-                } else {
+                const ok = await checkAuthorized(session.user.email);
+                if (ok) showDashboard();
+                else {
                     loginError.textContent = 'Tu cuenta (' + session.user.email + ') no esta autorizada.';
                     loginError.classList.add('visible');
                     await sb.auth.signOut();
@@ -742,10 +848,9 @@
 
         sb.auth.onAuthStateChange(async (event, session) => {
             if (event === 'SIGNED_IN' && session) {
-                const authorized = await checkAuthorized(session.user.email);
-                if (authorized) {
-                    showDashboard();
-                } else {
+                const ok = await checkAuthorized(session.user.email);
+                if (ok) showDashboard();
+                else {
                     loginError.textContent = 'Tu cuenta (' + session.user.email + ') no esta autorizada.';
                     loginError.classList.add('visible');
                     await sb.auth.signOut();
@@ -797,6 +902,18 @@
         document.getElementById('refreshSocios').addEventListener('click', loadSocios);
         document.getElementById('refreshJugadores').addEventListener('click', loadPlayers);
 
+        document.getElementById('sociosFilterClear').addEventListener('click', () => {
+            sociosFilter = null;
+            renderSociosTable();
+            renderSociosStats();
+        });
+
+        document.getElementById('jugadoresFilterClear').addEventListener('click', () => {
+            playersFilter = null;
+            renderPlayersTable();
+            renderPlayersStats();
+        });
+
         // ── Helpers ──
         function escapeHtml(str) {
             const div = document.createElement('div');
@@ -807,13 +924,23 @@
         function formatDate(dateStr) {
             if (!dateStr) return '-';
             const d = new Date(dateStr);
-            const day = String(d.getDate()).padStart(2, '0');
-            const month = String(d.getMonth() + 1).padStart(2, '0');
-            const year = d.getFullYear();
-            return `${day}/${month}/${year}`;
+            return String(d.getDate()).padStart(2, '0') + '/' + String(d.getMonth() + 1).padStart(2, '0') + '/' + d.getFullYear();
         }
 
-        // ── Load Socios ──
+        function isValidImageUrl(url) {
+            if (!url) return false;
+            if (url.startsWith('http://') || url.startsWith('https://')) return true;
+            return false;
+        }
+
+        function renderFotoThumb(url, onclick) {
+            if (isValidImageUrl(url)) {
+                return `<img src="${escapeHtml(url)}" class="admin-foto-thumb" alt="Foto" onerror="this.outerHTML='<div class=\\'admin-foto-none\\' ${onclick}><i class=\\'fas fa-user\\'></i></div>'" ${onclick}>`;
+            }
+            return `<div class="admin-foto-none" ${onclick}><i class="fas fa-user"></i></div>`;
+        }
+
+        // ── Socios ──
         async function loadSocios() {
             const container = document.getElementById('sociosTable');
             container.innerHTML = '<div class="admin-loading"><i class="fas fa-spinner fa-spin"></i> Cargando socios...</div>';
@@ -826,47 +953,143 @@
             }
 
             sociosData = data || [];
+            sociosFilter = null;
             document.getElementById('sociosCount').textContent = sociosData.length;
+            renderSociosStats();
+            renderSociosTable();
+        }
 
-            if (sociosData.length === 0) {
-                container.innerHTML = '<div class="admin-empty"><i class="fas fa-users"></i> No hay socios registrados.</div>';
-                document.getElementById('sociosStats').innerHTML = '';
-                return;
-            }
-
-            // Stats
+        function renderSociosStats() {
             const tipos = {};
             sociosData.forEach(s => {
                 const t = s.tipo_socio || 'sin tipo';
                 tipos[t] = (tipos[t] || 0) + 1;
             });
-            let statsHTML = `<div class="admin-stat"><div class="admin-stat-number">${sociosData.length}</div><div class="admin-stat-label">Total socios</div></div>`;
+
+            let html = `<div class="admin-stat ${!sociosFilter ? 'active' : ''}" onclick="filterSocios(null)">
+                <div class="admin-stat-number">${sociosData.length}</div><div class="admin-stat-label">Total</div></div>`;
             Object.entries(tipos).forEach(([tipo, count]) => {
-                statsHTML += `<div class="admin-stat"><div class="admin-stat-number">${count}</div><div class="admin-stat-label">${escapeHtml(tipo)}</div></div>`;
+                const isActive = sociosFilter && sociosFilter.key === 'tipo_socio' && sociosFilter.value === tipo;
+                html += `<div class="admin-stat ${isActive ? 'active' : ''}" onclick="filterSocios('${escapeHtml(tipo)}')">
+                    <div class="admin-stat-number">${count}</div><div class="admin-stat-label">${escapeHtml(tipo)}</div></div>`;
             });
-            document.getElementById('sociosStats').innerHTML = statsHTML;
+            document.getElementById('sociosStats').innerHTML = html;
 
-            // Table
-            let html = `<table><thead><tr>
-                <th>Foto</th><th>Nombre</th><th>Apellido</th><th>DNI/NIE/Pasaporte</th>
-                <th>Email</th><th>Tipo</th><th>Familiar de</th><th>Fecha alta</th><th>Acciones</th>
-            </tr></thead><tbody>`;
+            const clearBtn = document.getElementById('sociosFilterClear');
+            clearBtn.classList.toggle('visible', !!sociosFilter);
+        }
 
-            sociosData.forEach(s => {
-                const fotoClick = `onclick="openFotoModal('socio','${s.id}')"`;
-                const foto = s.foto_url
-                    ? `<img src="${escapeHtml(s.foto_url)}" class="admin-foto-thumb" alt="Foto" ${fotoClick}>`
-                    : `<div class="admin-foto-none" ${fotoClick}><i class="fas fa-user"></i></div>`;
+        function filterSocios(tipo) {
+            if (!tipo || (sociosFilter && sociosFilter.value === tipo)) {
+                sociosFilter = null;
+            } else {
+                sociosFilter = { key: 'tipo_socio', value: tipo };
+            }
+            renderSociosStats();
+            renderSociosTable();
+        }
+
+        function sortData(data, col, dir) {
+            return [...data].sort((a, b) => {
+                let va = a[col] || '', vb = b[col] || '';
+                if (typeof va === 'string') va = va.toLowerCase();
+                if (typeof vb === 'string') vb = vb.toLowerCase();
+                if (va < vb) return dir === 'asc' ? -1 : 1;
+                if (va > vb) return dir === 'asc' ? 1 : -1;
+                return 0;
+            });
+        }
+
+        function sortIcon(currentSort, col) {
+            const isActive = currentSort.col === col;
+            const icon = isActive ? (currentSort.dir === 'asc' ? 'fa-sort-up' : 'fa-sort-down') : 'fa-sort';
+            return `<i class="fas ${icon} sort-icon"></i>`;
+        }
+
+        function sociosSortClick(col) {
+            if (sociosSort.col === col) {
+                sociosSort.dir = sociosSort.dir === 'asc' ? 'desc' : 'asc';
+            } else {
+                sociosSort = { col, dir: 'asc' };
+            }
+            renderSociosTable();
+        }
+
+        function playersSortClick(col) {
+            if (playersSort.col === col) {
+                playersSort.dir = playersSort.dir === 'asc' ? 'desc' : 'asc';
+            } else {
+                playersSort = { col, dir: 'asc' };
+            }
+            renderPlayersTable();
+        }
+
+        function renderSociosTable() {
+            const container = document.getElementById('sociosTable');
+            let filtered = sociosFilter
+                ? sociosData.filter(s => (s.tipo_socio || 'sin tipo') === sociosFilter.value)
+                : sociosData;
+
+            // Sort - handle combined name column
+            if (sociosSort.col === 'nombre_full') {
+                filtered = [...filtered].sort((a, b) => {
+                    const va = ((a.apellido || '') + ' ' + (a.nombre || '')).toLowerCase();
+                    const vb = ((b.apellido || '') + ' ' + (b.nombre || '')).toLowerCase();
+                    if (va < vb) return sociosSort.dir === 'asc' ? -1 : 1;
+                    if (va > vb) return sociosSort.dir === 'asc' ? 1 : -1;
+                    return 0;
+                });
+            } else {
+                filtered = sortData(filtered, sociosSort.col, sociosSort.dir);
+            }
+
+            const title = document.getElementById('sociosTableTitle');
+            title.textContent = sociosFilter
+                ? `Socios: ${sociosFilter.value} (${filtered.length})`
+                : 'Socios registrados';
+
+            if (filtered.length === 0) {
+                container.innerHTML = '<div class="admin-empty"><i class="fas fa-users"></i> No hay socios' + (sociosFilter ? ' con este filtro' : '') + '.</div>';
+                return;
+            }
+
+            const cols = [
+                { key: null, label: 'Foto', noSort: true },
+                { key: 'nombre_full', label: 'Nombre' },
+                { key: 'documento', label: 'DNI/NIE/Pas.' },
+                { key: 'email', label: 'Email' },
+                { key: 'tipo_socio', label: 'Tipo' },
+                { key: 'familiar_de', label: 'Familiar de' },
+                { key: 'created_at', label: 'Alta' },
+                { key: null, label: 'Acc.', noSort: true }
+            ];
+
+            let html = '<table><thead><tr>';
+            cols.forEach(c => {
+                if (c.noSort) {
+                    html += `<th class="no-sort">${c.label}</th>`;
+                } else {
+                    const cls = sociosSort.col === c.key ? 'sorted' : '';
+                    html += `<th class="${cls}" onclick="sociosSortClick('${c.key}')">${c.label} ${sortIcon(sociosSort, c.key)}</th>`;
+                }
+            });
+            html += '</tr></thead><tbody>';
+
+            // Mobile cards
+            let mobileHtml = '';
+
+            filtered.forEach(s => {
+                const onclick = `onclick="openFotoModal('socio','${s.id}')"`;
+                const foto = renderFotoThumb(s.foto_url, onclick);
                 const tipo = s.tipo_socio || '-';
-                const badgeClass = `admin-badge--${tipo}`;
+                const nombre = `${escapeHtml(s.apellido || '')} ${escapeHtml(s.nombre || '')}`.trim();
 
                 html += `<tr>
                     <td>${foto}</td>
-                    <td>${escapeHtml(s.nombre || '')}</td>
-                    <td>${escapeHtml(s.apellido || '')}</td>
+                    <td>${nombre}</td>
                     <td>${escapeHtml(s.documento || '')}</td>
                     <td>${escapeHtml(s.email || '')}</td>
-                    <td><span class="admin-badge ${badgeClass}">${escapeHtml(tipo)}</span></td>
+                    <td><span class="admin-badge admin-badge--${tipo}">${escapeHtml(tipo)}</span></td>
                     <td class="familiar-de-cell">${escapeHtml(s.familiar_de || '')}</td>
                     <td>${formatDate(s.created_at)}</td>
                     <td><div class="admin-actions">
@@ -874,13 +1097,29 @@
                         <button class="admin-action-btn" onclick="openFotoModal('socio','${s.id}')" title="Foto"><i class="fas fa-camera"></i></button>
                     </div></td>
                 </tr>`;
+
+                mobileHtml += `<div class="mobile-card">
+                    <div class="mobile-card-foto">${foto}</div>
+                    <div class="mobile-card-info">
+                        <div class="mobile-card-name">${nombre}</div>
+                        <div class="mobile-card-detail"><span class="admin-badge admin-badge--${tipo}">${escapeHtml(tipo)}</span> ${formatDate(s.created_at)}</div>
+                        <div class="mobile-card-detail">${escapeHtml(s.email || '')}</div>
+                        ${s.documento ? `<div class="mobile-card-detail"><strong>Doc:</strong> ${escapeHtml(s.documento)}</div>` : ''}
+                        ${s.familiar_de ? `<div class="mobile-card-detail"><strong>Familiar de:</strong> ${escapeHtml(s.familiar_de)}</div>` : ''}
+                    </div>
+                    <div class="mobile-card-actions">
+                        <button class="admin-action-btn" onclick="openEditModal('${s.id}')" title="Editar"><i class="fas fa-pen"></i></button>
+                        <button class="admin-action-btn" onclick="openFotoModal('socio','${s.id}')" title="Foto"><i class="fas fa-camera"></i></button>
+                    </div>
+                </div>`;
             });
 
             html += '</tbody></table>';
+            html += `<div class="mobile-cards">${mobileHtml}</div>`;
             container.innerHTML = html;
         }
 
-        // ── Load Players ──
+        // ── Players ──
         async function loadPlayers() {
             const container = document.getElementById('jugadoresTable');
             container.innerHTML = '<div class="admin-loading"><i class="fas fa-spinner fa-spin"></i> Cargando jugadores...</div>';
@@ -893,52 +1132,106 @@
             }
 
             playersData = data || [];
+            playersFilter = null;
             document.getElementById('jugadoresCount').textContent = playersData.length;
+            renderPlayersStats();
+            renderPlayersTable();
+        }
 
-            if (playersData.length === 0) {
-                container.innerHTML = '<div class="admin-empty"><i class="fas fa-football-ball"></i> No hay jugadores registrados.</div>';
-                document.getElementById('jugadoresStats').innerHTML = '';
-                return;
-            }
-
-            // Stats
-            const categories = {};
+        function renderPlayersStats() {
             const statuses = {};
             playersData.forEach(p => {
-                const c = p.category_primary || 'sin categoria';
-                categories[c] = (categories[c] || 0) + 1;
                 const st = p.status || 'unknown';
                 statuses[st] = (statuses[st] || 0) + 1;
             });
 
-            let statsHTML = `<div class="admin-stat"><div class="admin-stat-number">${playersData.length}</div><div class="admin-stat-label">Total jugadores</div></div>`;
-            Object.entries(categories).forEach(([cat, count]) => {
-                statsHTML += `<div class="admin-stat"><div class="admin-stat-number">${count}</div><div class="admin-stat-label">${escapeHtml(cat)}</div></div>`;
-            });
+            let html = `<div class="admin-stat ${!playersFilter ? 'active' : ''}" onclick="filterPlayers(null)">
+                <div class="admin-stat-number">${playersData.length}</div><div class="admin-stat-label">Total</div></div>`;
             Object.entries(statuses).forEach(([st, count]) => {
-                statsHTML += `<div class="admin-stat"><div class="admin-stat-number">${count}</div><div class="admin-stat-label">${escapeHtml(st)}</div></div>`;
+                const isActive = playersFilter && playersFilter.value === st;
+                html += `<div class="admin-stat ${isActive ? 'active' : ''}" onclick="filterPlayers('${escapeHtml(st)}')">
+                    <div class="admin-stat-number">${count}</div><div class="admin-stat-label">${escapeHtml(st)}</div></div>`;
             });
-            document.getElementById('jugadoresStats').innerHTML = statsHTML;
+            document.getElementById('jugadoresStats').innerHTML = html;
 
-            // Table
-            let html = `<table><thead><tr>
-                <th>Foto</th><th>Apellido</th><th>Nombre</th><th>Categoria</th>
-                <th>Estado</th><th>Ficha</th><th>Email</th><th>Telefono</th>
-                <th>Documento</th><th>Genero</th><th>Nac.</th><th>Alta</th>
-            </tr></thead><tbody>`;
+            const clearBtn = document.getElementById('jugadoresFilterClear');
+            clearBtn.classList.toggle('visible', !!playersFilter);
+        }
 
-            playersData.forEach(p => {
-                const foto = p.photo
-                    ? `<img src="${escapeHtml(p.photo)}" class="admin-foto-thumb" alt="Foto" onclick="openFotoModal('player','${escapeHtml(p.player_id)}')">`
-                    : `<div class="admin-foto-none" onclick="openFotoModal('player','${escapeHtml(p.player_id)}')"><i class="fas fa-user"></i></div>`;
+        function filterPlayers(status) {
+            if (!status || (playersFilter && playersFilter.value === status)) {
+                playersFilter = null;
+            } else {
+                playersFilter = { key: 'status', value: status };
+            }
+            renderPlayersStats();
+            renderPlayersTable();
+        }
+
+        function renderPlayersTable() {
+            const container = document.getElementById('jugadoresTable');
+            let filtered = playersFilter
+                ? playersData.filter(p => (p.status || 'unknown') === playersFilter.value)
+                : playersData;
+
+            if (playersSort.col === 'nombre_full') {
+                filtered = [...filtered].sort((a, b) => {
+                    const va = ((a.last_name || '') + ' ' + (a.first_name || '')).toLowerCase();
+                    const vb = ((b.last_name || '') + ' ' + (b.first_name || '')).toLowerCase();
+                    if (va < vb) return playersSort.dir === 'asc' ? -1 : 1;
+                    if (va > vb) return playersSort.dir === 'asc' ? 1 : -1;
+                    return 0;
+                });
+            } else {
+                filtered = sortData(filtered, playersSort.col, playersSort.dir);
+            }
+
+            const title = document.getElementById('jugadoresTableTitle');
+            title.textContent = playersFilter
+                ? `Jugadores: ${playersFilter.value} (${filtered.length})`
+                : 'Jugadores registrados';
+
+            if (filtered.length === 0) {
+                container.innerHTML = '<div class="admin-empty"><i class="fas fa-football-ball"></i> No hay jugadores' + (playersFilter ? ' con este filtro' : '') + '.</div>';
+                return;
+            }
+
+            const cols = [
+                { key: null, label: 'Foto', noSort: true },
+                { key: 'nombre_full', label: 'Nombre' },
+                { key: 'status', label: 'Estado' },
+                { key: 'ficha_number', label: 'Ficha' },
+                { key: 'email', label: 'Email' },
+                { key: 'phone', label: 'Tel.' },
+                { key: 'tax_number', label: 'Documento' },
+                { key: 'gender', label: 'Gen.' },
+                { key: 'dob', label: 'Nac.' },
+                { key: 'created_at', label: 'Alta' }
+            ];
+
+            let html = '<table><thead><tr>';
+            cols.forEach(c => {
+                if (c.noSort) {
+                    html += `<th class="no-sort">${c.label}</th>`;
+                } else {
+                    const cls = playersSort.col === c.key ? 'sorted' : '';
+                    html += `<th class="${cls}" onclick="playersSortClick('${c.key}')">${c.label} ${sortIcon(playersSort, c.key)}</th>`;
+                }
+            });
+            html += '</tr></thead><tbody>';
+
+            let mobileHtml = '';
+
+            filtered.forEach(p => {
+                const onclick = `onclick="openFotoModal('player','${escapeHtml(p.player_id)}')"`;
+                const foto = renderFotoThumb(p.photo, onclick);
                 const statusClass = `admin-badge--${p.status || 'inactive'}`;
                 const docDisplay = p.tax_number ? `${(p.tax_type || '').toUpperCase()} ${p.tax_number}` : '';
+                const nombre = `${escapeHtml(p.last_name || '')} ${escapeHtml(p.first_name || '')}`.trim();
 
                 html += `<tr>
                     <td>${foto}</td>
-                    <td>${escapeHtml(p.last_name || '')}</td>
-                    <td>${escapeHtml(p.first_name || '')}</td>
-                    <td><span class="admin-badge">${escapeHtml(p.category_primary || '')}</span></td>
+                    <td>${nombre}</td>
                     <td><span class="admin-badge ${statusClass}">${escapeHtml(p.status || '')}</span></td>
                     <td>${escapeHtml(p.ficha_number || '')}</td>
                     <td>${escapeHtml(p.email || '')}</td>
@@ -948,9 +1241,22 @@
                     <td>${formatDate(p.dob)}</td>
                     <td>${formatDate(p.created_at)}</td>
                 </tr>`;
+
+                mobileHtml += `<div class="mobile-card">
+                    <div class="mobile-card-foto">${foto}</div>
+                    <div class="mobile-card-info">
+                        <div class="mobile-card-name">${nombre}</div>
+                        <div class="mobile-card-detail"><span class="admin-badge ${statusClass}">${escapeHtml(p.status || '')}</span> ${p.ficha_number ? 'Ficha: ' + escapeHtml(p.ficha_number) : ''}</div>
+                        ${p.email ? `<div class="mobile-card-detail">${escapeHtml(p.email)}</div>` : ''}
+                        ${p.phone ? `<div class="mobile-card-detail"><strong>Tel:</strong> ${escapeHtml(p.phone)}</div>` : ''}
+                        ${docDisplay ? `<div class="mobile-card-detail"><strong>Doc:</strong> ${escapeHtml(docDisplay)}</div>` : ''}
+                        <div class="mobile-card-detail"><strong>Nac:</strong> ${formatDate(p.dob)} ${p.gender ? '| ' + escapeHtml(p.gender) : ''}</div>
+                    </div>
+                </div>`;
             });
 
             html += '</tbody></table>';
+            html += `<div class="mobile-cards">${mobileHtml}</div>`;
             container.innerHTML = html;
         }
 
@@ -986,8 +1292,8 @@
             }
 
             fotoModalTitle.textContent = `Foto - ${name}`;
-            if (photoUrl) {
-                fotoModalPreview.innerHTML = `<img src="${escapeHtml(photoUrl)}" alt="Foto">`;
+            if (isValidImageUrl(photoUrl)) {
+                fotoModalPreview.innerHTML = `<img src="${escapeHtml(photoUrl)}" alt="Foto" onerror="this.outerHTML='<div class=\\'no-foto\\'><i class=\\'fas fa-user\\'></i><span>Sin foto</span></div>'">`;
             } else {
                 fotoModalPreview.innerHTML = `<div class="no-foto"><i class="fas fa-user"></i><span>Sin foto</span></div>`;
             }
