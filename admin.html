@@ -581,8 +581,8 @@
                     </div>
                 </div>
                 <div class="admin-modal-field">
-                    <label>Documento</label>
-                    <input type="text" id="editDocumento" readonly>
+                    <label>DNI / NIE / Pasaporte</label>
+                    <input type="text" id="editDocumento" required>
                 </div>
                 <div class="admin-modal-field">
                     <label>Email</label>
@@ -752,7 +752,7 @@
                         <th>Foto</th>
                         <th>Nombre</th>
                         <th>Apellido</th>
-                        <th>Documento</th>
+                        <th>DNI/NIE/Pasaporte</th>
                         <th>Email</th>
                         <th>Tipo</th>
                         <th>Fecha alta</th>
@@ -907,6 +907,7 @@
             editModalMsg.className = 'admin-modal-msg';
 
             const { error } = await sb.from('socios').update({
+                documento: document.getElementById('editDocumento').value.trim(),
                 tipo_socio: document.getElementById('editTipo').value,
                 estado_pago: document.getElementById('editEstadoPago').value
             }).eq('id', id);
