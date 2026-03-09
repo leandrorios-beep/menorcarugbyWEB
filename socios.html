@@ -495,8 +495,11 @@
                     apellido: 'Apellido',
                     documento: 'NIE / DNI / Pasaporte',
                     email: 'Email',
+                    foto: 'Foto (para el carnet)',
+                    foto_placeholder: 'Sube tu foto',
                     error_required: 'Este campo es obligatorio',
                     error_email: 'Introduce un email valido',
+                    error_foto: 'Sube una foto para el carnet',
                     submit: 'Continuar al pago',
                     privacy: 'Tus datos se guardan de forma segura y solo se usan para gestionar tu alta como socio.'
                 },
@@ -507,8 +510,11 @@
                     apellido: 'Cognom',
                     documento: 'NIE / DNI / Passaport',
                     email: 'Email',
+                    foto: 'Foto (per al carnet)',
+                    foto_placeholder: 'Puja la teva foto',
                     error_required: 'Aquest camp es obligatori',
                     error_email: 'Introdueix un email valid',
+                    error_foto: 'Puja una foto per al carnet',
                     submit: 'Continuar al pagament',
                     privacy: 'Les teves dades es guarden de forma segura i nomes s\'usen per gestionar la teva alta com a soci.'
                 },
@@ -519,8 +525,11 @@
                     apellido: 'Last name',
                     documento: 'ID / Passport',
                     email: 'Email',
+                    foto: 'Photo (for member card)',
+                    foto_placeholder: 'Upload your photo',
                     error_required: 'This field is required',
                     error_email: 'Enter a valid email',
+                    error_foto: 'Upload a photo for the member card',
                     submit: 'Continue to payment',
                     privacy: 'Your data is stored securely and only used to manage your membership registration.'
                 },
@@ -531,8 +540,11 @@
                     apellido: 'Nom de famille',
                     documento: 'CNI / Passeport',
                     email: 'Email',
+                    foto: 'Photo (pour la carte)',
+                    foto_placeholder: 'Telechargez votre photo',
                     error_required: 'Ce champ est obligatoire',
                     error_email: 'Entrez un email valide',
+                    error_foto: 'Telechargez une photo pour la carte',
                     submit: 'Continuer au paiement',
                     privacy: 'Vos donnees sont stockees de maniere securisee et utilisees uniquement pour gerer votre inscription.'
                 },
@@ -543,8 +555,11 @@
                     apellido: 'Cognome',
                     documento: 'Documento / Passaporto',
                     email: 'Email',
+                    foto: 'Foto (per la tessera)',
+                    foto_placeholder: 'Carica la tua foto',
                     error_required: 'Questo campo e obbligatorio',
                     error_email: 'Inserisci un email valido',
+                    error_foto: 'Carica una foto per la tessera',
                     submit: 'Continua al pagamento',
                     privacy: 'I tuoi dati sono conservati in modo sicuro e utilizzati solo per gestire la tua iscrizione.'
                 },
@@ -555,8 +570,11 @@
                     apellido: 'Apelido',
                     documento: 'BI / Passaporte',
                     email: 'Email',
+                    foto: 'Foto (para o cartao)',
+                    foto_placeholder: 'Carrega a tua foto',
                     error_required: 'Este campo e obrigatorio',
                     error_email: 'Introduz um email valido',
+                    error_foto: 'Carrega uma foto para o cartao',
                     submit: 'Continuar para o pagamento',
                     privacy: 'Os teus dados sao guardados de forma segura e usados apenas para gerir a tua inscricao como socio.'
                 }
@@ -592,6 +610,17 @@
                             <input type="email" id="socioEmail" name="email" required autocomplete="email">
                             <span class="socio-modal-error socio-modal-error--email" data-i18n-modal="error_email">Introduce un email valido</span>
                         </div>
+                        <div class="socio-modal-field socio-modal-field--foto">
+                            <label for="socioFoto" data-i18n-modal="foto">Foto (para el carnet)</label>
+                            <div class="socio-foto-upload" id="socioFotoUpload">
+                                <div class="socio-foto-preview" id="socioFotoPreview">
+                                    <i class="fas fa-camera"></i>
+                                    <span data-i18n-modal="foto_placeholder">Sube tu foto</span>
+                                </div>
+                                <input type="file" id="socioFoto" name="foto" accept="image/*" capture="user">
+                            </div>
+                            <span class="socio-modal-error" data-i18n-modal="error_foto">Sube una foto para el carnet</span>
+                        </div>
                         <button type="submit" class="socio-modal-submit" id="socioSubmit">
                             <span data-i18n-modal="submit">Continuar al pago</span>
                             <i class="fas fa-arrow-right"></i>
@@ -607,6 +636,27 @@
             const form = document.getElementById('socioForm');
             let pendingStripeLink = '';
             let pendingSocioType = '';
+            let selectedFotoFile = null;
+
+            // Foto upload preview
+            const fotoInput = document.getElementById('socioFoto');
+            const fotoPreview = document.getElementById('socioFotoPreview');
+            const fotoUpload = document.getElementById('socioFotoUpload');
+
+            fotoInput.addEventListener('change', e => {
+                const file = e.target.files[0];
+                if (file && file.type.startsWith('image/')) {
+                    selectedFotoFile = file;
+                    const reader = new FileReader();
+                    reader.onload = ev => {
+                        fotoPreview.innerHTML = `<img src="${ev.target.result}" alt="Foto">`;
+                        fotoUpload.classList.add('has-photo');
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+
+            fotoUpload.addEventListener('click', () => fotoInput.click());
 
             function getModalLang() {
                 return localStorage.getItem('menorca_rugby_lang') || 'es';
@@ -625,6 +675,9 @@
                 pendingStripeLink = stripeLink;
                 pendingSocioType = socioType;
                 form.reset();
+                selectedFotoFile = null;
+                fotoPreview.innerHTML = '<i class="fas fa-camera"></i><span data-i18n-modal="foto_placeholder">Sube tu foto</span>';
+                fotoUpload.classList.remove('has-photo');
                 overlay.querySelectorAll('.socio-modal-field').forEach(f => f.classList.remove('has-error'));
                 overlay.querySelector('.socio-modal-submit').disabled = false;
                 overlay.querySelector('.socio-modal-submit').classList.remove('is-loading');
@@ -678,6 +731,12 @@
                     valid = false;
                 }
 
+                // Validate foto
+                if (!selectedFotoFile) {
+                    document.querySelector('.socio-modal-field--foto').classList.add('has-error');
+                    valid = false;
+                }
+
                 if (!valid) return;
 
                 // Disable button & show loading
@@ -691,16 +750,47 @@
                             'https://jbkpnpfqfygidbunbmcg.supabase.co',
                             'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impia3BucGZxZnlnaWRidW5ibWNnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzA4OTkxNzIsImV4cCI6MjA0NjQ3NTE3Mn0.dz-tyVp-M4N-GWJUbfsjnq0LjNqvyrRkDgNlvUNjxvM'
                         );
-                        await sb.from('socios').insert({
+
+                        // Upload foto to Storage
+                        let foto_url = null;
+                        const timestamp = Date.now();
+                        const ext = selectedFotoFile.name.split('.').pop();
+                        const filePath = `${timestamp}_${documento.value.trim().replace(/[^a-zA-Z0-9]/g, '')}.${ext}`;
+
+                        const { data: uploadData, error: uploadError } = await sb.storage
+                            .from('fotos-socios')
+                            .upload(filePath, selectedFotoFile, {
+                                cacheControl: '3600',
+                                upsert: false
+                            });
+
+                        if (!uploadError && uploadData) {
+                            const { data: urlData } = sb.storage
+                                .from('fotos-socios')
+                                .getPublicUrl(filePath);
+                            foto_url = urlData?.publicUrl || null;
+                        }
+
+                        // Insert socio data
+                        const { error: insertError } = await sb.from('socios').insert({
                             nombre: nombre.value.trim(),
                             apellido: apellido.value.trim(),
                             documento: documento.value.trim(),
                             email: email.value.trim(),
                             tipo_socio: pendingSocioType,
-                            stripe_link: pendingStripeLink
+                            stripe_link: pendingStripeLink,
+                            foto_url: foto_url
                         });
+
+                        if (insertError) {
+                            console.error('Supabase insert error:', insertError);
+                        }
+                        if (uploadError) {
+                            console.error('Supabase upload error:', uploadError);
+                        }
                     }
-                } catch (_) {
+                } catch (err) {
+                    console.error('Supabase error:', err);
                     // Fail-open: if Supabase is down, still redirect to Stripe
                 }
 

@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin | Menorca Rugby Club</title>
+    <meta name="robots" content="noindex, nofollow">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="assets/images/static/favicon.ico">
+    <meta name="theme-color" content="#182B49">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+            background: #f0f2f5;
+            color: #182B49;
+            min-height: 100vh;
+        }
+
+        /* Login */
+        .admin-login {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 1rem;
+        }
+
+        .admin-login-card {
+            background: #fff;
+            border-radius: 12px;
+            padding: 2.5rem 2rem;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+        }
+
+        .admin-login-logo {
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .admin-login-logo img {
+            height: 60px;
+        }
+
+        .admin-login-title {
+            text-align: center;
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+        }
+
+        .admin-login-subtitle {
+            text-align: center;
+            font-size: 0.85rem;
+            color: #888;
+            margin-bottom: 1.5rem;
+        }
+
+        .admin-field {
+            margin-bottom: 1rem;
+        }
+
+        .admin-field label {
+            display: block;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-bottom: 0.3rem;
+            color: #182B49;
+        }
+
+        .admin-field input {
+            width: 100%;
+            padding: 0.65rem 0.8rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            font-family: inherit;
+            transition: border-color 0.2s;
+        }
+
+        .admin-field input:focus {
+            outline: none;
+            border-color: #FFC72C;
+        }
+
+        .admin-login-btn {
+            width: 100%;
+            padding: 0.75rem;
+            background: #182B49;
+            color: #FFC72C;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
+            transition: opacity 0.2s;
+            margin-top: 0.5rem;
+        }
+
+        .admin-login-btn:hover { opacity: 0.9; }
+        .admin-login-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .admin-google-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.6rem;
+        }
+
+        .admin-google-btn i { font-size: 1.1rem; }
+
+        .admin-error {
+            background: #fdecea;
+            color: #b71c1c;
+            padding: 0.6rem 0.8rem;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            margin-bottom: 1rem;
+            display: none;
+        }
+
+        .admin-error.visible { display: block; }
+
+        /* Dashboard */
+        .admin-dashboard { display: none; }
+
+        .admin-header {
+            background: #182B49;
+            color: #fff;
+            padding: 1rem 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .admin-header-left {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .admin-header-left img { height: 36px; }
+
+        .admin-header h1 {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .admin-logout {
+            background: none;
+            border: 1px solid rgba(255,255,255,0.3);
+            color: #fff;
+            padding: 0.4rem 1rem;
+            border-radius: 6px;
+            font-family: inherit;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .admin-logout:hover { background: rgba(255,255,255,0.1); }
+
+        .admin-content {
+            padding: 1.5rem 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .admin-stats {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .admin-stat {
+            background: #fff;
+            border-radius: 10px;
+            padding: 1.2rem 1.5rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            min-width: 150px;
+        }
+
+        .admin-stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #182B49;
+        }
+
+        .admin-stat-label {
+            font-size: 0.8rem;
+            color: #888;
+            font-weight: 500;
+        }
+
+        .admin-table-wrapper {
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            overflow-x: auto;
+        }
+
+        .admin-table-header {
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .admin-table-header h2 {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .admin-refresh {
+            background: none;
+            border: 1px solid #ddd;
+            padding: 0.4rem 0.8rem;
+            border-radius: 6px;
+            font-family: inherit;
+            font-size: 0.8rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            color: #555;
+            transition: border-color 0.2s;
+        }
+
+        .admin-refresh:hover { border-color: #182B49; color: #182B49; }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.88rem;
+        }
+
+        thead th {
+            text-align: left;
+            padding: 0.75rem 1rem;
+            font-weight: 600;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #888;
+            border-bottom: 2px solid #eee;
+            white-space: nowrap;
+        }
+
+        tbody td {
+            padding: 0.7rem 1rem;
+            border-bottom: 1px solid #f5f5f5;
+            vertical-align: middle;
+        }
+
+        tbody tr:hover { background: #fafafa; }
+
+        .admin-badge {
+            display: inline-block;
+            padding: 0.2rem 0.6rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: capitalize;
+        }
+
+        .admin-badge--normal { background: #e3f2fd; color: #1565c0; }
+        .admin-badge--protector { background: #fff3e0; color: #e65100; }
+        .admin-badge--gym { background: #e8f5e9; color: #2e7d32; }
+        .admin-badge--jugador { background: #f3e5f5; color: #6a1b9a; }
+
+        .admin-foto-thumb {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #eee;
+        }
+
+        .admin-foto-none {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: #f0f0f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ccc;
+            font-size: 0.9rem;
+        }
+
+        .admin-loading {
+            text-align: center;
+            padding: 3rem;
+            color: #888;
+        }
+
+        .admin-empty {
+            text-align: center;
+            padding: 3rem;
+            color: #aaa;
+        }
+
+        @media (max-width: 768px) {
+            .admin-header { padding: 1rem; }
+            .admin-content { padding: 1rem; }
+            .admin-stats { flex-direction: column; }
+            .admin-stat { min-width: unset; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Login Screen -->
+    <div class="admin-login" id="loginScreen">
+        <div class="admin-login-card">
+            <div class="admin-login-logo">
+                <img src="assets/images/static/LogoCompleto.png" alt="Menorca Rugby Club">
+            </div>
+            <h2 class="admin-login-title">Panel de Administracion</h2>
+            <p class="admin-login-subtitle">Accede con tu cuenta de Google autorizada</p>
+            <div class="admin-error" id="loginError"></div>
+            <button type="button" class="admin-login-btn admin-google-btn" id="googleLoginBtn">
+                <i class="fab fa-google"></i> Iniciar sesion con Google
+            </button>
+        </div>
+    </div>
+
+    <!-- Dashboard -->
+    <div class="admin-dashboard" id="dashboard">
+        <header class="admin-header">
+            <div class="admin-header-left">
+                <img src="assets/images/static/LogoCompleto.png" alt="MRC">
+                <h1>Panel de Socios</h1>
+            </div>
+            <button class="admin-logout" id="logoutBtn">
+                <i class="fas fa-sign-out-alt"></i> Cerrar sesion
+            </button>
+        </header>
+
+        <div class="admin-content">
+            <div class="admin-stats" id="statsRow"></div>
+
+            <div class="admin-table-wrapper">
+                <div class="admin-table-header">
+                    <h2>Socios registrados</h2>
+                    <button class="admin-refresh" id="refreshBtn">
+                        <i class="fas fa-sync-alt"></i> Actualizar
+                    </button>
+                </div>
+                <div id="tableContainer">
+                    <div class="admin-loading">
+                        <i class="fas fa-spinner fa-spin"></i> Cargando socios...
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const SUPABASE_URL = 'https://jbkpnpfqfygidbunbmcg.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impia3BucGZxZnlnaWRidW5ibWNnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzA4OTkxNzIsImV4cCI6MjA0NjQ3NTE3Mn0.dz-tyVp-M4N-GWJUbfsjnq0LjNqvyrRkDgNlvUNjxvM';
+
+        const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        const loginScreen = document.getElementById('loginScreen');
+        const dashboard = document.getElementById('dashboard');
+        const loginError = document.getElementById('loginError');
+        const googleLoginBtn = document.getElementById('googleLoginBtn');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const refreshBtn = document.getElementById('refreshBtn');
+
+        // Check existing session on load (handles redirect back from Google)
+        (async () => {
+            const { data: { session } } = await sb.auth.getSession();
+            if (session) {
+                const authorized = await checkAuthorized(session.user.email);
+                if (authorized) {
+                    showDashboard();
+                } else {
+                    loginError.textContent = 'Tu cuenta (' + session.user.email + ') no esta autorizada. Contacta al administrador.';
+                    loginError.classList.add('visible');
+                    await sb.auth.signOut();
+                }
+            }
+        })();
+
+        // Listen for auth state changes (handles OAuth redirect)
+        sb.auth.onAuthStateChange(async (event, session) => {
+            if (event === 'SIGNED_IN' && session) {
+                const authorized = await checkAuthorized(session.user.email);
+                if (authorized) {
+                    showDashboard();
+                } else {
+                    loginError.textContent = 'Tu cuenta (' + session.user.email + ') no esta autorizada. Contacta al administrador.';
+                    loginError.classList.add('visible');
+                    await sb.auth.signOut();
+                }
+            }
+        });
+
+        // Check if email is in admin_users table
+        async function checkAuthorized(email) {
+            const { data, error } = await sb.from('admin_users').select('email').eq('email', email).single();
+            return !error && data;
+        }
+
+        // Google login
+        googleLoginBtn.addEventListener('click', async () => {
+            loginError.classList.remove('visible');
+            googleLoginBtn.disabled = true;
+
+            const { error } = await sb.auth.signInWithOAuth({
+                provider: 'google',
+                options: {
+                    redirectTo: window.location.origin + '/admin'
+                }
+            });
+
+            if (error) {
+                loginError.textContent = 'Error al iniciar sesion con Google';
+                loginError.classList.add('visible');
+                googleLoginBtn.disabled = false;
+            }
+        });
+
+        // Logout
+        logoutBtn.addEventListener('click', async () => {
+            await sb.auth.signOut();
+            dashboard.style.display = 'none';
+            loginScreen.style.display = 'flex';
+            loginForm.reset();
+        });
+
+        // Refresh
+        refreshBtn.addEventListener('click', loadSocios);
+
+        async function showDashboard() {
+            loginScreen.style.display = 'none';
+            dashboard.style.display = 'block';
+            await loadSocios();
+        }
+
+        async function loadSocios() {
+            const container = document.getElementById('tableContainer');
+            container.innerHTML = '<div class="admin-loading"><i class="fas fa-spinner fa-spin"></i> Cargando socios...</div>';
+
+            const { data, error } = await sb.from('socios').select('*').order('created_at', { ascending: false });
+
+            if (error) {
+                container.innerHTML = '<div class="admin-empty"><i class="fas fa-exclamation-triangle"></i> Error al cargar: ' + error.message + '</div>';
+                return;
+            }
+
+            if (!data || data.length === 0) {
+                container.innerHTML = '<div class="admin-empty"><i class="fas fa-users"></i> No hay socios registrados aun.</div>';
+                document.getElementById('statsRow').innerHTML = '';
+                return;
+            }
+
+            // Stats
+            const total = data.length;
+            const tipos = {};
+            data.forEach(s => {
+                const t = s.tipo_socio || 'sin tipo';
+                tipos[t] = (tipos[t] || 0) + 1;
+            });
+
+            let statsHTML = `<div class="admin-stat"><div class="admin-stat-number">${total}</div><div class="admin-stat-label">Total socios</div></div>`;
+            Object.entries(tipos).forEach(([tipo, count]) => {
+                statsHTML += `<div class="admin-stat"><div class="admin-stat-number">${count}</div><div class="admin-stat-label">${tipo}</div></div>`;
+            });
+            document.getElementById('statsRow').innerHTML = statsHTML;
+
+            // Table
+            let html = `<table>
+                <thead>
+                    <tr>
+                        <th>Foto</th>
+                        <th>Nombre</th>
+                        <th>Apellido</th>
+                        <th>Documento</th>
+                        <th>Email</th>
+                        <th>Tipo</th>
+                        <th>Fecha</th>
+                    </tr>
+                </thead>
+                <tbody>`;
+
+            data.forEach(s => {
+                const foto = s.foto_url
+                    ? `<img src="${s.foto_url}" class="admin-foto-thumb" alt="Foto">`
+                    : `<div class="admin-foto-none"><i class="fas fa-user"></i></div>`;
+                const tipo = s.tipo_socio || '-';
+                const badgeClass = `admin-badge--${tipo}`;
+                const fecha = s.created_at ? new Date(s.created_at).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' }) : '-';
+
+                html += `<tr>
+                    <td>${foto}</td>
+                    <td>${escapeHtml(s.nombre || '')}</td>
+                    <td>${escapeHtml(s.apellido || '')}</td>
+                    <td>${escapeHtml(s.documento || '')}</td>
+                    <td>${escapeHtml(s.email || '')}</td>
+                    <td><span class="admin-badge ${badgeClass}">${escapeHtml(tipo)}</span></td>
+                    <td>${fecha}</td>
+                </tr>`;
+            });
+
+            html += '</tbody></table>';
+            container.innerHTML = html;
+        }
+
+        function escapeHtml(str) {
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+    </script>
+</body>
+</html>
