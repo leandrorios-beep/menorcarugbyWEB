@@ -1140,17 +1140,25 @@
 
         function renderPlayersStats() {
             const statuses = {};
+            const categories = {};
             playersData.forEach(p => {
                 const st = p.status || 'unknown';
                 statuses[st] = (statuses[st] || 0) + 1;
+                const cat = p.category_primary || 'sin categoria';
+                categories[cat] = (categories[cat] || 0) + 1;
             });
 
-            let html = `<div class="admin-stat ${!playersFilter ? 'active' : ''}" onclick="filterPlayers(null)">
+            let html = `<div class="admin-stat ${!playersFilter ? 'active' : ''}" onclick="filterPlayers(null, null)">
                 <div class="admin-stat-number">${playersData.length}</div><div class="admin-stat-label">Total</div></div>`;
             Object.entries(statuses).forEach(([st, count]) => {
-                const isActive = playersFilter && playersFilter.value === st;
-                html += `<div class="admin-stat ${isActive ? 'active' : ''}" onclick="filterPlayers('${escapeHtml(st)}')">
+                const isActive = playersFilter && playersFilter.key === 'status' && playersFilter.value === st;
+                html += `<div class="admin-stat ${isActive ? 'active' : ''}" onclick="filterPlayers('status','${escapeHtml(st)}')">
                     <div class="admin-stat-number">${count}</div><div class="admin-stat-label">${escapeHtml(st)}</div></div>`;
+            });
+            Object.entries(categories).forEach(([cat, count]) => {
+                const isActive = playersFilter && playersFilter.key === 'category_primary' && playersFilter.value === cat;
+                html += `<div class="admin-stat ${isActive ? 'active' : ''}" onclick="filterPlayers('category_primary','${escapeHtml(cat)}')">
+                    <div class="admin-stat-number">${count}</div><div class="admin-stat-label">${escapeHtml(cat)}</div></div>`;
             });
             document.getElementById('jugadoresStats').innerHTML = html;
 
@@ -1158,11 +1166,11 @@
             clearBtn.classList.toggle('visible', !!playersFilter);
         }
 
-        function filterPlayers(status) {
-            if (!status || (playersFilter && playersFilter.value === status)) {
+        function filterPlayers(key, value) {
+            if (!key || (playersFilter && playersFilter.key === key && playersFilter.value === value)) {
                 playersFilter = null;
             } else {
-                playersFilter = { key: 'status', value: status };
+                playersFilter = { key, value };
             }
             renderPlayersStats();
             renderPlayersTable();
@@ -1171,7 +1179,7 @@
         function renderPlayersTable() {
             const container = document.getElementById('jugadoresTable');
             let filtered = playersFilter
-                ? playersData.filter(p => (p.status || 'unknown') === playersFilter.value)
+                ? playersData.filter(p => (p[playersFilter.key] || 'unknown') === playersFilter.value)
                 : playersData;
 
             if (playersSort.col === 'nombre_full') {
