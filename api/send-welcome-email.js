@@ -101,6 +101,11 @@ function buildWelcomeEmail(nombre, tipo_socio, numero_socio, mensaje_extra) {
                                 Como socio del club, disfrutaras de beneficios exclusivos, acceso a eventos y la satisfaccion
                                 de formar parte de una comunidad unida por la pasion al rugby.
                             </p>
+                            <p style="color:#333;font-size:15px;line-height:1.6;margin:0 0 15px;">
+                                Recuerda que puedes consultar todos los partidos y eventos en nuestro
+                                <a href="https://www.menorcarugbyclub.com/calendar.html" style="color:#1565c0;font-weight:600;text-decoration:none;">calendario</a>.
+                                No te pierdas ningun partido!
+                            </p>
                             ${mensaje_extra ? `<p style="color:#333;font-size:15px;line-height:1.6;margin:0 0 15px;padding:15px;background:#f8f9fa;border-left:3px solid #FFC72C;border-radius:4px;">${escapeHtml(mensaje_extra)}</p>` : ''}
                         </td>
                     </tr>
