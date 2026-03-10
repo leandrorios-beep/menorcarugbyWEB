@@ -154,7 +154,7 @@ function buildWelcomeEmail(nombre, tipo_socio, numero_socio, mensaje_extra) {
                         <td style="background:#182B49;padding:25px 40px;text-align:center;">
                             <p style="color:#FFC72C;font-size:14px;font-weight:600;margin:0 0 8px;">Nos vemos en el campo!</p>
                             <p style="color:rgba(255,255,255,0.6);font-size:12px;margin:0;">
-                                Menorca Rugby Club &bull; Es Mercadal, Menorca
+                                Menorca Rugby Club &bull; Sa Terranova 8, Mao, Illes Balears
                             </p>
                             <div style="margin-top:15px;">
                                 <a href="https://www.instagram.com/menorcarugbyclub" style="color:#FFC72C;text-decoration:none;margin:0 8px;font-size:13px;">Instagram</a>
