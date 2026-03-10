@@ -1,4 +1,9 @@
 {
+  "functions": {
+    "api/send-welcome-email.js": {
+      "maxDuration": 15
+    }
+  },
   "redirects": [
     {
       "source": "/zona-socios",

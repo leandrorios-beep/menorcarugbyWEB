@@ -595,6 +595,120 @@
             font-style: italic;
         }
 
+        /* Email Modal */
+        .email-modal { max-width: 600px; }
+
+        .email-preview-container {
+            background: #f8f9fa;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .email-preview-container iframe {
+            width: 100%;
+            height: 280px;
+            border: none;
+            border-radius: 4px;
+            background: #fff;
+        }
+
+        .email-extra-msg {
+            width: 100%;
+            padding: 0.6rem 0.8rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-family: inherit;
+            resize: vertical;
+            min-height: 60px;
+            transition: border-color 0.2s;
+        }
+
+        .email-extra-msg:focus { outline: none; border-color: #FFC72C; }
+
+        .email-attach-area {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+
+        .email-attach-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.45rem 1rem;
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-family: inherit;
+            font-size: 0.82rem;
+            cursor: pointer;
+            color: #555;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .email-attach-btn:hover { border-color: #182B49; color: #182B49; }
+
+        .email-attach-name {
+            font-size: 0.82rem;
+            color: #333;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .email-attach-remove {
+            background: none;
+            border: none;
+            color: #b71c1c;
+            cursor: pointer;
+            font-size: 0.9rem;
+            padding: 0.2rem;
+        }
+
+        .email-send-btn {
+            width: 100%;
+            padding: 0.75rem;
+            background: #2e7d32;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
+            transition: opacity 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .email-send-btn:hover { opacity: 0.9; }
+        .email-send-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .email-to-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            background: #e3f2fd;
+            color: #1565c0;
+            padding: 0.3rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
         /* Mobile card view */
         .mobile-cards { display: none; }
 
@@ -756,6 +870,38 @@
                 <button class="admin-foto-upload-btn" id="fotoUploadBtn"><i class="fas fa-upload"></i> Subir foto</button>
             </div>
             <div class="admin-modal-msg" id="fotoModalMsg"></div>
+        </div>
+    </div>
+
+    <!-- Email Modal -->
+    <div class="admin-modal-overlay" id="emailModal">
+        <div class="admin-modal email-modal">
+            <button class="admin-modal-close" id="emailModalClose">&times;</button>
+            <h3><i class="fas fa-envelope" style="color:#2e7d32;margin-right:0.4rem;"></i> Enviar email de bienvenida</h3>
+            <div class="email-to-badge" id="emailTo">
+                <i class="fas fa-user"></i> <span id="emailToName"></span> &mdash; <span id="emailToAddr"></span>
+            </div>
+            <div class="admin-modal-field">
+                <label>Vista previa del email</label>
+                <div class="email-preview-container">
+                    <iframe id="emailPreviewFrame"></iframe>
+                </div>
+            </div>
+            <div class="admin-modal-field">
+                <label>Mensaje adicional (opcional)</label>
+                <textarea class="email-extra-msg" id="emailExtraMsg" placeholder="Ej: Tu numero de socio es #042. Nos vemos en el proximo partido!"></textarea>
+            </div>
+            <div class="admin-modal-field">
+                <label>Adjuntar archivo (carnet de socio, etc.)</label>
+                <div class="email-attach-area">
+                    <input type="file" id="emailFileInput" style="display:none" accept=".pdf,.png,.jpg,.jpeg,.webp">
+                    <button class="email-attach-btn" id="emailAttachBtn"><i class="fas fa-paperclip"></i> Adjuntar archivo</button>
+                    <span class="email-attach-name" id="emailAttachName">Sin archivo adjunto</span>
+                    <button class="email-attach-remove" id="emailAttachRemove" style="display:none;" title="Quitar adjunto"><i class="fas fa-times-circle"></i></button>
+                </div>
+            </div>
+            <button class="email-send-btn" id="emailSendBtn"><i class="fas fa-paper-plane"></i> Enviar email de bienvenida</button>
+            <div class="admin-modal-msg" id="emailModalMsg"></div>
         </div>
     </div>
 
@@ -1099,6 +1245,7 @@
                     <td><div class="admin-actions">
                         <button class="admin-action-btn" onclick="openEditModal('${s.id}')" title="Editar"><i class="fas fa-pen"></i></button>
                         <button class="admin-action-btn" onclick="openFotoModal('socio','${s.id}')" title="Foto"><i class="fas fa-camera"></i></button>
+                        <button class="admin-action-btn" onclick="openEmailModal('${s.id}')" title="Enviar email bienvenida" style="color:#2e7d32;border-color:#2e7d32;"><i class="fas fa-envelope"></i></button>
                     </div></td>
                 </tr>`;
 
@@ -1114,6 +1261,7 @@
                     <div class="mobile-card-actions">
                         <button class="admin-action-btn" onclick="openEditModal('${s.id}')" title="Editar"><i class="fas fa-pen"></i></button>
                         <button class="admin-action-btn" onclick="openFotoModal('socio','${s.id}')" title="Foto"><i class="fas fa-camera"></i></button>
+                        <button class="admin-action-btn" onclick="openEmailModal('${s.id}')" title="Email" style="color:#2e7d32;border-color:#2e7d32;"><i class="fas fa-envelope"></i></button>
                     </div>
                 </div>`;
             });
@@ -1422,11 +1570,183 @@
             saveBtn.innerHTML = '<i class="fas fa-save"></i> Guardar cambios';
         });
 
+        // ── Email Welcome Modal ──
+        const emailModal = document.getElementById('emailModal');
+        const emailModalClose = document.getElementById('emailModalClose');
+        const emailModalMsg = document.getElementById('emailModalMsg');
+        const emailSendBtn = document.getElementById('emailSendBtn');
+        const emailFileInput = document.getElementById('emailFileInput');
+        const emailAttachBtn = document.getElementById('emailAttachBtn');
+        const emailAttachName = document.getElementById('emailAttachName');
+        const emailAttachRemove = document.getElementById('emailAttachRemove');
+        const emailExtraMsg = document.getElementById('emailExtraMsg');
+        let currentEmailSocio = null;
+        let emailAttachmentBase64 = null;
+        let emailAttachmentFilename = null;
+
+        function openEmailModal(id) {
+            const socio = sociosData.find(s => s.id === id);
+            if (!socio) return;
+            if (!socio.email) {
+                alert('Este socio no tiene email registrado.');
+                return;
+            }
+
+            currentEmailSocio = socio;
+            document.getElementById('emailToName').textContent = `${socio.nombre || ''} ${socio.apellido || ''}`.trim();
+            document.getElementById('emailToAddr').textContent = socio.email;
+            emailExtraMsg.value = '';
+            emailAttachmentBase64 = null;
+            emailAttachmentFilename = null;
+            emailAttachName.textContent = 'Sin archivo adjunto';
+            emailAttachRemove.style.display = 'none';
+            emailFileInput.value = '';
+            emailModalMsg.className = 'admin-modal-msg';
+            emailModalMsg.textContent = '';
+            emailSendBtn.disabled = false;
+            emailSendBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Enviar email de bienvenida';
+
+            // Render preview
+            updateEmailPreview();
+
+            emailModal.classList.add('is-active');
+        }
+
+        function updateEmailPreview() {
+            const s = currentEmailSocio;
+            if (!s) return;
+            const nombre = `${s.nombre || ''} ${s.apellido || ''}`.trim();
+            const tipo = s.tipo_socio ? s.tipo_socio.charAt(0).toUpperCase() + s.tipo_socio.slice(1) : 'Socio';
+            const extra = emailExtraMsg.value.trim();
+
+            const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><style>body{margin:0;font-family:Arial,sans-serif;font-size:13px;}</style></head><body>
+                <div style="background:#182B49;padding:18px;text-align:center;">
+                    <div style="color:#FFC72C;font-size:16px;font-weight:700;">MENORCA RUGBY CLUB</div>
+                </div>
+                <div style="padding:20px;">
+                    <h2 style="color:#182B49;font-size:18px;margin:0 0 4px;">Bienvenid@ ${escapeHtml(nombre)}!</h2>
+                    <p style="color:#FFC72C;font-weight:600;margin:0 0 12px;">Socio ${escapeHtml(tipo)}</p>
+                    <p style="color:#333;line-height:1.5;margin:0 0 10px;">Desde el Menorca Rugby Club queremos darte las gracias por unirte a nuestra familia rugbistica. Tu apoyo es fundamental para seguir creciendo y promoviendo los valores del rugby en nuestra isla.</p>
+                    <p style="color:#333;line-height:1.5;margin:0 0 10px;">Como socio del club, disfrutaras de beneficios exclusivos, acceso a eventos y la satisfaccion de formar parte de una comunidad unida por la pasion al rugby.</p>
+                    ${extra ? `<p style="padding:10px;background:#f8f9fa;border-left:3px solid #FFC72C;border-radius:4px;color:#333;line-height:1.5;">${escapeHtml(extra)}</p>` : ''}
+                </div>
+                <div style="background:#182B49;padding:15px;text-align:center;">
+                    <div style="color:#FFC72C;font-size:12px;font-weight:600;">Nos vemos en el campo!</div>
+                    <div style="color:rgba(255,255,255,0.5);font-size:11px;margin-top:4px;">Menorca Rugby Club &bull; Es Mercadal, Menorca</div>
+                </div>
+            </body></html>`;
+
+            const frame = document.getElementById('emailPreviewFrame');
+            const doc = frame.contentDocument || frame.contentWindow.document;
+            doc.open();
+            doc.write(html);
+            doc.close();
+        }
+
+        // Update preview when extra message changes
+        emailExtraMsg.addEventListener('input', updateEmailPreview);
+
+        // File attachment
+        emailAttachBtn.addEventListener('click', () => emailFileInput.click());
+
+        emailFileInput.addEventListener('change', e => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            if (file.size > 5 * 1024 * 1024) {
+                alert('El archivo es demasiado grande. Maximo 5MB.');
+                emailFileInput.value = '';
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = () => {
+                emailAttachmentBase64 = reader.result.split(',')[1];
+                emailAttachmentFilename = file.name;
+                emailAttachName.textContent = file.name;
+                emailAttachRemove.style.display = 'inline';
+            };
+            reader.readAsDataURL(file);
+        });
+
+        emailAttachRemove.addEventListener('click', () => {
+            emailAttachmentBase64 = null;
+            emailAttachmentFilename = null;
+            emailAttachName.textContent = 'Sin archivo adjunto';
+            emailAttachRemove.style.display = 'none';
+            emailFileInput.value = '';
+        });
+
+        // Send email
+        emailSendBtn.addEventListener('click', async () => {
+            if (!currentEmailSocio) return;
+
+            emailSendBtn.disabled = true;
+            emailSendBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
+            emailModalMsg.className = 'admin-modal-msg';
+
+            // Get auth token from current session
+            const { data: { session } } = await sb.auth.getSession();
+            if (!session) {
+                emailModalMsg.textContent = 'Sesion expirada. Recarga la pagina.';
+                emailModalMsg.className = 'admin-modal-msg error';
+                emailSendBtn.disabled = false;
+                emailSendBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Enviar email de bienvenida';
+                return;
+            }
+
+            try {
+                const body = {
+                    to: currentEmailSocio.email,
+                    nombre: `${currentEmailSocio.nombre || ''} ${currentEmailSocio.apellido || ''}`.trim(),
+                    tipo_socio: currentEmailSocio.tipo_socio || '',
+                    numero_socio: currentEmailSocio.numero_socio || '',
+                    mensaje_extra: emailExtraMsg.value.trim()
+                };
+
+                if (emailAttachmentBase64 && emailAttachmentFilename) {
+                    body.adjunto_base64 = emailAttachmentBase64;
+                    body.adjunto_nombre = emailAttachmentFilename;
+                }
+
+                const resp = await fetch('/api/send-welcome-email', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + session.access_token
+                    },
+                    body: JSON.stringify(body)
+                });
+
+                const result = await resp.json();
+
+                if (resp.ok && result.success) {
+                    emailModalMsg.textContent = 'Email enviado correctamente a ' + currentEmailSocio.email;
+                    emailModalMsg.className = 'admin-modal-msg success';
+                    emailSendBtn.innerHTML = '<i class="fas fa-check"></i> Enviado!';
+                } else {
+                    emailModalMsg.textContent = result.error || 'Error al enviar el email';
+                    emailModalMsg.className = 'admin-modal-msg error';
+                    emailSendBtn.disabled = false;
+                    emailSendBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Reintentar';
+                }
+            } catch (err) {
+                emailModalMsg.textContent = 'Error de conexion: ' + err.message;
+                emailModalMsg.className = 'admin-modal-msg error';
+                emailSendBtn.disabled = false;
+                emailSendBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Reintentar';
+            }
+        });
+
+        emailModalClose.addEventListener('click', () => emailModal.classList.remove('is-active'));
+        emailModal.addEventListener('click', e => { if (e.target === emailModal) emailModal.classList.remove('is-active'); });
+
         // Close modals with ESC
         document.addEventListener('keydown', e => {
             if (e.key === 'Escape') {
                 fotoModal.classList.remove('is-active');
                 editModal.classList.remove('is-active');
+                emailModal.classList.remove('is-active');
             }
         });
     </script>

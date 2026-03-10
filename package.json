@@ -1,0 +1,7 @@
+{
+  "name": "menorca-rugby-web",
+  "private": true,
+  "dependencies": {
+    "nodemailer": "^6.9.0"
+  }
+}
