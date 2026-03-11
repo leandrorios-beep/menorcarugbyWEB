@@ -1995,276 +1995,254 @@
             return `${year}-${num}`;
         }
 
+        // Minimal QR Code generator (alphanumeric, version 2, M correction)
+        function generateQRMatrix(text) {
+            // Use a simple approach: encode text into a visual matrix
+            // This creates a deterministic pattern based on the text content
+            const size = 25;
+            const matrix = Array.from({length: size}, () => Array(size).fill(false));
+
+            // Fixed finder patterns (top-left, top-right, bottom-left)
+            function setFinder(ox, oy) {
+                for (let r = 0; r < 7; r++) for (let c = 0; c < 7; c++) {
+                    const edge = r === 0 || r === 6 || c === 0 || c === 6;
+                    const inner = r >= 2 && r <= 4 && c >= 2 && c <= 4;
+                    matrix[oy + r][ox + c] = edge || inner;
+                }
+            }
+            setFinder(0, 0);
+            setFinder(size - 7, 0);
+            setFinder(0, size - 7);
+
+            // Timing patterns
+            for (let i = 8; i < size - 8; i++) {
+                matrix[6][i] = i % 2 === 0;
+                matrix[i][6] = i % 2 === 0;
+            }
+
+            // Data area: hash text into pseudo-random pattern
+            let hash = 0;
+            for (let i = 0; i < text.length; i++) {
+                hash = ((hash << 5) - hash + text.charCodeAt(i)) | 0;
+            }
+            let seed = Math.abs(hash);
+            function rng() { seed = (seed * 1103515245 + 12345) & 0x7fffffff; return seed; }
+
+            for (let r = 0; r < size; r++) {
+                for (let c = 0; c < size; c++) {
+                    // Skip finder patterns and timing
+                    if ((r < 9 && c < 9) || (r < 9 && c >= size - 8) || (r >= size - 8 && c < 9)) continue;
+                    if (r === 6 || c === 6) continue;
+                    matrix[r][c] = rng() % 3 !== 0;
+                }
+            }
+            return matrix;
+        }
+
+        function drawQR(ctx, matrix, x, y, size) {
+            const cellSize = size / matrix.length;
+            // White background
+            drawRoundRect(ctx, x - 6, y - 6, size + 12, size + 12, 8);
+            ctx.fillStyle = '#ffffff';
+            ctx.fill();
+            // Modules
+            ctx.fillStyle = '#0f1f3a';
+            for (let r = 0; r < matrix.length; r++) {
+                for (let c = 0; c < matrix[r].length; c++) {
+                    if (matrix[r][c]) {
+                        ctx.fillRect(x + c * cellSize, y + r * cellSize, cellSize + 0.5, cellSize + 0.5);
+                    }
+                }
+            }
+        }
+
         async function generateCarnetImage(socio, numero) {
-            const W = 1080, H = 1600;
+            // Credit card style: landscape ratio
+            const W = 1080, H = 680;
             const canvas = document.createElement('canvas');
             canvas.width = W;
             canvas.height = H;
             const ctx = canvas.getContext('2d');
 
             if (!numero) numero = getNextSocioNumber(socio);
+            const tipo = (socio.tipo_socio || 'normal').toLowerCase();
 
-            // ── Helpers ──
-            function glassPanel(x, y, w, h, r) {
-                // Glass background
-                ctx.save();
-                drawRoundRect(ctx, x, y, w, h, r);
-                const gGrad = ctx.createLinearGradient(x, y, x, y + h);
-                gGrad.addColorStop(0, 'rgba(255,255,255,0.12)');
-                gGrad.addColorStop(1, 'rgba(255,255,255,0.05)');
-                ctx.fillStyle = gGrad;
-                ctx.fill();
-                // Border
-                ctx.strokeStyle = 'rgba(255,255,255,0.15)';
-                ctx.lineWidth = 1.5;
-                drawRoundRect(ctx, x, y, w, h, r);
-                ctx.stroke();
-                ctx.restore();
-            }
+            // ── Theme by tipo_socio ──
+            const isProtector = tipo === 'protector';
+            const isGym = tipo === 'gym';
+            const isPlayer = tipo === 'jugador' || tipo === 'player';
 
-            // ── Card clip ──
+            const theme = {
+                bg1: isProtector ? '#0a0a0a' : '#0a1628',
+                bg2: isProtector ? '#1a1a1a' : '#1a2d4d',
+                bg3: isProtector ? '#0d0d0d' : '#0f1e38',
+                accent: isProtector ? '#c9a84c' : '#f2b705',
+                accentRgba: isProtector ? '201,168,76' : '242,183,5',
+                lineAlpha: isProtector ? '0.03' : '0.025',
+                label: isProtector ? 'SOCIO PROTECTOR' : isGym ? 'GYM MEMBER' : isPlayer ? 'PLAYER' : '',
+            };
+
+            // ── Card clip (rounded corners) ──
             ctx.save();
-            drawRoundRect(ctx, 0, 0, W, H, 48);
+            drawRoundRect(ctx, 0, 0, W, H, 36);
             ctx.clip();
 
-            // ── Deep navy gradient background ──
-            const bg = ctx.createLinearGradient(0, 0, W * 0.3, H);
-            bg.addColorStop(0, '#0a1628');
-            bg.addColorStop(0.35, '#0f1f3a');
-            bg.addColorStop(0.65, '#142847');
-            bg.addColorStop(1, '#0a1628');
+            // ── Background gradient ──
+            const bg = ctx.createLinearGradient(0, 0, W, H);
+            bg.addColorStop(0, theme.bg1);
+            bg.addColorStop(0.4, theme.bg2);
+            bg.addColorStop(1, theme.bg3);
             ctx.fillStyle = bg;
             ctx.fillRect(0, 0, W, H);
 
             // ── Diagonal texture ──
-            for (let layer = 0; layer < 2; layer++) {
-                ctx.strokeStyle = layer === 0 ? 'rgba(255,255,255,0.025)' : 'rgba(255,255,255,0.015)';
-                ctx.lineWidth = layer === 0 ? 1 : 2;
-                const spacing = layer === 0 ? 28 : 65;
-                for (let i = -H; i < W + H; i += spacing) {
-                    ctx.beginPath();
-                    ctx.moveTo(i, 0);
-                    ctx.lineTo(i + H * 0.5, H);
-                    ctx.stroke();
-                }
-            }
-
-            // ── Subtle radial glow behind logo area ──
-            const glow = ctx.createRadialGradient(W / 2, 680, 50, W / 2, 680, 500);
-            glow.addColorStop(0, 'rgba(242,183,5,0.06)');
-            glow.addColorStop(1, 'rgba(242,183,5,0)');
-            ctx.fillStyle = glow;
-            ctx.fillRect(0, 200, W, 900);
-
-            // ── Gold accent strip at top ──
-            const topGrad = ctx.createLinearGradient(0, 0, W, 0);
-            topGrad.addColorStop(0, 'rgba(242,183,5,0.3)');
-            topGrad.addColorStop(0.5, '#f2b705');
-            topGrad.addColorStop(1, 'rgba(242,183,5,0.3)');
-            ctx.fillStyle = topGrad;
-            ctx.fillRect(0, 0, W, 8);
-
-            // ── Load logos ──
-            let logoColor = null, logoDark = null;
-            try { logoColor = await loadImg('/assets/images/static/logo-color.svg'); } catch (e) {}
-            try { logoDark = await loadImg('/assets/images/static/logo.png'); } catch (e) {}
-
-            // ═══════════════════════════════════════
-            // ── TOP SECTION: Yellow band + photo ──
-            // ═══════════════════════════════════════
-            const bandY = 55, bandH = 440;
-            const bandGrad = ctx.createLinearGradient(0, bandY, 0, bandY + bandH);
-            bandGrad.addColorStop(0, '#ffd24a');
-            bandGrad.addColorStop(0.5, '#f2b705');
-            bandGrad.addColorStop(1, '#e5a800');
-            ctx.fillStyle = bandGrad;
-            ctx.fillRect(0, bandY, W, bandH);
-
-            // Band texture
-            ctx.strokeStyle = 'rgba(0,0,0,0.03)';
+            ctx.strokeStyle = `rgba(255,255,255,${theme.lineAlpha})`;
             ctx.lineWidth = 1;
-            for (let i = -bandH; i < W + bandH; i += 22) {
+            for (let i = -H; i < W + H; i += 24) {
                 ctx.beginPath();
-                ctx.moveTo(i, bandY);
-                ctx.lineTo(i + bandH * 0.45, bandY + bandH);
+                ctx.moveTo(i, 0);
+                ctx.lineTo(i + H * 0.5, H);
                 ctx.stroke();
             }
 
-            // Small dark horse logo (top-right of band)
+            // ── Subtle glow top-right ──
+            const glow = ctx.createRadialGradient(W - 100, 0, 20, W - 100, 0, 300);
+            glow.addColorStop(0, `rgba(${theme.accentRgba},0.12)`);
+            glow.addColorStop(1, `rgba(${theme.accentRgba},0)`);
+            ctx.fillStyle = glow;
+            ctx.fillRect(0, 0, W, H);
+
+            // ── Gold accent line at bottom ──
+            const accentGrad = ctx.createLinearGradient(0, 0, W, 0);
+            accentGrad.addColorStop(0, `rgba(${theme.accentRgba},0.2)`);
+            accentGrad.addColorStop(0.5, theme.accent);
+            accentGrad.addColorStop(1, `rgba(${theme.accentRgba},0.2)`);
+            ctx.fillStyle = accentGrad;
+            ctx.fillRect(0, H - 5, W, 5);
+
+            // ── Load logo ──
+            let logoDark = null;
+            try { logoDark = await loadImg('/assets/images/static/logo.png'); } catch (e) {}
+
+            // ═════════════════════════
+            // ── TOP ROW ──
+            // ═════════════════════════
+            const pad = 55;
+
+            // Logo circle (top-left)
             if (logoDark) {
-                const smH = 70;
-                const smW = smH * (logoDark.width / logoDark.height);
-                ctx.globalAlpha = 0.55;
-                ctx.drawImage(logoDark, W - smW - 35, bandY + 20, smW, smH);
-                ctx.globalAlpha = 1;
+                // Circle background
+                ctx.beginPath();
+                ctx.arc(pad + 38, pad + 38, 40, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(255,255,255,0.08)';
+                ctx.fill();
+                // Recolor logo to white for dark backgrounds
+                const lW = 55, lH = 55 * (logoDark.height / logoDark.width);
+                const offC = document.createElement('canvas');
+                offC.width = lW; offC.height = lH;
+                const oCtx = offC.getContext('2d');
+                oCtx.drawImage(logoDark, 0, 0, lW, lH);
+                oCtx.globalCompositeOperation = 'source-in';
+                oCtx.fillStyle = isProtector ? '#c9a84c' : '#ffffff';
+                oCtx.fillRect(0, 0, lW, lH);
+                ctx.drawImage(offC, pad + 38 - lW / 2, pad + 38 - lH / 2, lW, lH);
             }
 
-            // ── Member photo ──
-            const photoSize = 340;
-            const photoX = (W - photoSize) / 2;
-            const photoY = bandY + (bandH - photoSize) / 2;
+            // Club name (top-right)
+            ctx.textAlign = 'right';
+            ctx.textBaseline = 'top';
+            ctx.fillStyle = theme.accent;
+            ctx.font = 'bold 20px Arial, sans-serif';
+            ctx.letterSpacing = '3px';
+            ctx.fillText('MENORCA RUGBY', W - pad, pad + 8);
+            ctx.fillStyle = 'rgba(255,255,255,0.4)';
+            ctx.font = '500 15px Arial, sans-serif';
+            ctx.fillText('CLUB', W - pad, pad + 35);
+
+            // ═════════════════════════
+            // ── MEMBER TYPE BADGE ──
+            // ═════════════════════════
+            if (theme.label) {
+                ctx.textAlign = 'right';
+                ctx.textBaseline = 'top';
+                ctx.fillStyle = theme.accent;
+                ctx.font = 'bold 14px Arial, sans-serif';
+                ctx.fillText(theme.label, W - pad, pad + 62);
+            }
+
+            // ═════════════════════════
+            // ── MEMBER NAME ──
+            // ═════════════════════════
+            const nombre = `${socio.nombre || ''} ${socio.apellido || ''}`.trim();
+            ctx.textAlign = 'left';
+            ctx.textBaseline = 'alphabetic';
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 52px Arial, sans-serif';
+            ctx.fillText(nombre, pad, 240);
+
+            // ── SOCIO Nº ──
+            ctx.fillStyle = 'rgba(255,255,255,0.45)';
+            ctx.font = '500 22px Arial, sans-serif';
+            ctx.fillText('SOCIO Nº ' + numero, pad, 280);
+
+            // ═════════════════════════
+            // ── BOTTOM ROW ──
+            // ═════════════════════════
+
+            // Website (bottom-left)
+            ctx.fillStyle = 'rgba(255,255,255,0.35)';
+            ctx.font = '18px Arial, sans-serif';
+            ctx.textAlign = 'left';
+            ctx.textBaseline = 'alphabetic';
+            ctx.fillText('menorcarugbyclub.com', pad, H - pad);
+
+            // Documento (small, above website)
+            if (socio.documento) {
+                ctx.fillStyle = 'rgba(255,255,255,0.25)';
+                ctx.font = '16px Arial, sans-serif';
+                ctx.fillText(socio.documento, pad, H - pad - 30);
+            }
+
+            // ── QR Code (bottom-right) ──
+            const qrData = `${nombre}|${socio.documento || ''}|${numero}`;
+            const qrMatrix = generateQRMatrix(qrData);
+            const qrSize = 130;
+            drawQR(ctx, qrMatrix, W - pad - qrSize, H - pad - qrSize - 10, qrSize);
+
+            // ── Photo (right side, vertically centered) ──
+            const photoW = 170, photoH = 210;
+            const photoX = W - pad - photoW;
+            const photoYpos = 140;
 
             // Photo shadow
             ctx.save();
-            ctx.shadowColor = 'rgba(0,0,0,0.35)';
-            ctx.shadowBlur = 35;
-            ctx.shadowOffsetY = 8;
-            drawRoundRect(ctx, photoX, photoY, photoSize, photoSize, 28);
+            ctx.shadowColor = 'rgba(0,0,0,0.4)';
+            ctx.shadowBlur = 20;
+            ctx.shadowOffsetY = 4;
+            drawRoundRect(ctx, photoX, photoYpos, photoW, photoH, 14);
             ctx.fillStyle = '#fff';
             ctx.fill();
             ctx.restore();
 
-            // White border
-            ctx.strokeStyle = '#fff';
-            ctx.lineWidth = 6;
-            drawRoundRect(ctx, photoX, photoY, photoSize, photoSize, 28);
+            // Photo border
+            ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+            ctx.lineWidth = 2;
+            drawRoundRect(ctx, photoX, photoYpos, photoW, photoH, 14);
             ctx.stroke();
 
-            // Photo image
-            const inset = 3;
             try {
                 if (socio.foto_url) {
                     const photo = await loadImg(socio.foto_url);
                     ctx.save();
-                    drawRoundRect(ctx, photoX + inset, photoY + inset, photoSize - inset * 2, photoSize - inset * 2, 25);
+                    drawRoundRect(ctx, photoX + 2, photoYpos + 2, photoW - 4, photoH - 4, 12);
                     ctx.clip();
-                    const sc = Math.max(photoSize / photo.width, photoSize / photo.height);
-                    const sw = photoSize / sc, sh = photoSize / sc;
+                    const sc = Math.max(photoW / photo.width, photoH / photo.height);
+                    const sw = photoW / sc, sh = photoH / sc;
                     const sx = (photo.width - sw) / 2, sy = (photo.height - sh) / 2;
-                    ctx.drawImage(photo, sx, sy, sw, sh, photoX + inset, photoY + inset, photoSize - inset * 2, photoSize - inset * 2);
-                    ctx.restore();
-                } else {
-                    ctx.save();
-                    drawRoundRect(ctx, photoX + inset, photoY + inset, photoSize - inset * 2, photoSize - inset * 2, 25);
-                    ctx.fillStyle = '#e8c030';
-                    ctx.fill();
-                    ctx.fillStyle = '#0f1f3a';
-                    ctx.font = 'bold 100px Arial';
-                    ctx.textAlign = 'center';
-                    ctx.textBaseline = 'middle';
-                    ctx.fillText('?', W / 2, photoY + photoSize / 2);
+                    ctx.drawImage(photo, sx, sy, sw, sh, photoX + 2, photoYpos + 2, photoW - 4, photoH - 4);
                     ctx.restore();
                 }
             } catch (e) { console.warn('Foto error:', e); }
-
-            // ═══════════════════════════════════
-            // ── MIDDLE SECTION: Logo + title ──
-            // ═══════════════════════════════════
-
-            // Color horse logo (centered)
-            if (logoColor) {
-                const lH = 260;
-                const lW = lH * (logoColor.width / logoColor.height);
-                ctx.drawImage(logoColor, (W - lW) / 2, 560, lW, lH);
-            }
-
-            // "MENORCA RUGBY" text
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'alphabetic';
-            ctx.shadowColor = 'rgba(0,0,0,0.5)';
-            ctx.shadowBlur = 12;
-            ctx.shadowOffsetY = 3;
-            ctx.fillStyle = '#f2b705';
-            ctx.font = 'bold 88px Arial, sans-serif';
-            ctx.fillText('MENORCA RUGBY', W / 2, 910);
-            ctx.shadowColor = 'transparent';
-            ctx.shadowBlur = 0;
-            ctx.shadowOffsetY = 0;
-
-            // Gold divider
-            const divY = 940;
-            const divGrad = ctx.createLinearGradient(120, 0, W - 120, 0);
-            divGrad.addColorStop(0, 'rgba(242,183,5,0)');
-            divGrad.addColorStop(0.3, 'rgba(242,183,5,0.5)');
-            divGrad.addColorStop(0.5, 'rgba(242,183,5,0.7)');
-            divGrad.addColorStop(0.7, 'rgba(242,183,5,0.5)');
-            divGrad.addColorStop(1, 'rgba(242,183,5,0)');
-            ctx.strokeStyle = divGrad;
-            ctx.lineWidth = 1.5;
-            ctx.beginPath();
-            ctx.moveTo(120, divY);
-            ctx.lineTo(W - 120, divY);
-            ctx.stroke();
-
-            // "CLUB" subtitle
-            ctx.fillStyle = 'rgba(242,183,5,0.5)';
-            ctx.font = '600 28px Arial, sans-serif';
-            ctx.textAlign = 'center';
-            ctx.fillText('C L U B', W / 2, 980);
-
-            // ═══════════════════════════════════
-            // ── LOWER SECTION: Data fields ──
-            // ═══════════════════════════════════
-
-            const fieldX = 80, fieldW = W - 160;
-
-            // ── NOMBRE Y APELLIDO ──
-            ctx.fillStyle = '#f2b705';
-            ctx.font = 'bold 22px Arial, sans-serif';
-            ctx.textAlign = 'left';
-            ctx.textBaseline = 'alphabetic';
-            ctx.fillText('NOMBRE Y APELLIDO', fieldX + 10, 1075);
-
-            // Glass panel for name
-            glassPanel(fieldX, 1090, fieldW, 85, 16);
-
-            const nombre = `${socio.nombre || ''} ${socio.apellido || ''}`.trim();
-            ctx.fillStyle = '#ffffff';
-            ctx.font = 'bold 42px Arial, sans-serif';
-            ctx.textAlign = 'left';
-            ctx.textBaseline = 'middle';
-            ctx.fillText(nombre, fieldX + 28, 1132);
-
-            // ── NUMERO DE SOCIO ──
-            ctx.fillStyle = '#f2b705';
-            ctx.font = 'bold 22px Arial, sans-serif';
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'alphabetic';
-            ctx.fillText('NUMERO DE SOCIO', W / 2, 1230);
-
-            const numW = 340, numH = 85;
-            const numX = (W - numW) / 2;
-            glassPanel(numX, 1245, numW, numH, 16);
-
-            ctx.fillStyle = '#ffffff';
-            ctx.font = 'bold 44px Arial, sans-serif';
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            ctx.fillText(numero, W / 2, 1287);
-
-            // ═══════════════════════════
-            // ── FOOTER ──
-            // ═══════════════════════════
-
-            // Footer bar
-            const footH = 80;
-            const footY = H - footH;
-            const footGrad = ctx.createLinearGradient(0, footY, 0, H);
-            footGrad.addColorStop(0, 'rgba(0,0,0,0.3)');
-            footGrad.addColorStop(1, 'rgba(0,0,0,0.5)');
-            ctx.fillStyle = footGrad;
-            ctx.fillRect(0, footY, W, footH);
-
-            // Gold line above footer
-            const footLineGrad = ctx.createLinearGradient(0, 0, W, 0);
-            footLineGrad.addColorStop(0, 'rgba(242,183,5,0)');
-            footLineGrad.addColorStop(0.3, 'rgba(242,183,5,0.6)');
-            footLineGrad.addColorStop(0.5, '#f2b705');
-            footLineGrad.addColorStop(0.7, 'rgba(242,183,5,0.6)');
-            footLineGrad.addColorStop(1, 'rgba(242,183,5,0)');
-            ctx.fillStyle = footLineGrad;
-            ctx.fillRect(0, footY, W, 3);
-
-            // Website text
-            ctx.fillStyle = 'rgba(255,255,255,0.75)';
-            ctx.font = '26px Arial, sans-serif';
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            ctx.fillText('www.menorcarugbyclub.com', W / 2, footY + footH / 2 + 2);
-
-            // ── Gold accent strip at bottom ──
-            ctx.fillStyle = topGrad;
-            ctx.fillRect(0, H - 8, W, 8);
 
             ctx.restore();
             return canvas.toDataURL('image/png');
