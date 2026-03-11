@@ -132,6 +132,18 @@ function buildWelcomeEmail(nombre, tipo_socio, numero_socio, mensaje_extra) {
                                             </tr>
                                             <tr>
                                                 <td style="padding:4px 0;color:#555;font-size:14px;">
+                                                    <strong style="color:#182B49;">Facebook:</strong>
+                                                    <a href="https://www.facebook.com/menorcarugby" style="color:#1565c0;text-decoration:none;">Menorca Rugby</a>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td style="padding:4px 0;color:#555;font-size:14px;">
+                                                    <strong style="color:#182B49;">TikTok:</strong>
+                                                    <a href="https://www.tiktok.com/@menorcarugby" style="color:#1565c0;text-decoration:none;">@menorcarugby</a>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td style="padding:4px 0;color:#555;font-size:14px;">
                                                     <strong style="color:#182B49;">Email:</strong>
                                                     <a href="mailto:info@menorcarugbyclub.com" style="color:#1565c0;text-decoration:none;">info@menorcarugbyclub.com</a>
                                                 </td>

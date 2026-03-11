@@ -871,6 +871,21 @@
         </div>
     </div>
 
+    <!-- Carnet Modal -->
+    <div class="admin-modal-overlay" id="carnetModal">
+        <div class="admin-modal">
+            <button class="admin-modal-close" id="carnetModalClose">&times;</button>
+            <h3 id="carnetModalTitle"><i class="fas fa-id-card" style="color:#1565c0;margin-right:0.4rem;"></i> Carnet digital</h3>
+            <div class="admin-foto-modal-preview" id="carnetModalPreview" style="min-height:120px;"></div>
+            <div class="admin-foto-upload-area" style="gap:0.5rem;display:flex;align-items:center;flex-wrap:wrap;">
+                <input type="file" id="carnetFileInput" accept=".pdf,.png,.jpg,.jpeg,.webp" style="display:none">
+                <button class="admin-foto-upload-btn" id="carnetUploadBtn"><i class="fas fa-upload"></i> Subir carnet</button>
+                <a href="#" id="carnetViewLink" target="_blank" style="display:none;" class="admin-foto-upload-btn" title="Abrir carnet"><i class="fas fa-external-link-alt"></i> Abrir</a>
+            </div>
+            <div class="admin-modal-msg" id="carnetModalMsg"></div>
+        </div>
+    </div>
+
     <!-- Email Modal -->
     <div class="admin-modal-overlay" id="emailModal">
         <div class="admin-modal email-modal">
@@ -1247,6 +1262,7 @@
                     <td><div class="admin-actions">
                         <button class="admin-action-btn" onclick="openEditModal('${s.id}')" title="Editar"><i class="fas fa-pen"></i></button>
                         <button class="admin-action-btn" onclick="openFotoModal('socio','${s.id}')" title="Foto"><i class="fas fa-camera"></i></button>
+                        <button class="admin-action-btn" onclick="openCarnetModal('${s.id}')" title="Carnet digital" style="color:#1565c0;border-color:#1565c0;${s.carnet_url ? 'background:#e3f2fd;' : ''}"><i class="fas fa-id-card"></i></button>
                         <button class="admin-action-btn" onclick="openEmailModal('${s.id}')" title="Enviar email bienvenida" style="color:#2e7d32;border-color:#2e7d32;"><i class="fas fa-envelope"></i></button>
                     </div></td>
                 </tr>`;
@@ -1263,6 +1279,7 @@
                     <div class="mobile-card-actions">
                         <button class="admin-action-btn" onclick="openEditModal('${s.id}')" title="Editar"><i class="fas fa-pen"></i></button>
                         <button class="admin-action-btn" onclick="openFotoModal('socio','${s.id}')" title="Foto"><i class="fas fa-camera"></i></button>
+                        <button class="admin-action-btn" onclick="openCarnetModal('${s.id}')" title="Carnet" style="color:#1565c0;border-color:#1565c0;${s.carnet_url ? 'background:#e3f2fd;' : ''}"><i class="fas fa-id-card"></i></button>
                         <button class="admin-action-btn" onclick="openEmailModal('${s.id}')" title="Email" style="color:#2e7d32;border-color:#2e7d32;"><i class="fas fa-envelope"></i></button>
                     </div>
                 </div>`;
@@ -1733,6 +1750,25 @@
                 const result = await resp.json();
 
                 if (resp.ok && result.success) {
+                    // If there was an attachment, also save it as carnet
+                    if (emailAttachmentBase64 && emailAttachmentFilename && currentEmailSocio) {
+                        try {
+                            const ext = emailAttachmentFilename.split('.').pop();
+                            const carnetPath = `carnets/${Date.now()}_carnet_${currentEmailSocio.id}.${ext}`;
+                            const byteChars = atob(emailAttachmentBase64);
+                            const byteArr = new Uint8Array(byteChars.length);
+                            for (let i = 0; i < byteChars.length; i++) byteArr[i] = byteChars.charCodeAt(i);
+                            const blob = new Blob([byteArr]);
+                            const { error: upErr } = await sb.storage.from('fotos-socios').upload(carnetPath, blob, { cacheControl: '3600', upsert: false });
+                            if (!upErr) {
+                                const { data: uData } = sb.storage.from('fotos-socios').getPublicUrl(carnetPath);
+                                if (uData?.publicUrl) {
+                                    await sb.from('socios').update({ carnet_url: uData.publicUrl }).eq('id', currentEmailSocio.id);
+                                    loadSocios();
+                                }
+                            }
+                        } catch (e) { console.error('Error guardando carnet:', e); }
+                    }
                     emailModalMsg.textContent = 'Email enviado correctamente a ' + emailDestino;
                     emailModalMsg.className = 'admin-modal-msg success';
                     emailSendBtn.innerHTML = '<i class="fas fa-check"></i> Enviado!';
@@ -1753,12 +1789,113 @@
         emailModalClose.addEventListener('click', () => emailModal.classList.remove('is-active'));
         emailModal.addEventListener('click', e => { if (e.target === emailModal) emailModal.classList.remove('is-active'); });
 
+        // ── Carnet Modal ──
+        const carnetModal = document.getElementById('carnetModal');
+        const carnetModalClose = document.getElementById('carnetModalClose');
+        const carnetModalTitle = document.getElementById('carnetModalTitle');
+        const carnetModalPreview = document.getElementById('carnetModalPreview');
+        const carnetFileInput = document.getElementById('carnetFileInput');
+        const carnetUploadBtn = document.getElementById('carnetUploadBtn');
+        const carnetViewLink = document.getElementById('carnetViewLink');
+        const carnetModalMsg = document.getElementById('carnetModalMsg');
+        let currentCarnetId = null;
+
+        function openCarnetModal(id) {
+            const s = sociosData.find(s => s.id === id);
+            if (!s) return;
+            currentCarnetId = id;
+            const name = `${s.nombre || ''} ${s.apellido || ''}`.trim();
+            carnetModalTitle.innerHTML = `<i class="fas fa-id-card" style="color:#1565c0;margin-right:0.4rem;"></i> Carnet - ${escapeHtml(name)}`;
+            carnetModalMsg.className = 'admin-modal-msg';
+            carnetModalMsg.textContent = '';
+            carnetFileInput.value = '';
+
+            if (s.carnet_url) {
+                const isPdf = s.carnet_url.toLowerCase().includes('.pdf');
+                if (isPdf) {
+                    carnetModalPreview.innerHTML = `<div style="text-align:center;padding:20px;"><i class="fas fa-file-pdf" style="font-size:48px;color:#e53935;"></i><p style="margin:8px 0 0;color:#555;">Carnet en PDF</p></div>`;
+                } else {
+                    carnetModalPreview.innerHTML = `<img src="${escapeHtml(s.carnet_url)}" alt="Carnet" style="max-width:100%;border-radius:8px;" onerror="this.outerHTML='<div style=\\'text-align:center;padding:20px;color:#999;\\'><i class=\\'fas fa-id-card\\' style=\\'font-size:48px;\\'></i><p>Error al cargar</p></div>'">`;
+                }
+                carnetViewLink.href = s.carnet_url;
+                carnetViewLink.style.display = 'inline-flex';
+            } else {
+                carnetModalPreview.innerHTML = `<div style="text-align:center;padding:20px;color:#999;"><i class="fas fa-id-card" style="font-size:48px;"></i><p style="margin:8px 0 0;">Sin carnet</p></div>`;
+                carnetViewLink.style.display = 'none';
+            }
+
+            carnetModal.classList.add('is-active');
+        }
+
+        carnetModalClose.addEventListener('click', () => carnetModal.classList.remove('is-active'));
+        carnetModal.addEventListener('click', e => { if (e.target === carnetModal) carnetModal.classList.remove('is-active'); });
+        carnetUploadBtn.addEventListener('click', () => carnetFileInput.click());
+
+        carnetFileInput.addEventListener('change', async e => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            if (file.size > 5 * 1024 * 1024) {
+                alert('El archivo es demasiado grande. Maximo 5MB.');
+                carnetFileInput.value = '';
+                return;
+            }
+
+            carnetUploadBtn.disabled = true;
+            carnetUploadBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Subiendo...';
+            carnetModalMsg.className = 'admin-modal-msg';
+
+            const ext = file.name.split('.').pop();
+            const filePath = `carnets/${Date.now()}_carnet_${currentCarnetId}.${ext}`;
+
+            const { error: uploadError } = await sb.storage
+                .from('fotos-socios')
+                .upload(filePath, file, { cacheControl: '3600', upsert: false });
+
+            if (uploadError) {
+                carnetModalMsg.textContent = 'Error al subir: ' + uploadError.message;
+                carnetModalMsg.className = 'admin-modal-msg error';
+                carnetUploadBtn.disabled = false;
+                carnetUploadBtn.innerHTML = '<i class="fas fa-upload"></i> Subir carnet';
+                return;
+            }
+
+            const { data: urlData } = sb.storage.from('fotos-socios').getPublicUrl(filePath);
+            const carnet_url = urlData?.publicUrl || null;
+
+            const { error: updateError } = await sb.from('socios').update({ carnet_url }).eq('id', currentCarnetId);
+
+            if (updateError) {
+                carnetModalMsg.textContent = 'Error al guardar: ' + updateError.message;
+                carnetModalMsg.className = 'admin-modal-msg error';
+            } else {
+                carnetModalMsg.textContent = 'Carnet subido correctamente';
+                carnetModalMsg.className = 'admin-modal-msg success';
+                carnetViewLink.href = carnet_url;
+                carnetViewLink.style.display = 'inline-flex';
+                const isPdf = carnet_url.toLowerCase().includes('.pdf');
+                if (isPdf) {
+                    carnetModalPreview.innerHTML = `<div style="text-align:center;padding:20px;"><i class="fas fa-file-pdf" style="font-size:48px;color:#e53935;"></i><p style="margin:8px 0 0;color:#555;">Carnet en PDF</p></div>`;
+                } else {
+                    carnetModalPreview.innerHTML = `<img src="${escapeHtml(carnet_url)}" alt="Carnet" style="max-width:100%;border-radius:8px;">`;
+                }
+                loadSocios();
+            }
+
+            carnetUploadBtn.disabled = false;
+            carnetUploadBtn.innerHTML = '<i class="fas fa-upload"></i> Subir carnet';
+        });
+
+        // ── Also save carnet when sending email with attachment ──
+        const origEmailSendHandler = emailSendBtn.onclick;
+
         // Close modals with ESC
         document.addEventListener('keydown', e => {
             if (e.key === 'Escape') {
                 fotoModal.classList.remove('is-active');
                 editModal.classList.remove('is-active');
                 emailModal.classList.remove('is-active');
+                carnetModal.classList.remove('is-active');
             }
         });
     </script>
