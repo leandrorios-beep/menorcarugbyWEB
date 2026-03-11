@@ -77,7 +77,7 @@ function buildWelcomeEmail(nombre, tipo_socio, numero_socio, mensaje_extra) {
                     <!-- Header -->
                     <tr>
                         <td style="background:#182B49;padding:30px 40px;text-align:center;">
-                            <img src="https://www.menorcarugbyclub.com/assets/images/static/logo.png" alt="Menorca Rugby Club" width="80" style="margin-bottom:12px;">
+                            <img src="https://www.menorcarugbyclub.com/assets/images/static/logo.png" alt="Menorca Rugby Club" width="80" style="margin-bottom:12px;background:#ffffff;border-radius:50%;padding:8px;">
                             <h1 style="color:#FFC72C;font-size:22px;margin:0;font-weight:700;">MENORCA RUGBY CLUB</h1>
                         </td>
                     </tr>
@@ -116,7 +116,7 @@ function buildWelcomeEmail(nombre, tipo_socio, numero_socio, mensaje_extra) {
                             <table width="100%" cellpadding="0" cellspacing="0" style="background:#f8f9fa;border-radius:8px;overflow:hidden;">
                                 <tr>
                                     <td style="padding:20px 25px;">
-                                        <p style="color:#182B49;font-size:14px;font-weight:700;margin:0 0 10px;">INFORMACION UTIL</p>
+                                        <p style="color:#182B49;font-size:14px;font-weight:700;margin:0 0 10px;">INFORMACI&Oacute;N &Uacute;TIL</p>
                                         <table cellpadding="0" cellspacing="0">
                                             <tr>
                                                 <td style="padding:4px 0;color:#555;font-size:14px;">
