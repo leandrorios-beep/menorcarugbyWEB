@@ -877,7 +877,11 @@
             <button class="admin-modal-close" id="emailModalClose">&times;</button>
             <h3><i class="fas fa-envelope" style="color:#2e7d32;margin-right:0.4rem;"></i> Enviar email de bienvenida</h3>
             <div class="email-to-badge" id="emailTo">
-                <i class="fas fa-user"></i> <span id="emailToName"></span> &mdash; <span id="emailToAddr"></span>
+                <i class="fas fa-user"></i> <span id="emailToName"></span>
+            </div>
+            <div class="admin-modal-field" style="margin-top:0.5rem;">
+                <label>Para (destinatario)</label>
+                <input type="email" id="emailToInput" class="admin-modal-input" placeholder="email@ejemplo.com" style="width:100%;padding:0.5rem 0.7rem;border:1px solid #d0d5dd;border-radius:6px;font-size:14px;">
             </div>
             <div class="admin-modal-field">
                 <label>Vista previa del email</label>
@@ -1592,7 +1596,7 @@
 
             currentEmailSocio = socio;
             document.getElementById('emailToName').textContent = `${socio.nombre || ''} ${socio.apellido || ''}`.trim();
-            document.getElementById('emailToAddr').textContent = socio.email;
+            document.getElementById('emailToInput').value = socio.email;
             emailExtraMsg.value = '';
             emailAttachmentBase64 = null;
             emailAttachmentFilename = null;
@@ -1695,8 +1699,17 @@
             }
 
             try {
+                const emailDestino = document.getElementById('emailToInput').value.trim();
+                if (!emailDestino) {
+                    emailModalMsg.textContent = 'Introduce un email destinatario.';
+                    emailModalMsg.className = 'admin-modal-msg error';
+                    emailSendBtn.disabled = false;
+                    emailSendBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Enviar email de bienvenida';
+                    return;
+                }
+
                 const body = {
-                    to: currentEmailSocio.email,
+                    to: emailDestino,
                     nombre: `${currentEmailSocio.nombre || ''} ${currentEmailSocio.apellido || ''}`.trim(),
                     tipo_socio: currentEmailSocio.tipo_socio || '',
                     numero_socio: currentEmailSocio.numero_socio || '',
@@ -1720,7 +1733,7 @@
                 const result = await resp.json();
 
                 if (resp.ok && result.success) {
-                    emailModalMsg.textContent = 'Email enviado correctamente a ' + currentEmailSocio.email;
+                    emailModalMsg.textContent = 'Email enviado correctamente a ' + emailDestino;
                     emailModalMsg.className = 'admin-modal-msg success';
                     emailSendBtn.innerHTML = '<i class="fas fa-check"></i> Enviado!';
                 } else {
