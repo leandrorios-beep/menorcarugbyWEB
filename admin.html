@@ -1996,7 +1996,7 @@
         }
 
         async function generateCarnetImage(socio, numero) {
-            const W = 600, H = 950;
+            const W = 1080, H = 1600;
             const canvas = document.createElement('canvas');
             canvas.width = W;
             canvas.height = H;
@@ -2004,206 +2004,267 @@
 
             if (!numero) numero = getNextSocioNumber(socio);
 
-            // ── Card with rounded corners ──
-            ctx.save();
-            drawRoundRect(ctx, 0, 0, W, H, 28);
-            ctx.clip();
-
-            // ── Background gradient (dark navy to slightly lighter) ──
-            const bgGrad = ctx.createLinearGradient(0, 0, 0, H);
-            bgGrad.addColorStop(0, '#0f1e35');
-            bgGrad.addColorStop(0.5, '#182B49');
-            bgGrad.addColorStop(1, '#0f1e35');
-            ctx.fillStyle = bgGrad;
-            ctx.fillRect(0, 0, W, H);
-
-            // ── Subtle diagonal lines ──
-            ctx.strokeStyle = 'rgba(255,255,255,0.04)';
-            ctx.lineWidth = 1;
-            for (let i = -H; i < W + H; i += 16) {
-                ctx.beginPath();
-                ctx.moveTo(i, 0);
-                ctx.lineTo(i + H * 0.55, H);
+            // ── Helpers ──
+            function glassPanel(x, y, w, h, r) {
+                // Glass background
+                ctx.save();
+                drawRoundRect(ctx, x, y, w, h, r);
+                const gGrad = ctx.createLinearGradient(x, y, x, y + h);
+                gGrad.addColorStop(0, 'rgba(255,255,255,0.12)');
+                gGrad.addColorStop(1, 'rgba(255,255,255,0.05)');
+                ctx.fillStyle = gGrad;
+                ctx.fill();
+                // Border
+                ctx.strokeStyle = 'rgba(255,255,255,0.15)';
+                ctx.lineWidth = 1.5;
+                drawRoundRect(ctx, x, y, w, h, r);
                 ctx.stroke();
+                ctx.restore();
             }
 
-            // ── Gold accent line at very top ──
-            ctx.fillStyle = '#FFC72C';
-            ctx.fillRect(0, 0, W, 5);
+            // ── Card clip ──
+            ctx.save();
+            drawRoundRect(ctx, 0, 0, W, H, 48);
+            ctx.clip();
+
+            // ── Deep navy gradient background ──
+            const bg = ctx.createLinearGradient(0, 0, W * 0.3, H);
+            bg.addColorStop(0, '#0a1628');
+            bg.addColorStop(0.35, '#0f1f3a');
+            bg.addColorStop(0.65, '#142847');
+            bg.addColorStop(1, '#0a1628');
+            ctx.fillStyle = bg;
+            ctx.fillRect(0, 0, W, H);
+
+            // ── Diagonal texture ──
+            for (let layer = 0; layer < 2; layer++) {
+                ctx.strokeStyle = layer === 0 ? 'rgba(255,255,255,0.025)' : 'rgba(255,255,255,0.015)';
+                ctx.lineWidth = layer === 0 ? 1 : 2;
+                const spacing = layer === 0 ? 28 : 65;
+                for (let i = -H; i < W + H; i += spacing) {
+                    ctx.beginPath();
+                    ctx.moveTo(i, 0);
+                    ctx.lineTo(i + H * 0.5, H);
+                    ctx.stroke();
+                }
+            }
+
+            // ── Subtle radial glow behind logo area ──
+            const glow = ctx.createRadialGradient(W / 2, 680, 50, W / 2, 680, 500);
+            glow.addColorStop(0, 'rgba(242,183,5,0.06)');
+            glow.addColorStop(1, 'rgba(242,183,5,0)');
+            ctx.fillStyle = glow;
+            ctx.fillRect(0, 200, W, 900);
+
+            // ── Gold accent strip at top ──
+            const topGrad = ctx.createLinearGradient(0, 0, W, 0);
+            topGrad.addColorStop(0, 'rgba(242,183,5,0.3)');
+            topGrad.addColorStop(0.5, '#f2b705');
+            topGrad.addColorStop(1, 'rgba(242,183,5,0.3)');
+            ctx.fillStyle = topGrad;
+            ctx.fillRect(0, 0, W, 8);
 
             // ── Load logos ──
-            let logoColor = null;
-            let logoDark = null;
+            let logoColor = null, logoDark = null;
             try { logoColor = await loadImg('/assets/images/static/logo-color.svg'); } catch (e) {}
             try { logoDark = await loadImg('/assets/images/static/logo.png'); } catch (e) {}
 
-            // ── Yellow photo band (full width) ──
-            const bandY = 35, bandH = 260;
+            // ═══════════════════════════════════════
+            // ── TOP SECTION: Yellow band + photo ──
+            // ═══════════════════════════════════════
+            const bandY = 55, bandH = 440;
             const bandGrad = ctx.createLinearGradient(0, bandY, 0, bandY + bandH);
-            bandGrad.addColorStop(0, '#FFD044');
-            bandGrad.addColorStop(1, '#FFC72C');
+            bandGrad.addColorStop(0, '#ffd24a');
+            bandGrad.addColorStop(0.5, '#f2b705');
+            bandGrad.addColorStop(1, '#e5a800');
             ctx.fillStyle = bandGrad;
             ctx.fillRect(0, bandY, W, bandH);
 
-            // ── Subtle pattern on yellow band ──
-            ctx.strokeStyle = 'rgba(24,43,73,0.04)';
+            // Band texture
+            ctx.strokeStyle = 'rgba(0,0,0,0.03)';
             ctx.lineWidth = 1;
-            for (let i = -bandH; i < W + bandH; i += 14) {
+            for (let i = -bandH; i < W + bandH; i += 22) {
                 ctx.beginPath();
                 ctx.moveTo(i, bandY);
-                ctx.lineTo(i + bandH * 0.5, bandY + bandH);
+                ctx.lineTo(i + bandH * 0.45, bandY + bandH);
                 ctx.stroke();
             }
 
-            // ── Member photo (centered in band) ──
-            const photoSize = 190;
+            // Small dark horse logo (top-right of band)
+            if (logoDark) {
+                const smH = 70;
+                const smW = smH * (logoDark.width / logoDark.height);
+                ctx.globalAlpha = 0.55;
+                ctx.drawImage(logoDark, W - smW - 35, bandY + 20, smW, smH);
+                ctx.globalAlpha = 1;
+            }
+
+            // ── Member photo ──
+            const photoSize = 340;
             const photoX = (W - photoSize) / 2;
             const photoY = bandY + (bandH - photoSize) / 2;
 
             // Photo shadow
             ctx.save();
-            ctx.shadowColor = 'rgba(0,0,0,0.3)';
-            ctx.shadowBlur = 20;
-            ctx.shadowOffsetY = 4;
-            drawRoundRect(ctx, photoX, photoY, photoSize, photoSize, 16);
+            ctx.shadowColor = 'rgba(0,0,0,0.35)';
+            ctx.shadowBlur = 35;
+            ctx.shadowOffsetY = 8;
+            drawRoundRect(ctx, photoX, photoY, photoSize, photoSize, 28);
             ctx.fillStyle = '#fff';
             ctx.fill();
             ctx.restore();
 
-            // Photo border
+            // White border
             ctx.strokeStyle = '#fff';
-            ctx.lineWidth = 4;
-            drawRoundRect(ctx, photoX, photoY, photoSize, photoSize, 16);
+            ctx.lineWidth = 6;
+            drawRoundRect(ctx, photoX, photoY, photoSize, photoSize, 28);
             ctx.stroke();
 
+            // Photo image
+            const inset = 3;
             try {
                 if (socio.foto_url) {
                     const photo = await loadImg(socio.foto_url);
                     ctx.save();
-                    drawRoundRect(ctx, photoX + 2, photoY + 2, photoSize - 4, photoSize - 4, 14);
+                    drawRoundRect(ctx, photoX + inset, photoY + inset, photoSize - inset * 2, photoSize - inset * 2, 25);
                     ctx.clip();
-                    const scale = Math.max(photoSize / photo.width, photoSize / photo.height);
-                    const sw = photoSize / scale, sh = photoSize / scale;
+                    const sc = Math.max(photoSize / photo.width, photoSize / photo.height);
+                    const sw = photoSize / sc, sh = photoSize / sc;
                     const sx = (photo.width - sw) / 2, sy = (photo.height - sh) / 2;
-                    ctx.drawImage(photo, sx, sy, sw, sh, photoX + 2, photoY + 2, photoSize - 4, photoSize - 4);
+                    ctx.drawImage(photo, sx, sy, sw, sh, photoX + inset, photoY + inset, photoSize - inset * 2, photoSize - inset * 2);
                     ctx.restore();
                 } else {
                     ctx.save();
-                    drawRoundRect(ctx, photoX + 2, photoY + 2, photoSize - 4, photoSize - 4, 14);
+                    drawRoundRect(ctx, photoX + inset, photoY + inset, photoSize - inset * 2, photoSize - inset * 2, 25);
                     ctx.fillStyle = '#e8c030';
                     ctx.fill();
-                    ctx.fillStyle = '#182B49';
-                    ctx.font = 'bold 60px Arial';
+                    ctx.fillStyle = '#0f1f3a';
+                    ctx.font = 'bold 100px Arial';
                     ctx.textAlign = 'center';
                     ctx.textBaseline = 'middle';
-                    ctx.fillText('?', photoX + photoSize / 2, photoY + photoSize / 2);
+                    ctx.fillText('?', W / 2, photoY + photoSize / 2);
                     ctx.restore();
                 }
             } catch (e) { console.warn('Foto error:', e); }
 
-            // ── Small dark horse logo (top-right of yellow band) ──
-            if (logoDark) {
-                const smH = 40;
-                const smW = smH * (logoDark.width / logoDark.height);
-                ctx.globalAlpha = 0.7;
-                ctx.drawImage(logoDark, W - smW - 18, bandY + 12, smW, smH);
-                ctx.globalAlpha = 1;
-            }
+            // ═══════════════════════════════════
+            // ── MIDDLE SECTION: Logo + title ──
+            // ═══════════════════════════════════
 
-            // ── Main color horse logo (center) ──
+            // Color horse logo (centered)
             if (logoColor) {
-                const logoH = 155;
-                const logoW = logoH * (logoColor.width / logoColor.height);
-                const logoY = 340;
-                ctx.drawImage(logoColor, (W - logoW) / 2, logoY, logoW, logoH);
+                const lH = 260;
+                const lW = lH * (logoColor.width / logoColor.height);
+                ctx.drawImage(logoColor, (W - lW) / 2, 560, lW, lH);
             }
 
-            // ── "MENORCA RUGBY" ──
+            // "MENORCA RUGBY" text
             ctx.textAlign = 'center';
             ctx.textBaseline = 'alphabetic';
-            // Gold text with subtle shadow
-            ctx.shadowColor = 'rgba(0,0,0,0.4)';
-            ctx.shadowBlur = 6;
-            ctx.shadowOffsetY = 2;
-            ctx.fillStyle = '#FFC72C';
-            ctx.font = 'bold 50px Arial, sans-serif';
-            ctx.fillText('MENORCA RUGBY', W / 2, 555);
+            ctx.shadowColor = 'rgba(0,0,0,0.5)';
+            ctx.shadowBlur = 12;
+            ctx.shadowOffsetY = 3;
+            ctx.fillStyle = '#f2b705';
+            ctx.font = 'bold 88px Arial, sans-serif';
+            ctx.fillText('MENORCA RUGBY', W / 2, 910);
             ctx.shadowColor = 'transparent';
             ctx.shadowBlur = 0;
             ctx.shadowOffsetY = 0;
 
-            // ── Thin gold divider line ──
-            ctx.strokeStyle = 'rgba(255,199,44,0.3)';
-            ctx.lineWidth = 1;
+            // Gold divider
+            const divY = 940;
+            const divGrad = ctx.createLinearGradient(120, 0, W - 120, 0);
+            divGrad.addColorStop(0, 'rgba(242,183,5,0)');
+            divGrad.addColorStop(0.3, 'rgba(242,183,5,0.5)');
+            divGrad.addColorStop(0.5, 'rgba(242,183,5,0.7)');
+            divGrad.addColorStop(0.7, 'rgba(242,183,5,0.5)');
+            divGrad.addColorStop(1, 'rgba(242,183,5,0)');
+            ctx.strokeStyle = divGrad;
+            ctx.lineWidth = 1.5;
             ctx.beginPath();
-            ctx.moveTo(60, 580);
-            ctx.lineTo(W - 60, 580);
+            ctx.moveTo(120, divY);
+            ctx.lineTo(W - 120, divY);
             ctx.stroke();
 
-            // ── CLUB label ──
-            ctx.fillStyle = 'rgba(255,199,44,0.5)';
-            ctx.font = '600 14px Arial, sans-serif';
+            // "CLUB" subtitle
+            ctx.fillStyle = 'rgba(242,183,5,0.5)';
+            ctx.font = '600 28px Arial, sans-serif';
             ctx.textAlign = 'center';
-            ctx.fillText('C L U B', W / 2, 602);
+            ctx.fillText('C L U B', W / 2, 980);
+
+            // ═══════════════════════════════════
+            // ── LOWER SECTION: Data fields ──
+            // ═══════════════════════════════════
+
+            const fieldX = 80, fieldW = W - 160;
 
             // ── NOMBRE Y APELLIDO ──
-            ctx.fillStyle = '#FFC72C';
-            ctx.font = 'bold 13px Arial, sans-serif';
+            ctx.fillStyle = '#f2b705';
+            ctx.font = 'bold 22px Arial, sans-serif';
             ctx.textAlign = 'left';
             ctx.textBaseline = 'alphabetic';
-            ctx.fillText('NOMBRE Y APELLIDO', 50, 660);
+            ctx.fillText('NOMBRE Y APELLIDO', fieldX + 10, 1075);
 
-            // Name box
-            drawRoundRect(ctx, 50, 670, W - 100, 52, 10);
-            ctx.fillStyle = 'rgba(255,255,255,0.95)';
-            ctx.fill();
-            ctx.strokeStyle = 'rgba(255,199,44,0.3)';
-            ctx.lineWidth = 1;
-            drawRoundRect(ctx, 50, 670, W - 100, 52, 10);
-            ctx.stroke();
+            // Glass panel for name
+            glassPanel(fieldX, 1090, fieldW, 85, 16);
 
             const nombre = `${socio.nombre || ''} ${socio.apellido || ''}`.trim();
-            ctx.fillStyle = '#182B49';
-            ctx.font = 'bold 26px Arial, sans-serif';
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 42px Arial, sans-serif';
             ctx.textAlign = 'left';
             ctx.textBaseline = 'middle';
-            ctx.fillText(nombre, 68, 696);
+            ctx.fillText(nombre, fieldX + 28, 1132);
 
             // ── NUMERO DE SOCIO ──
-            ctx.fillStyle = '#FFC72C';
-            ctx.font = 'bold 13px Arial, sans-serif';
+            ctx.fillStyle = '#f2b705';
+            ctx.font = 'bold 22px Arial, sans-serif';
             ctx.textAlign = 'center';
             ctx.textBaseline = 'alphabetic';
-            ctx.fillText('NUMERO DE SOCIO', W / 2, 760);
+            ctx.fillText('NUMERO DE SOCIO', W / 2, 1230);
 
-            const numW = 200, numH = 50;
+            const numW = 340, numH = 85;
             const numX = (W - numW) / 2;
-            drawRoundRect(ctx, numX, 770, numW, numH, 10);
-            ctx.fillStyle = 'rgba(255,255,255,0.95)';
-            ctx.fill();
-            ctx.strokeStyle = 'rgba(255,199,44,0.3)';
-            ctx.lineWidth = 1;
-            drawRoundRect(ctx, numX, 770, numW, numH, 10);
-            ctx.stroke();
+            glassPanel(numX, 1245, numW, numH, 16);
 
-            ctx.fillStyle = '#182B49';
-            ctx.font = 'bold 26px Arial, sans-serif';
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 44px Arial, sans-serif';
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
-            ctx.fillText(numero, W / 2, 795);
+            ctx.fillText(numero, W / 2, 1287);
 
-            // ── Bottom bar ──
-            ctx.fillStyle = 'rgba(0,0,0,0.2)';
-            ctx.fillRect(0, H - 55, W, 55);
-            // Gold accent line
-            ctx.fillStyle = '#FFC72C';
-            ctx.fillRect(0, H - 55, W, 2);
+            // ═══════════════════════════
+            // ── FOOTER ──
+            // ═══════════════════════════
 
-            ctx.fillStyle = 'rgba(255,255,255,0.7)';
-            ctx.font = '13px Arial, sans-serif';
+            // Footer bar
+            const footH = 80;
+            const footY = H - footH;
+            const footGrad = ctx.createLinearGradient(0, footY, 0, H);
+            footGrad.addColorStop(0, 'rgba(0,0,0,0.3)');
+            footGrad.addColorStop(1, 'rgba(0,0,0,0.5)');
+            ctx.fillStyle = footGrad;
+            ctx.fillRect(0, footY, W, footH);
+
+            // Gold line above footer
+            const footLineGrad = ctx.createLinearGradient(0, 0, W, 0);
+            footLineGrad.addColorStop(0, 'rgba(242,183,5,0)');
+            footLineGrad.addColorStop(0.3, 'rgba(242,183,5,0.6)');
+            footLineGrad.addColorStop(0.5, '#f2b705');
+            footLineGrad.addColorStop(0.7, 'rgba(242,183,5,0.6)');
+            footLineGrad.addColorStop(1, 'rgba(242,183,5,0)');
+            ctx.fillStyle = footLineGrad;
+            ctx.fillRect(0, footY, W, 3);
+
+            // Website text
+            ctx.fillStyle = 'rgba(255,255,255,0.75)';
+            ctx.font = '26px Arial, sans-serif';
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
-            ctx.fillText('www.menorcarugbyclub.com', W / 2, H - 28);
+            ctx.fillText('www.menorcarugbyclub.com', W / 2, footY + footH / 2 + 2);
+
+            // ── Gold accent strip at bottom ──
+            ctx.fillStyle = topGrad;
+            ctx.fillRect(0, H - 8, W, 8);
 
             ctx.restore();
             return canvas.toDataURL('image/png');
