@@ -876,10 +876,15 @@
         <div class="admin-modal">
             <button class="admin-modal-close" id="carnetModalClose">&times;</button>
             <h3 id="carnetModalTitle"><i class="fas fa-id-card" style="color:#1565c0;margin-right:0.4rem;"></i> Carnet digital</h3>
+            <div class="admin-modal-field" id="carnetNumField">
+                <label>Numero de socio</label>
+                <input type="text" id="carnetNumInput" class="admin-modal-input" placeholder="Ej: 00042" style="width:140px;padding:0.5rem 0.7rem;border:1px solid #d0d5dd;border-radius:6px;font-size:14px;font-weight:700;letter-spacing:1px;">
+            </div>
             <div class="admin-foto-modal-preview" id="carnetModalPreview" style="min-height:120px;"></div>
             <div class="admin-foto-upload-area" style="gap:0.5rem;display:flex;align-items:center;flex-wrap:wrap;">
+                <button class="admin-foto-upload-btn" id="carnetGenerateBtn" style="background:#1565c0;color:#fff;border-color:#1565c0;"><i class="fas fa-magic"></i> Generar carnet</button>
                 <input type="file" id="carnetFileInput" accept=".pdf,.png,.jpg,.jpeg,.webp" style="display:none">
-                <button class="admin-foto-upload-btn" id="carnetUploadBtn"><i class="fas fa-upload"></i> Subir carnet</button>
+                <button class="admin-foto-upload-btn" id="carnetUploadBtn"><i class="fas fa-upload"></i> Subir archivo</button>
                 <a href="#" id="carnetViewLink" target="_blank" style="display:none;" class="admin-foto-upload-btn" title="Abrir carnet"><i class="fas fa-external-link-alt"></i> Abrir</a>
             </div>
             <div class="admin-modal-msg" id="carnetModalMsg"></div>
@@ -1811,29 +1816,32 @@
         const carnetModalMsg = document.getElementById('carnetModalMsg');
         let currentCarnetId = null;
 
+        const carnetGenerateBtn = document.getElementById('carnetGenerateBtn');
+        const carnetNumInput = document.getElementById('carnetNumInput');
+        const carnetNumField = document.getElementById('carnetNumField');
+
         function openCarnetModal(id) {
             const s = sociosData.find(s => s.id === id);
             if (!s) return;
+
+            // If carnet already exists, open it directly
+            if (s.carnet_url) {
+                window.open(s.carnet_url, '_blank');
+                return;
+            }
+
+            // No carnet yet → show modal to generate
             currentCarnetId = id;
             const name = `${s.nombre || ''} ${s.apellido || ''}`.trim();
-            carnetModalTitle.innerHTML = `<i class="fas fa-id-card" style="color:#1565c0;margin-right:0.4rem;"></i> Carnet - ${escapeHtml(name)}`;
+            carnetModalTitle.innerHTML = `<i class="fas fa-id-card" style="color:#1565c0;margin-right:0.4rem;"></i> Generar carnet - ${escapeHtml(name)}`;
             carnetModalMsg.className = 'admin-modal-msg';
             carnetModalMsg.textContent = '';
             carnetFileInput.value = '';
-
-            if (s.carnet_url) {
-                const isPdf = s.carnet_url.toLowerCase().includes('.pdf');
-                if (isPdf) {
-                    carnetModalPreview.innerHTML = `<div style="text-align:center;padding:20px;"><i class="fas fa-file-pdf" style="font-size:48px;color:#e53935;"></i><p style="margin:8px 0 0;color:#555;">Carnet en PDF</p></div>`;
-                } else {
-                    carnetModalPreview.innerHTML = `<img src="${escapeHtml(s.carnet_url)}" alt="Carnet" style="max-width:100%;border-radius:8px;" onerror="this.outerHTML='<div style=\\'text-align:center;padding:20px;color:#999;\\'><i class=\\'fas fa-id-card\\' style=\\'font-size:48px;\\'></i><p>Error al cargar</p></div>'">`;
-                }
-                carnetViewLink.href = s.carnet_url;
-                carnetViewLink.style.display = 'inline-flex';
-            } else {
-                carnetModalPreview.innerHTML = `<div style="text-align:center;padding:20px;color:#999;"><i class="fas fa-id-card" style="font-size:48px;"></i><p style="margin:8px 0 0;">Sin carnet</p></div>`;
-                carnetViewLink.style.display = 'none';
-            }
+            carnetNumInput.value = '';
+            carnetNumField.style.display = '';
+            carnetModalPreview.innerHTML = `<div style="text-align:center;padding:20px;color:#999;"><i class="fas fa-id-card" style="font-size:48px;"></i><p style="margin:8px 0 0;">Sin carnet</p></div>`;
+            carnetViewLink.style.display = 'none';
+            carnetGenerateBtn.style.display = '';
 
             carnetModal.classList.add('is-active');
         }
@@ -1894,7 +1902,61 @@
             }
 
             carnetUploadBtn.disabled = false;
-            carnetUploadBtn.innerHTML = '<i class="fas fa-upload"></i> Subir carnet';
+            carnetUploadBtn.innerHTML = '<i class="fas fa-upload"></i> Subir archivo';
+        });
+
+        // ── Generate carnet from modal ──
+        carnetGenerateBtn.addEventListener('click', async () => {
+            const s = sociosData.find(s => s.id === currentCarnetId);
+            if (!s) return;
+            const num = carnetNumInput.value.trim();
+            if (!num) {
+                carnetModalMsg.textContent = 'Introduce el numero de socio.';
+                carnetModalMsg.className = 'admin-modal-msg error';
+                return;
+            }
+
+            carnetGenerateBtn.disabled = true;
+            carnetGenerateBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generando...';
+            carnetModalMsg.className = 'admin-modal-msg';
+            carnetModalMsg.textContent = '';
+
+            try {
+                const dataUrl = await generateCarnetImage(s, num);
+                // Show preview
+                carnetModalPreview.innerHTML = `<img src="${dataUrl}" alt="Carnet" style="max-width:280px;border-radius:8px;">`;
+
+                // Upload to storage
+                const base64 = dataUrl.split(',')[1];
+                const byteChars = atob(base64);
+                const byteArr = new Uint8Array(byteChars.length);
+                for (let i = 0; i < byteChars.length; i++) byteArr[i] = byteChars.charCodeAt(i);
+                const blob = new Blob([byteArr], { type: 'image/png' });
+                const filePath = `carnets/${Date.now()}_carnet_${currentCarnetId}.png`;
+
+                const { error: upErr } = await sb.storage.from('fotos-socios').upload(filePath, blob, { cacheControl: '3600', upsert: false });
+                if (upErr) throw new Error(upErr.message);
+
+                const { data: urlData } = sb.storage.from('fotos-socios').getPublicUrl(filePath);
+                const carnet_url = urlData?.publicUrl || null;
+
+                const { error: dbErr } = await sb.from('socios').update({ carnet_url }).eq('id', currentCarnetId);
+                if (dbErr) throw new Error(dbErr.message);
+
+                carnetModalMsg.textContent = 'Carnet generado y guardado!';
+                carnetModalMsg.className = 'admin-modal-msg success';
+                carnetViewLink.href = carnet_url;
+                carnetViewLink.style.display = 'inline-flex';
+                carnetNumField.style.display = 'none';
+                carnetGenerateBtn.style.display = 'none';
+                loadSocios();
+            } catch (err) {
+                carnetModalMsg.textContent = 'Error: ' + err.message;
+                carnetModalMsg.className = 'admin-modal-msg error';
+            }
+
+            carnetGenerateBtn.disabled = false;
+            carnetGenerateBtn.innerHTML = '<i class="fas fa-magic"></i> Generar carnet';
         });
 
         // ── Generate carnet image ──
