@@ -908,13 +908,21 @@
                 <label>Mensaje adicional (opcional)</label>
                 <textarea class="email-extra-msg" id="emailExtraMsg" placeholder="Ej: Tu numero de socio es #042. Nos vemos en el proximo partido!"></textarea>
             </div>
+            <div class="admin-modal-field" style="margin-top:0.5rem;">
+                <label>Numero de socio (para el carnet)</label>
+                <input type="text" id="emailNumSocio" class="admin-modal-input" placeholder="Ej: 00042" style="width:140px;padding:0.5rem 0.7rem;border:1px solid #d0d5dd;border-radius:6px;font-size:14px;font-weight:700;letter-spacing:1px;">
+            </div>
             <div class="admin-modal-field">
-                <label>Adjuntar archivo (carnet de socio, etc.)</label>
+                <label>Carnet de socio</label>
                 <div class="email-attach-area">
+                    <button class="email-attach-btn" id="emailGenCarnetBtn" style="background:#1565c0;color:#fff;border-color:#1565c0;"><i class="fas fa-id-card"></i> Generar carnet</button>
                     <input type="file" id="emailFileInput" style="display:none" accept=".pdf,.png,.jpg,.jpeg,.webp">
                     <button class="email-attach-btn" id="emailAttachBtn"><i class="fas fa-paperclip"></i> Adjuntar archivo</button>
                     <span class="email-attach-name" id="emailAttachName">Sin archivo adjunto</span>
                     <button class="email-attach-remove" id="emailAttachRemove" style="display:none;" title="Quitar adjunto"><i class="fas fa-times-circle"></i></button>
+                </div>
+                <div id="carnetPreviewContainer" style="display:none;margin-top:0.5rem;text-align:center;">
+                    <img id="carnetPreviewImg" style="max-width:200px;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.15);">
                 </div>
             </div>
             <button class="email-send-btn" id="emailSendBtn"><i class="fas fa-paper-plane"></i> Enviar email de bienvenida</button>
@@ -1102,7 +1110,7 @@
 
         function renderFotoThumb(url, onclick) {
             if (isValidImageUrl(url)) {
-                return `<img src="${escapeHtml(url)}" class="admin-foto-thumb" alt="Foto" onerror="this.outerHTML='<div class=\\'admin-foto-none\\' ${onclick}><i class=\\'fas fa-user\\'></i></div>'" ${onclick}>`;
+                return `<img src="${escapeHtml(url)}" class="admin-foto-thumb" alt="Foto" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';" ${onclick}><div class="admin-foto-none" style="display:none;" ${onclick}><i class="fas fa-user"></i></div>`;
             }
             return `<div class="admin-foto-none" ${onclick}><i class="fas fa-user"></i></div>`;
         }
@@ -1620,6 +1628,8 @@
             emailAttachName.textContent = 'Sin archivo adjunto';
             emailAttachRemove.style.display = 'none';
             emailFileInput.value = '';
+            document.getElementById('emailNumSocio').value = '';
+            document.getElementById('carnetPreviewContainer').style.display = 'none';
             emailModalMsg.className = 'admin-modal-msg';
             emailModalMsg.textContent = '';
             emailSendBtn.disabled = false;
@@ -1695,6 +1705,7 @@
             emailAttachName.textContent = 'Sin archivo adjunto';
             emailAttachRemove.style.display = 'none';
             emailFileInput.value = '';
+            document.getElementById('carnetPreviewContainer').style.display = 'none';
         });
 
         // Send email
@@ -1729,7 +1740,7 @@
                     to: emailDestino,
                     nombre: `${currentEmailSocio.nombre || ''} ${currentEmailSocio.apellido || ''}`.trim(),
                     tipo_socio: currentEmailSocio.tipo_socio || '',
-                    numero_socio: currentEmailSocio.numero_socio || '',
+                    numero_socio: document.getElementById('emailNumSocio').value.trim() || '',
                     mensaje_extra: emailExtraMsg.value.trim()
                 };
 
@@ -1886,8 +1897,217 @@
             carnetUploadBtn.innerHTML = '<i class="fas fa-upload"></i> Subir carnet';
         });
 
-        // ── Also save carnet when sending email with attachment ──
-        const origEmailSendHandler = emailSendBtn.onclick;
+        // ── Generate carnet image ──
+        const emailGenCarnetBtn = document.getElementById('emailGenCarnetBtn');
+        const emailNumSocio = document.getElementById('emailNumSocio');
+        const carnetPreviewContainer = document.getElementById('carnetPreviewContainer');
+        const carnetPreviewImg = document.getElementById('carnetPreviewImg');
+
+        function loadImg(src) {
+            return new Promise((resolve, reject) => {
+                const img = new Image();
+                img.crossOrigin = 'anonymous';
+                img.onload = () => resolve(img);
+                img.onerror = () => reject(new Error('No se pudo cargar: ' + src));
+                img.src = src;
+            });
+        }
+
+        function drawRoundRect(ctx, x, y, w, h, r) {
+            ctx.beginPath();
+            ctx.moveTo(x + r, y);
+            ctx.lineTo(x + w - r, y);
+            ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+            ctx.lineTo(x + w, y + h - r);
+            ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+            ctx.lineTo(x + r, y + h);
+            ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+            ctx.lineTo(x, y + r);
+            ctx.quadraticCurveTo(x, y, x + r, y);
+            ctx.closePath();
+        }
+
+        async function generateCarnetImage(socio, numero) {
+            const W = 600, H = 950;
+            const canvas = document.createElement('canvas');
+            canvas.width = W;
+            canvas.height = H;
+            const ctx = canvas.getContext('2d');
+
+            // ── Card outline with rounded corners ──
+            drawRoundRect(ctx, 0, 0, W, H, 24);
+            ctx.clip();
+
+            // ── Background: navy ──
+            ctx.fillStyle = '#182B49';
+            ctx.fillRect(0, 0, W, H);
+
+            // ── Diagonal lines pattern ──
+            ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+            ctx.lineWidth = 1;
+            for (let i = -H; i < W + H; i += 18) {
+                ctx.beginPath();
+                ctx.moveTo(i, 0);
+                ctx.lineTo(i + H * 0.6, H);
+                ctx.stroke();
+            }
+            // Second set of lines (thicker, more spaced)
+            ctx.strokeStyle = 'rgba(255,255,255,0.03)';
+            ctx.lineWidth = 2;
+            for (let i = -H; i < W + H; i += 45) {
+                ctx.beginPath();
+                ctx.moveTo(i, 0);
+                ctx.lineTo(i + H * 0.6, H);
+                ctx.stroke();
+            }
+
+            // ── Yellow photo area ──
+            const yaX = 95, yaY = 50, yaW = 410, yaH = 350;
+            ctx.fillStyle = '#FFC72C';
+            drawRoundRect(ctx, yaX, yaY, yaW, yaH, 18);
+            ctx.fill();
+
+            // ── Member photo ──
+            const photoSize = 240;
+            const photoX = (W - photoSize) / 2;
+            const photoY = yaY + 30;
+            try {
+                if (socio.foto_url) {
+                    const photo = await loadImg(socio.foto_url);
+                    ctx.save();
+                    drawRoundRect(ctx, photoX, photoY, photoSize, photoSize, 16);
+                    ctx.clip();
+                    const scale = Math.max(photoSize / photo.width, photoSize / photo.height);
+                    const sw = photoSize / scale, sh = photoSize / scale;
+                    const sx = (photo.width - sw) / 2, sy = (photo.height - sh) / 2;
+                    ctx.drawImage(photo, sx, sy, sw, sh, photoX, photoY, photoSize, photoSize);
+                    ctx.restore();
+                } else {
+                    // Placeholder
+                    ctx.save();
+                    drawRoundRect(ctx, photoX, photoY, photoSize, photoSize, 16);
+                    ctx.fillStyle = '#e0c040';
+                    ctx.fill();
+                    ctx.fillStyle = '#182B49';
+                    ctx.font = '80px "Font Awesome 6 Free"';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText('\uf007', photoX + photoSize / 2, photoY + photoSize / 2);
+                    ctx.restore();
+                }
+            } catch (e) {
+                console.warn('No se pudo cargar la foto:', e);
+            }
+
+            // ── Small horse logo (navy, top-right of yellow area) ──
+            try {
+                const logo = await loadImg('/assets/images/static/logo.png');
+                const logoSmW = 120, logoSmH = 60;
+                ctx.drawImage(logo, yaX + yaW - logoSmW - 10, yaY + 8, logoSmW, logoSmH);
+            } catch (e) {}
+
+            // ── Large yellow horse logo (center) ──
+            try {
+                const logo = await loadImg('/assets/images/static/logo.png');
+                const bigW = 320, bigH = 160;
+                const offC = document.createElement('canvas');
+                offC.width = bigW;
+                offC.height = bigH;
+                const offCtx = offC.getContext('2d');
+                offCtx.drawImage(logo, 0, 0, bigW, bigH);
+                offCtx.globalCompositeOperation = 'source-in';
+                offCtx.fillStyle = '#FFC72C';
+                offCtx.fillRect(0, 0, bigW, bigH);
+                ctx.globalAlpha = 0.7;
+                ctx.drawImage(offC, (W - bigW) / 2, 430, bigW, bigH);
+                ctx.globalAlpha = 1;
+            } catch (e) {}
+
+            // ── "MENORCA RUGBY" text ──
+            ctx.fillStyle = '#FFC72C';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'alphabetic';
+            ctx.font = 'bold 48px Arial, sans-serif';
+            ctx.fillText('MENORCA', W / 2, 645);
+            ctx.font = 'bold 38px Arial, sans-serif';
+            ctx.fillText('R U G B Y', W / 2, 692);
+
+            // ── Vertical text on left ──
+            ctx.save();
+            ctx.translate(32, H / 2 + 40);
+            ctx.rotate(-Math.PI / 2);
+            ctx.fillStyle = '#FFC72C';
+            ctx.font = 'bold 15px Arial, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('WWW.MENORCARUGBYCLUB.COM', 0, 0);
+            ctx.restore();
+
+            // ── Bottom: NOMBRE ──
+            ctx.fillStyle = '#FFC72C';
+            ctx.font = 'bold 15px Arial, sans-serif';
+            ctx.textAlign = 'left';
+            ctx.fillText('NOMBRE', 65, 765);
+
+            // Name background
+            drawRoundRect(ctx, 65, 775, W - 130, 48, 8);
+            ctx.fillStyle = 'rgba(255,255,255,0.92)';
+            ctx.fill();
+
+            // Name text
+            const nombre = `${socio.nombre || ''} ${socio.apellido || ''}`.trim();
+            ctx.fillStyle = '#182B49';
+            ctx.font = 'bold 26px Arial, sans-serif';
+            ctx.textAlign = 'left';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(nombre, 82, 799);
+
+            // ── Bottom: NUMERO DE SOCIO ──
+            ctx.fillStyle = '#FFC72C';
+            ctx.font = 'bold 15px Arial, sans-serif';
+            ctx.textAlign = 'left';
+            ctx.textBaseline = 'alphabetic';
+            ctx.fillText('NUMERO DE SOCIO', 65, 855);
+
+            // Number background (right-aligned)
+            const numW = 140, numH = 44;
+            const numX = W - 65 - numW;
+            drawRoundRect(ctx, numX, 863, numW, numH, 8);
+            ctx.fillStyle = 'rgba(255,255,255,0.92)';
+            ctx.fill();
+
+            // Number text
+            ctx.fillStyle = '#182B49';
+            ctx.font = 'bold 24px Arial, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(numero || '-----', numX + numW / 2, 885);
+
+            return canvas.toDataURL('image/png');
+        }
+
+        emailGenCarnetBtn.addEventListener('click', async () => {
+            if (!currentEmailSocio) return;
+            emailGenCarnetBtn.disabled = true;
+            emailGenCarnetBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generando...';
+
+            try {
+                const num = emailNumSocio.value.trim();
+                const dataUrl = await generateCarnetImage(currentEmailSocio, num);
+                const base64 = dataUrl.split(',')[1];
+                emailAttachmentBase64 = base64;
+                emailAttachmentFilename = `carnet_${(currentEmailSocio.nombre || '').toLowerCase()}_${(currentEmailSocio.apellido || '').toLowerCase()}.png`;
+                emailAttachName.textContent = emailAttachmentFilename;
+                emailAttachRemove.style.display = 'inline';
+                carnetPreviewImg.src = dataUrl;
+                carnetPreviewContainer.style.display = 'block';
+            } catch (err) {
+                alert('Error generando carnet: ' + err.message);
+                console.error(err);
+            }
+
+            emailGenCarnetBtn.disabled = false;
+            emailGenCarnetBtn.innerHTML = '<i class="fas fa-id-card"></i> Generar carnet';
+        });
 
         // Close modals with ESC
         document.addEventListener('keydown', e => {
