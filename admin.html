@@ -909,10 +909,6 @@
                     <iframe id="emailPreviewFrame"></iframe>
                 </div>
             </div>
-            <div class="admin-modal-field">
-                <label>Mensaje adicional (opcional)</label>
-                <textarea class="email-extra-msg" id="emailExtraMsg" placeholder="Ej: Tu numero de socio es #042. Nos vemos en el proximo partido!"></textarea>
-            </div>
             <div class="admin-modal-field" style="margin-top:0.5rem;">
                 <label>Numero de socio (para el carnet)</label>
                 <input type="text" id="emailNumSocio" class="admin-modal-input" placeholder="Ej: 00042" style="width:140px;padding:0.5rem 0.7rem;border:1px solid #d0d5dd;border-radius:6px;font-size:14px;font-weight:700;letter-spacing:1px;">
@@ -920,10 +916,8 @@
             <div class="admin-modal-field">
                 <label>Carnet de socio</label>
                 <div class="email-attach-area">
-                    <button class="email-attach-btn" id="emailGenCarnetBtn" style="background:#1565c0;color:#fff;border-color:#1565c0;"><i class="fas fa-id-card"></i> Generar carnet</button>
-                    <input type="file" id="emailFileInput" style="display:none" accept=".pdf,.png,.jpg,.jpeg,.webp">
-                    <button class="email-attach-btn" id="emailAttachBtn"><i class="fas fa-paperclip"></i> Adjuntar archivo</button>
-                    <span class="email-attach-name" id="emailAttachName">Sin archivo adjunto</span>
+                    <button class="email-attach-btn" id="emailGenCarnetBtn" style="background:#1565c0;color:#fff;border-color:#1565c0;"><i class="fas fa-id-card"></i> Generar carnet y adjuntar</button>
+                    <span class="email-attach-name" id="emailAttachName"></span>
                     <button class="email-attach-remove" id="emailAttachRemove" style="display:none;" title="Quitar adjunto"><i class="fas fa-times-circle"></i></button>
                 </div>
                 <div id="carnetPreviewContainer" style="display:none;margin-top:0.5rem;text-align:center;">
@@ -1058,7 +1052,11 @@
         });
 
         logoutBtn.addEventListener('click', async () => {
-            await sb.auth.signOut();
+            try {
+                await sb.auth.signOut();
+            } catch (e) {
+                console.error('Error al cerrar sesion:', e);
+            }
             dashboard.style.display = 'none';
             loginScreen.style.display = 'flex';
         });
@@ -1582,20 +1580,28 @@
             saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
             editModalMsg.className = 'admin-modal-msg';
 
-            const { error } = await sb.from('socios').update({
-                documento: document.getElementById('editDocumento').value.trim(),
-                tipo_socio: document.getElementById('editTipo').value,
-                estado_pago: document.getElementById('editEstadoPago').value,
-                familiar_de: document.getElementById('editFamiliarDe').value.trim() || null
-            }).eq('id', id);
+            try {
+                const updateData = {
+                    documento: document.getElementById('editDocumento').value.trim(),
+                    tipo_socio: document.getElementById('editTipo').value,
+                    estado_pago: document.getElementById('editEstadoPago').value,
+                    familiar_de: document.getElementById('editFamiliarDe').value.trim() || null
+                };
 
-            if (error) {
-                editModalMsg.textContent = 'Error al guardar: ' + error.message;
+                const { error } = await sb.from('socios').update(updateData).eq('id', id);
+
+                if (error) {
+                    editModalMsg.textContent = 'Error al guardar: ' + error.message;
+                    editModalMsg.className = 'admin-modal-msg error';
+                } else {
+                    editModalMsg.textContent = 'Cambios guardados correctamente';
+                    editModalMsg.className = 'admin-modal-msg success';
+                    await loadSocios();
+                }
+            } catch (err) {
+                console.error('Error en editar socio:', err);
+                editModalMsg.textContent = 'Error inesperado: ' + err.message;
                 editModalMsg.className = 'admin-modal-msg error';
-            } else {
-                editModalMsg.textContent = 'Cambios guardados correctamente';
-                editModalMsg.className = 'admin-modal-msg success';
-                await loadSocios();
             }
 
             saveBtn.disabled = false;
@@ -1607,11 +1613,8 @@
         const emailModalClose = document.getElementById('emailModalClose');
         const emailModalMsg = document.getElementById('emailModalMsg');
         const emailSendBtn = document.getElementById('emailSendBtn');
-        const emailFileInput = document.getElementById('emailFileInput');
-        const emailAttachBtn = document.getElementById('emailAttachBtn');
         const emailAttachName = document.getElementById('emailAttachName');
         const emailAttachRemove = document.getElementById('emailAttachRemove');
-        const emailExtraMsg = document.getElementById('emailExtraMsg');
         let currentEmailSocio = null;
         let emailAttachmentBase64 = null;
         let emailAttachmentFilename = null;
@@ -1627,12 +1630,10 @@
             currentEmailSocio = socio;
             document.getElementById('emailToName').textContent = `${socio.nombre || ''} ${socio.apellido || ''}`.trim();
             document.getElementById('emailToInput').value = socio.email;
-            emailExtraMsg.value = '';
             emailAttachmentBase64 = null;
             emailAttachmentFilename = null;
-            emailAttachName.textContent = 'Sin archivo adjunto';
+            emailAttachName.textContent = '';
             emailAttachRemove.style.display = 'none';
-            emailFileInput.value = '';
             document.getElementById('emailNumSocio').value = getNextSocioNumber(socio);
             document.getElementById('carnetPreviewContainer').style.display = 'none';
             emailModalMsg.className = 'admin-modal-msg';
@@ -1651,8 +1652,6 @@
             if (!s) return;
             const nombre = `${s.nombre || ''} ${s.apellido || ''}`.trim();
             const tipo = s.tipo_socio ? s.tipo_socio.charAt(0).toUpperCase() + s.tipo_socio.slice(1) : 'Socio';
-            const extra = emailExtraMsg.value.trim();
-
             const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><style>body{margin:0;font-family:Arial,sans-serif;font-size:13px;}</style></head><body>
                 <div style="background:#182B49;padding:18px;text-align:center;">
                     <div style="color:#FFC72C;font-size:16px;font-weight:700;">MENORCA RUGBY CLUB</div>
@@ -1663,7 +1662,6 @@
                     <p style="color:#333;line-height:1.5;margin:0 0 10px;">Desde el Menorca Rugby Club queremos darte las gracias por unirte a nuestra familia rugbistica. Tu apoyo es fundamental para seguir creciendo y promoviendo los valores del rugby en nuestra isla.</p>
                     <p style="color:#333;line-height:1.5;margin:0 0 10px;">Como socio del club, disfrutaras de beneficios exclusivos, acceso a eventos y la satisfaccion de formar parte de una comunidad unida por la pasion al rugby.</p>
                     <p style="color:#333;line-height:1.5;margin:0 0 10px;">Recuerda que puedes consultar todos los partidos y eventos en nuestro <a href="https://www.menorcarugbyclub.com/calendar.html" style="color:#1565c0;font-weight:600;">calendario</a>. No te pierdas ningun partido!</p>
-                    ${extra ? `<p style="padding:10px;background:#f8f9fa;border-left:3px solid #FFC72C;border-radius:4px;color:#333;line-height:1.5;">${escapeHtml(extra)}</p>` : ''}
                 </div>
                 <div style="background:#182B49;padding:15px;text-align:center;">
                     <div style="color:#FFC72C;font-size:12px;font-weight:600;">Nos vemos en el campo!</div>
@@ -1678,38 +1676,11 @@
             doc.close();
         }
 
-        // Update preview when extra message changes
-        emailExtraMsg.addEventListener('input', updateEmailPreview);
-
-        // File attachment
-        emailAttachBtn.addEventListener('click', () => emailFileInput.click());
-
-        emailFileInput.addEventListener('change', e => {
-            const file = e.target.files[0];
-            if (!file) return;
-
-            if (file.size > 5 * 1024 * 1024) {
-                alert('El archivo es demasiado grande. Maximo 5MB.');
-                emailFileInput.value = '';
-                return;
-            }
-
-            const reader = new FileReader();
-            reader.onload = () => {
-                emailAttachmentBase64 = reader.result.split(',')[1];
-                emailAttachmentFilename = file.name;
-                emailAttachName.textContent = file.name;
-                emailAttachRemove.style.display = 'inline';
-            };
-            reader.readAsDataURL(file);
-        });
-
         emailAttachRemove.addEventListener('click', () => {
             emailAttachmentBase64 = null;
             emailAttachmentFilename = null;
-            emailAttachName.textContent = 'Sin archivo adjunto';
+            emailAttachName.textContent = '';
             emailAttachRemove.style.display = 'none';
-            emailFileInput.value = '';
             document.getElementById('carnetPreviewContainer').style.display = 'none';
         });
 
@@ -1745,8 +1716,7 @@
                     to: emailDestino,
                     nombre: `${currentEmailSocio.nombre || ''} ${currentEmailSocio.apellido || ''}`.trim(),
                     tipo_socio: currentEmailSocio.tipo_socio || '',
-                    numero_socio: document.getElementById('emailNumSocio').value.trim() || '',
-                    mensaje_extra: emailExtraMsg.value.trim()
+                    numero_socio: document.getElementById('emailNumSocio').value.trim() || ''
                 };
 
                 if (emailAttachmentBase64 && emailAttachmentFilename) {
@@ -1770,12 +1740,12 @@
                     if (emailAttachmentBase64 && emailAttachmentFilename && currentEmailSocio) {
                         try {
                             const ext = emailAttachmentFilename.split('.').pop();
-                            const carnetPath = `carnets/${Date.now()}_carnet_${currentEmailSocio.id}.${ext}`;
+                            const carnetPath = `carnets/carnet_${currentEmailSocio.id}.${ext}`;
                             const byteChars = atob(emailAttachmentBase64);
                             const byteArr = new Uint8Array(byteChars.length);
                             for (let i = 0; i < byteChars.length; i++) byteArr[i] = byteChars.charCodeAt(i);
                             const blob = new Blob([byteArr]);
-                            const { error: upErr } = await sb.storage.from('fotos-socios').upload(carnetPath, blob, { cacheControl: '3600', upsert: false });
+                            const { error: upErr } = await sb.storage.from('fotos-socios').upload(carnetPath, blob, { cacheControl: '0', upsert: true });
                             if (!upErr) {
                                 const { data: uData } = sb.storage.from('fotos-socios').getPublicUrl(carnetPath);
                                 if (uData?.publicUrl) {
@@ -1824,26 +1794,33 @@
             const s = sociosData.find(s => s.id === id);
             if (!s) return;
 
-            // If carnet already exists, open it directly
-            if (s.carnet_url) {
-                window.open(s.carnet_url, '_blank');
-                return;
-            }
-
-            // No carnet yet → show modal to generate
             currentCarnetId = id;
             const name = `${s.nombre || ''} ${s.apellido || ''}`.trim();
-            carnetModalTitle.innerHTML = `<i class="fas fa-id-card" style="color:#1565c0;margin-right:0.4rem;"></i> Generar carnet - ${escapeHtml(name)}`;
             carnetModalMsg.className = 'admin-modal-msg';
             carnetModalMsg.textContent = '';
             carnetFileInput.value = '';
             const autoNum = getNextSocioNumber(s);
             carnetNumInput.value = autoNum;
             carnetNumInput.placeholder = autoNum;
-            carnetNumField.style.display = '';
-            carnetModalPreview.innerHTML = `<div style="text-align:center;padding:20px;color:#999;"><i class="fas fa-id-card" style="font-size:48px;"></i><p style="margin:8px 0 0;">Sin carnet</p></div>`;
-            carnetViewLink.style.display = 'none';
-            carnetGenerateBtn.style.display = '';
+
+            if (s.carnet_url) {
+                // Carnet exists → show preview + regenerate option
+                carnetModalTitle.innerHTML = `<i class="fas fa-id-card" style="color:#1565c0;margin-right:0.4rem;"></i> Carnet - ${escapeHtml(name)}`;
+                carnetModalPreview.innerHTML = `<img src="${escapeHtml(s.carnet_url)}" alt="Carnet" style="max-width:100%;border-radius:8px;">`;
+                carnetViewLink.href = s.carnet_url;
+                carnetViewLink.style.display = 'inline-flex';
+                carnetNumField.style.display = '';
+                carnetGenerateBtn.style.display = '';
+                carnetGenerateBtn.innerHTML = '<i class="fas fa-sync-alt"></i> Regenerar carnet';
+            } else {
+                // No carnet yet → show modal to generate
+                carnetModalTitle.innerHTML = `<i class="fas fa-id-card" style="color:#1565c0;margin-right:0.4rem;"></i> Generar carnet - ${escapeHtml(name)}`;
+                carnetModalPreview.innerHTML = `<div style="text-align:center;padding:20px;color:#999;"><i class="fas fa-id-card" style="font-size:48px;"></i><p style="margin:8px 0 0;">Sin carnet</p></div>`;
+                carnetViewLink.style.display = 'none';
+                carnetNumField.style.display = '';
+                carnetGenerateBtn.style.display = '';
+                carnetGenerateBtn.innerHTML = '<i class="fas fa-magic"></i> Generar carnet';
+            }
 
             carnetModal.classList.add('is-active');
         }
@@ -1867,11 +1844,11 @@
             carnetModalMsg.className = 'admin-modal-msg';
 
             const ext = file.name.split('.').pop();
-            const filePath = `carnets/${Date.now()}_carnet_${currentCarnetId}.${ext}`;
+            const filePath = `carnets/carnet_${currentCarnetId}.${ext}`;
 
             const { error: uploadError } = await sb.storage
                 .from('fotos-socios')
-                .upload(filePath, file, { cacheControl: '3600', upsert: false });
+                .upload(filePath, file, { cacheControl: '0', upsert: true });
 
             if (uploadError) {
                 carnetModalMsg.textContent = 'Error al subir: ' + uploadError.message;
@@ -1882,7 +1859,7 @@
             }
 
             const { data: urlData } = sb.storage.from('fotos-socios').getPublicUrl(filePath);
-            const carnet_url = urlData?.publicUrl || null;
+            const carnet_url = (urlData?.publicUrl || '') + '?v=' + Date.now();
 
             const { error: updateError } = await sb.from('socios').update({ carnet_url }).eq('id', currentCarnetId);
 
@@ -1929,13 +1906,13 @@
                 const byteArr = new Uint8Array(byteChars.length);
                 for (let i = 0; i < byteChars.length; i++) byteArr[i] = byteChars.charCodeAt(i);
                 const blob = new Blob([byteArr], { type: 'image/png' });
-                const filePath = `carnets/${Date.now()}_carnet_${currentCarnetId}.png`;
+                const filePath = `carnets/carnet_${currentCarnetId}.png`;
 
-                const { error: upErr } = await sb.storage.from('fotos-socios').upload(filePath, blob, { cacheControl: '3600', upsert: false });
+                const { error: upErr } = await sb.storage.from('fotos-socios').upload(filePath, blob, { cacheControl: '0', upsert: true });
                 if (upErr) throw new Error(upErr.message);
 
                 const { data: urlData } = sb.storage.from('fotos-socios').getPublicUrl(filePath);
-                const carnet_url = urlData?.publicUrl || null;
+                const carnet_url = (urlData?.publicUrl || '') + '?v=' + Date.now();
 
                 const { error: dbErr } = await sb.from('socios').update({ carnet_url }).eq('id', currentCarnetId);
                 if (dbErr) throw new Error(dbErr.message);
