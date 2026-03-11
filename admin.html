@@ -1641,6 +1641,37 @@
             emailSendBtn.disabled = false;
             emailSendBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Enviar email de bienvenida';
 
+            const genBtn = document.getElementById('emailGenCarnetBtn');
+
+            // If socio already has carnet, auto-attach it
+            if (socio.carnet_url) {
+                genBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Cargando carnet...';
+                genBtn.disabled = true;
+                fetch(socio.carnet_url)
+                    .then(r => r.blob())
+                    .then(blob => {
+                        const reader = new FileReader();
+                        reader.onload = () => {
+                            emailAttachmentBase64 = reader.result.split(',')[1];
+                            emailAttachmentFilename = `carnet_${(socio.nombre || '').toLowerCase()}_${(socio.apellido || '').toLowerCase()}.png`;
+                            emailAttachName.textContent = emailAttachmentFilename;
+                            emailAttachRemove.style.display = 'inline';
+                            document.getElementById('carnetPreviewImg').src = socio.carnet_url;
+                            document.getElementById('carnetPreviewContainer').style.display = '';
+                            genBtn.innerHTML = '<i class="fas fa-check"></i> Carnet adjuntado';
+                            genBtn.disabled = false;
+                        };
+                        reader.readAsDataURL(blob);
+                    })
+                    .catch(() => {
+                        genBtn.innerHTML = '<i class="fas fa-id-card"></i> Generar carnet y adjuntar';
+                        genBtn.disabled = false;
+                    });
+            } else {
+                genBtn.innerHTML = '<i class="fas fa-id-card"></i> Generar carnet y adjuntar';
+                genBtn.disabled = false;
+            }
+
             // Render preview
             updateEmailPreview();
 
