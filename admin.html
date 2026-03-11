@@ -2002,156 +2002,208 @@
             canvas.height = H;
             const ctx = canvas.getContext('2d');
 
-            // Auto-generate number if not provided
             if (!numero) numero = getNextSocioNumber(socio);
 
-            // ── Card outline with rounded corners ──
+            // ── Card with rounded corners ──
             ctx.save();
-            drawRoundRect(ctx, 0, 0, W, H, 24);
+            drawRoundRect(ctx, 0, 0, W, H, 28);
             ctx.clip();
 
-            // ── Background: navy ──
-            ctx.fillStyle = '#182B49';
+            // ── Background gradient (dark navy to slightly lighter) ──
+            const bgGrad = ctx.createLinearGradient(0, 0, 0, H);
+            bgGrad.addColorStop(0, '#0f1e35');
+            bgGrad.addColorStop(0.5, '#182B49');
+            bgGrad.addColorStop(1, '#0f1e35');
+            ctx.fillStyle = bgGrad;
             ctx.fillRect(0, 0, W, H);
 
-            // ── Diagonal lines pattern ──
-            ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+            // ── Subtle diagonal lines ──
+            ctx.strokeStyle = 'rgba(255,255,255,0.04)';
             ctx.lineWidth = 1;
-            for (let i = -H; i < W + H; i += 18) {
+            for (let i = -H; i < W + H; i += 16) {
                 ctx.beginPath();
                 ctx.moveTo(i, 0);
-                ctx.lineTo(i + H * 0.6, H);
-                ctx.stroke();
-            }
-            ctx.strokeStyle = 'rgba(255,255,255,0.03)';
-            ctx.lineWidth = 2;
-            for (let i = -H; i < W + H; i += 45) {
-                ctx.beginPath();
-                ctx.moveTo(i, 0);
-                ctx.lineTo(i + H * 0.6, H);
+                ctx.lineTo(i + H * 0.55, H);
                 ctx.stroke();
             }
 
-            // ── Load logo once ──
-            let logo = null;
-            try { logo = await loadImg('/assets/images/static/logo.png'); } catch (e) {}
-
-            // ── Yellow photo band (full width, like a tag) ──
-            const yaMargin = 0;
-            const yaY = 45, yaH = 290;
+            // ── Gold accent line at very top ──
             ctx.fillStyle = '#FFC72C';
-            drawRoundRect(ctx, yaMargin, yaY, W - yaMargin * 2, yaH, 0);
-            ctx.fill();
+            ctx.fillRect(0, 0, W, 5);
 
-            // ── Member photo (centered perfectly in yellow band) ──
-            const photoSize = 200;
+            // ── Load logos ──
+            let logoColor = null;
+            let logoDark = null;
+            try { logoColor = await loadImg('/assets/images/static/logo-color.svg'); } catch (e) {}
+            try { logoDark = await loadImg('/assets/images/static/logo.png'); } catch (e) {}
+
+            // ── Yellow photo band (full width) ──
+            const bandY = 35, bandH = 260;
+            const bandGrad = ctx.createLinearGradient(0, bandY, 0, bandY + bandH);
+            bandGrad.addColorStop(0, '#FFD044');
+            bandGrad.addColorStop(1, '#FFC72C');
+            ctx.fillStyle = bandGrad;
+            ctx.fillRect(0, bandY, W, bandH);
+
+            // ── Subtle pattern on yellow band ──
+            ctx.strokeStyle = 'rgba(24,43,73,0.04)';
+            ctx.lineWidth = 1;
+            for (let i = -bandH; i < W + bandH; i += 14) {
+                ctx.beginPath();
+                ctx.moveTo(i, bandY);
+                ctx.lineTo(i + bandH * 0.5, bandY + bandH);
+                ctx.stroke();
+            }
+
+            // ── Member photo (centered in band) ──
+            const photoSize = 190;
             const photoX = (W - photoSize) / 2;
-            const photoY = yaY + (yaH - photoSize) / 2;
+            const photoY = bandY + (bandH - photoSize) / 2;
+
+            // Photo shadow
+            ctx.save();
+            ctx.shadowColor = 'rgba(0,0,0,0.3)';
+            ctx.shadowBlur = 20;
+            ctx.shadowOffsetY = 4;
+            drawRoundRect(ctx, photoX, photoY, photoSize, photoSize, 16);
+            ctx.fillStyle = '#fff';
+            ctx.fill();
+            ctx.restore();
+
+            // Photo border
+            ctx.strokeStyle = '#fff';
+            ctx.lineWidth = 4;
+            drawRoundRect(ctx, photoX, photoY, photoSize, photoSize, 16);
+            ctx.stroke();
+
             try {
                 if (socio.foto_url) {
                     const photo = await loadImg(socio.foto_url);
                     ctx.save();
-                    drawRoundRect(ctx, photoX, photoY, photoSize, photoSize, 14);
+                    drawRoundRect(ctx, photoX + 2, photoY + 2, photoSize - 4, photoSize - 4, 14);
                     ctx.clip();
                     const scale = Math.max(photoSize / photo.width, photoSize / photo.height);
                     const sw = photoSize / scale, sh = photoSize / scale;
                     const sx = (photo.width - sw) / 2, sy = (photo.height - sh) / 2;
-                    ctx.drawImage(photo, sx, sy, sw, sh, photoX, photoY, photoSize, photoSize);
+                    ctx.drawImage(photo, sx, sy, sw, sh, photoX + 2, photoY + 2, photoSize - 4, photoSize - 4);
                     ctx.restore();
                 } else {
                     ctx.save();
-                    drawRoundRect(ctx, photoX, photoY, photoSize, photoSize, 14);
-                    ctx.fillStyle = '#e0c040';
+                    drawRoundRect(ctx, photoX + 2, photoY + 2, photoSize - 4, photoSize - 4, 14);
+                    ctx.fillStyle = '#e8c030';
                     ctx.fill();
                     ctx.fillStyle = '#182B49';
-                    ctx.font = '60px Arial';
+                    ctx.font = 'bold 60px Arial';
                     ctx.textAlign = 'center';
                     ctx.textBaseline = 'middle';
                     ctx.fillText('?', photoX + photoSize / 2, photoY + photoSize / 2);
                     ctx.restore();
                 }
-            } catch (e) {
-                console.warn('No se pudo cargar la foto:', e);
-            }
+            } catch (e) { console.warn('Foto error:', e); }
 
-            // ── Small navy horse logo (top-right of yellow band) ──
-            if (logo) {
-                const logoSmH = 45;
-                const logoSmW = logoSmH * (logo.width / logo.height);
-                ctx.drawImage(logo, W - logoSmW - 20, yaY + 10, logoSmW, logoSmH);
-            }
-
-            // ── Large yellow horse logo (center, proportional) ──
-            if (logo) {
-                const bigH = 150;
-                const bigW = bigH * (logo.width / logo.height);
-                const offC = document.createElement('canvas');
-                offC.width = Math.ceil(bigW);
-                offC.height = bigH;
-                const offCtx = offC.getContext('2d');
-                offCtx.drawImage(logo, 0, 0, bigW, bigH);
-                offCtx.globalCompositeOperation = 'source-in';
-                offCtx.fillStyle = '#FFC72C';
-                offCtx.fillRect(0, 0, bigW, bigH);
-                ctx.globalAlpha = 0.65;
-                ctx.drawImage(offC, (W - bigW) / 2, 400, bigW, bigH);
+            // ── Small dark horse logo (top-right of yellow band) ──
+            if (logoDark) {
+                const smH = 40;
+                const smW = smH * (logoDark.width / logoDark.height);
+                ctx.globalAlpha = 0.7;
+                ctx.drawImage(logoDark, W - smW - 18, bandY + 12, smW, smH);
                 ctx.globalAlpha = 1;
             }
 
-            // ── "MENORCA RUGBY" single line ──
-            ctx.fillStyle = '#FFC72C';
+            // ── Main color horse logo (center) ──
+            if (logoColor) {
+                const logoH = 155;
+                const logoW = logoH * (logoColor.width / logoColor.height);
+                const logoY = 340;
+                ctx.drawImage(logoColor, (W - logoW) / 2, logoY, logoW, logoH);
+            }
+
+            // ── "MENORCA RUGBY" ──
             ctx.textAlign = 'center';
             ctx.textBaseline = 'alphabetic';
-            ctx.font = 'bold 52px Arial, sans-serif';
-            ctx.fillText('MENORCA RUGBY', W / 2, 610);
+            // Gold text with subtle shadow
+            ctx.shadowColor = 'rgba(0,0,0,0.4)';
+            ctx.shadowBlur = 6;
+            ctx.shadowOffsetY = 2;
+            ctx.fillStyle = '#FFC72C';
+            ctx.font = 'bold 50px Arial, sans-serif';
+            ctx.fillText('MENORCA RUGBY', W / 2, 555);
+            ctx.shadowColor = 'transparent';
+            ctx.shadowBlur = 0;
+            ctx.shadowOffsetY = 0;
+
+            // ── Thin gold divider line ──
+            ctx.strokeStyle = 'rgba(255,199,44,0.3)';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(60, 580);
+            ctx.lineTo(W - 60, 580);
+            ctx.stroke();
+
+            // ── CLUB label ──
+            ctx.fillStyle = 'rgba(255,199,44,0.5)';
+            ctx.font = '600 14px Arial, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('C L U B', W / 2, 602);
 
             // ── NOMBRE Y APELLIDO ──
             ctx.fillStyle = '#FFC72C';
-            ctx.font = 'bold 15px Arial, sans-serif';
+            ctx.font = 'bold 13px Arial, sans-serif';
             ctx.textAlign = 'left';
             ctx.textBaseline = 'alphabetic';
-            ctx.fillText('NOMBRE Y APELLIDO', 55, 720);
+            ctx.fillText('NOMBRE Y APELLIDO', 50, 660);
 
-            // Name background
-            drawRoundRect(ctx, 55, 730, W - 110, 50, 8);
-            ctx.fillStyle = 'rgba(255,255,255,0.92)';
+            // Name box
+            drawRoundRect(ctx, 50, 670, W - 100, 52, 10);
+            ctx.fillStyle = 'rgba(255,255,255,0.95)';
             ctx.fill();
+            ctx.strokeStyle = 'rgba(255,199,44,0.3)';
+            ctx.lineWidth = 1;
+            drawRoundRect(ctx, 50, 670, W - 100, 52, 10);
+            ctx.stroke();
 
-            // Name text
             const nombre = `${socio.nombre || ''} ${socio.apellido || ''}`.trim();
             ctx.fillStyle = '#182B49';
             ctx.font = 'bold 26px Arial, sans-serif';
             ctx.textAlign = 'left';
             ctx.textBaseline = 'middle';
-            ctx.fillText(nombre, 72, 755);
+            ctx.fillText(nombre, 68, 696);
 
-            // ── NUMERO DE SOCIO (centered with its box) ──
-            const numW = 200, numH = 48;
-            const numX = (W - numW) / 2;
+            // ── NUMERO DE SOCIO ──
             ctx.fillStyle = '#FFC72C';
-            ctx.font = 'bold 15px Arial, sans-serif';
+            ctx.font = 'bold 13px Arial, sans-serif';
             ctx.textAlign = 'center';
             ctx.textBaseline = 'alphabetic';
-            ctx.fillText('NUMERO DE SOCIO', W / 2, 815);
+            ctx.fillText('NUMERO DE SOCIO', W / 2, 760);
 
-            // Number background (centered)
-            drawRoundRect(ctx, numX, 825, numW, numH, 8);
-            ctx.fillStyle = 'rgba(255,255,255,0.92)';
+            const numW = 200, numH = 50;
+            const numX = (W - numW) / 2;
+            drawRoundRect(ctx, numX, 770, numW, numH, 10);
+            ctx.fillStyle = 'rgba(255,255,255,0.95)';
             ctx.fill();
+            ctx.strokeStyle = 'rgba(255,199,44,0.3)';
+            ctx.lineWidth = 1;
+            drawRoundRect(ctx, numX, 770, numW, numH, 10);
+            ctx.stroke();
 
-            // Number text (YEAR-00001)
             ctx.fillStyle = '#182B49';
-            ctx.font = 'bold 24px Arial, sans-serif';
+            ctx.font = 'bold 26px Arial, sans-serif';
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
-            ctx.fillText(numero, W / 2, 849);
+            ctx.fillText(numero, W / 2, 795);
 
-            // ── www.menorcarugbyclub.com (small, centered, bottom) ──
-            ctx.fillStyle = 'rgba(255,199,44,0.6)';
+            // ── Bottom bar ──
+            ctx.fillStyle = 'rgba(0,0,0,0.2)';
+            ctx.fillRect(0, H - 55, W, 55);
+            // Gold accent line
+            ctx.fillStyle = '#FFC72C';
+            ctx.fillRect(0, H - 55, W, 2);
+
+            ctx.fillStyle = 'rgba(255,255,255,0.7)';
             ctx.font = '13px Arial, sans-serif';
             ctx.textAlign = 'center';
-            ctx.textBaseline = 'alphabetic';
-            ctx.fillText('www.menorcarugbyclub.com', W / 2, H - 20);
+            ctx.textBaseline = 'middle';
+            ctx.fillText('www.menorcarugbyclub.com', W / 2, H - 28);
 
             ctx.restore();
             return canvas.toDataURL('image/png');
