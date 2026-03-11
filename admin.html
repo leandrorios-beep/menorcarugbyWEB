@@ -361,6 +361,8 @@
         .admin-badge--injured { background: #fdecea; color: #b71c1c; }
         .admin-badge--suspended { background: #fff3e0; color: #e65100; }
         .admin-badge--inactive { background: #f5f5f5; color: #999; }
+        .admin-badge--pendiente { background: #fff3e0; color: #e65100; }
+        .admin-badge--completado { background: #e8f5e9; color: #2e7d32; }
 
         .admin-foto-thumb {
             width: 32px;
@@ -946,6 +948,10 @@
                         <input type="text" id="editApellido" readonly>
                     </div>
                 </div>
+                <div class="admin-modal-field" style="max-width:120px">
+                    <label>N.° Socio</label>
+                    <input type="number" id="editNumeroSocio" min="1">
+                </div>
                 <div class="admin-modal-field">
                     <label>DNI / NIE / Pasaporte</label>
                     <input type="text" id="editDocumento" required>
@@ -1003,7 +1009,7 @@
         let playersData = [];
         let sociosFilter = null;
         let playersFilter = null;
-        let sociosSort = { col: 'created_at', dir: 'desc' };
+        let sociosSort = { col: 'numero_socio', dir: 'asc' };
         let playersSort = { col: 'last_name', dir: 'asc' };
 
         // ── Auth ──
@@ -1123,7 +1129,7 @@
             const container = document.getElementById('sociosTable');
             container.innerHTML = '<div class="admin-loading"><i class="fas fa-spinner fa-spin"></i> Cargando socios...</div>';
 
-            const { data, error } = await sb.from('socios').select('*').order('created_at', { ascending: false });
+            const { data, error } = await sb.from('socios').select('*').order('numero_socio', { ascending: true });
 
             if (error) {
                 container.innerHTML = '<div class="admin-empty"><i class="fas fa-exclamation-triangle"></i> Error: ' + escapeHtml(error.message) + '</div>';
@@ -1232,11 +1238,13 @@
             }
 
             const cols = [
+                { key: 'numero_socio', label: 'N.°' },
                 { key: null, label: 'Foto', noSort: true },
                 { key: 'nombre_full', label: 'Nombre' },
                 { key: 'documento', label: 'DNI/NIE/Pas.' },
                 { key: 'email', label: 'Email' },
                 { key: 'tipo_socio', label: 'Tipo' },
+                { key: 'estado_pago', label: 'Pago' },
                 { key: 'familiar_de', label: 'Familiar de' },
                 { key: 'created_at', label: 'Alta' },
                 { key: null, label: 'Acc.', noSort: true }
@@ -1263,11 +1271,13 @@
                 const nombre = `${escapeHtml(s.apellido || '')} ${escapeHtml(s.nombre || '')}`.trim();
 
                 html += `<tr>
+                    <td><strong>${s.numero_socio != null ? s.numero_socio : '-'}</strong></td>
                     <td>${foto}</td>
                     <td>${nombre}</td>
                     <td>${escapeHtml(s.documento || '')}</td>
                     <td>${escapeHtml(s.email || '')}</td>
                     <td><span class="admin-badge admin-badge--${tipo}">${escapeHtml(tipo)}</span></td>
+                    <td><span class="admin-badge admin-badge--${s.estado_pago || 'pendiente'}">${escapeHtml(s.estado_pago || 'pendiente')}</span></td>
                     <td class="familiar-de-cell">${escapeHtml(s.familiar_de || '')}</td>
                     <td>${formatDate(s.created_at)}</td>
                     <td><div class="admin-actions">
@@ -1281,7 +1291,7 @@
                 mobileHtml += `<div class="mobile-card">
                     <div class="mobile-card-foto">${foto}</div>
                     <div class="mobile-card-info">
-                        <div class="mobile-card-name">${nombre}</div>
+                        <div class="mobile-card-name"><span style="color:var(--primary-navy);font-weight:700;margin-right:6px;">#${s.numero_socio != null ? s.numero_socio : '-'}</span>${nombre}</div>
                         <div class="mobile-card-detail"><span class="admin-badge admin-badge--${tipo}">${escapeHtml(tipo)}</span> ${formatDate(s.created_at)}</div>
                         <div class="mobile-card-detail">${escapeHtml(s.email || '')}</div>
                         ${s.documento ? `<div class="mobile-card-detail"><strong>Doc:</strong> ${escapeHtml(s.documento)}</div>` : ''}
@@ -1555,6 +1565,7 @@
             if (!socio) return;
 
             document.getElementById('editId').value = socio.id;
+            document.getElementById('editNumeroSocio').value = socio.numero_socio || '';
             document.getElementById('editNombre').value = socio.nombre || '';
             document.getElementById('editApellido').value = socio.apellido || '';
             document.getElementById('editDocumento').value = socio.documento || '';
@@ -1581,7 +1592,9 @@
             editModalMsg.className = 'admin-modal-msg';
 
             try {
+                const numSocio = document.getElementById('editNumeroSocio').value;
                 const updateData = {
+                    numero_socio: numSocio ? parseInt(numSocio) : null,
                     documento: document.getElementById('editDocumento').value.trim(),
                     tipo_socio: document.getElementById('editTipo').value,
                     estado_pago: document.getElementById('editEstadoPago').value,
@@ -1995,10 +2008,14 @@
         }
 
         function getNextSocioNumber(socio) {
-            // Sort socios by created_at to get sequential number
-            const sorted = [...sociosData].sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
-            const idx = sorted.findIndex(s => s.id === socio.id);
-            const num = String(idx + 1).padStart(5, '0');
+            if (socio.numero_socio) {
+                const num = String(socio.numero_socio).padStart(5, '0');
+                const year = new Date().getFullYear();
+                return `${year}-${num}`;
+            }
+            // Fallback: next available number
+            const maxNum = sociosData.reduce((max, s) => Math.max(max, s.numero_socio || 0), 0);
+            const num = String(maxNum + 1).padStart(5, '0');
             const year = new Date().getFullYear();
             return `${year}-${num}`;
         }
