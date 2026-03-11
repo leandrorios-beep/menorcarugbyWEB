@@ -191,7 +191,7 @@ function buildWelcomeEmail(nombre, tipo_socio, numero_socio, mensaje_extra) {
 }
 
 function adjuntoMention() {
-    return 'Si hemos adjuntado tu carnet de socio a este email, guardalo bien. Tambien puedes acceder a tu carnet digital desde nuestra web.';
+    return 'Si hemos adjuntado tu carnet de socio a este email, guardalo bien.';
 }
 
 function escapeHtml(str) {
