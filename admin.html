@@ -2036,16 +2036,17 @@
             let logo = null;
             try { logo = await loadImg('/assets/images/static/logo.png'); } catch (e) {}
 
-            // ── Yellow photo area (smaller) ──
-            const yaX = 120, yaY = 50, yaW = 360, yaH = 280;
+            // ── Yellow photo band (full width, like a tag) ──
+            const yaMargin = 0;
+            const yaY = 45, yaH = 290;
             ctx.fillStyle = '#FFC72C';
-            drawRoundRect(ctx, yaX, yaY, yaW, yaH, 18);
+            drawRoundRect(ctx, yaMargin, yaY, W - yaMargin * 2, yaH, 0);
             ctx.fill();
 
-            // ── Member photo (smaller: 180px) ──
-            const photoSize = 180;
+            // ── Member photo (centered perfectly in yellow band) ──
+            const photoSize = 200;
             const photoX = (W - photoSize) / 2;
-            const photoY = yaY + 25;
+            const photoY = yaY + (yaH - photoSize) / 2;
             try {
                 if (socio.foto_url) {
                     const photo = await loadImg(socio.foto_url);
@@ -2073,17 +2074,16 @@
                 console.warn('No se pudo cargar la foto:', e);
             }
 
-            // ── Small navy horse logo (top-right of yellow area) ──
+            // ── Small navy horse logo (top-right of yellow band) ──
             if (logo) {
-                // Maintain aspect ratio: logo is ~2.5:1
                 const logoSmH = 45;
                 const logoSmW = logoSmH * (logo.width / logo.height);
-                ctx.drawImage(logo, yaX + yaW - logoSmW - 8, yaY + 6, logoSmW, logoSmH);
+                ctx.drawImage(logo, W - logoSmW - 20, yaY + 10, logoSmW, logoSmH);
             }
 
             // ── Large yellow horse logo (center, proportional) ──
             if (logo) {
-                const bigH = 140;
+                const bigH = 150;
                 const bigW = bigH * (logo.width / logo.height);
                 const offC = document.createElement('canvas');
                 offC.width = Math.ceil(bigW);
@@ -2093,7 +2093,7 @@
                 offCtx.globalCompositeOperation = 'source-in';
                 offCtx.fillStyle = '#FFC72C';
                 offCtx.fillRect(0, 0, bigW, bigH);
-                ctx.globalAlpha = 0.7;
+                ctx.globalAlpha = 0.65;
                 ctx.drawImage(offC, (W - bigW) / 2, 400, bigW, bigH);
                 ctx.globalAlpha = 1;
             }
@@ -2103,27 +2103,17 @@
             ctx.textAlign = 'center';
             ctx.textBaseline = 'alphabetic';
             ctx.font = 'bold 52px Arial, sans-serif';
-            ctx.fillText('MENORCA RUGBY', W / 2, 600);
+            ctx.fillText('MENORCA RUGBY', W / 2, 610);
 
-            // ── Vertical text on left (much bigger) ──
-            ctx.save();
-            ctx.translate(35, H / 2 + 20);
-            ctx.rotate(-Math.PI / 2);
-            ctx.fillStyle = '#FFC72C';
-            ctx.font = 'bold 26px Arial, sans-serif';
-            ctx.textAlign = 'center';
-            ctx.fillText('WWW.MENORCARUGBYCLUB.COM', 0, 0);
-            ctx.restore();
-
-            // ── Bottom: NOMBRE Y APELLIDO ──
+            // ── NOMBRE Y APELLIDO ──
             ctx.fillStyle = '#FFC72C';
             ctx.font = 'bold 15px Arial, sans-serif';
             ctx.textAlign = 'left';
             ctx.textBaseline = 'alphabetic';
-            ctx.fillText('NOMBRE Y APELLIDO', 75, 700);
+            ctx.fillText('NOMBRE Y APELLIDO', 55, 720);
 
             // Name background
-            drawRoundRect(ctx, 75, 710, W - 150, 50, 8);
+            drawRoundRect(ctx, 55, 730, W - 110, 50, 8);
             ctx.fillStyle = 'rgba(255,255,255,0.92)';
             ctx.fill();
 
@@ -2133,19 +2123,19 @@
             ctx.font = 'bold 26px Arial, sans-serif';
             ctx.textAlign = 'left';
             ctx.textBaseline = 'middle';
-            ctx.fillText(nombre, 90, 735);
+            ctx.fillText(nombre, 72, 755);
 
-            // ── Bottom: NUMERO DE SOCIO ──
+            // ── NUMERO DE SOCIO (centered with its box) ──
+            const numW = 200, numH = 48;
+            const numX = (W - numW) / 2;
             ctx.fillStyle = '#FFC72C';
             ctx.font = 'bold 15px Arial, sans-serif';
-            ctx.textAlign = 'left';
+            ctx.textAlign = 'center';
             ctx.textBaseline = 'alphabetic';
-            ctx.fillText('NUMERO DE SOCIO', 75, 795);
+            ctx.fillText('NUMERO DE SOCIO', W / 2, 815);
 
-            // Number background
-            const numW = 180, numH = 48;
-            const numX = W - 75 - numW;
-            drawRoundRect(ctx, numX, 805, numW, numH, 8);
+            // Number background (centered)
+            drawRoundRect(ctx, numX, 825, numW, numH, 8);
             ctx.fillStyle = 'rgba(255,255,255,0.92)';
             ctx.fill();
 
@@ -2154,7 +2144,14 @@
             ctx.font = 'bold 24px Arial, sans-serif';
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
-            ctx.fillText(numero, numX + numW / 2, 829);
+            ctx.fillText(numero, W / 2, 849);
+
+            // ── www.menorcarugbyclub.com (small, centered, bottom) ──
+            ctx.fillStyle = 'rgba(255,199,44,0.6)';
+            ctx.font = '13px Arial, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'alphabetic';
+            ctx.fillText('www.menorcarugbyclub.com', W / 2, H - 20);
 
             ctx.restore();
             return canvas.toDataURL('image/png');
