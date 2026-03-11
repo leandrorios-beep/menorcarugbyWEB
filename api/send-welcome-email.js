@@ -127,7 +127,7 @@ function buildWelcomeEmail(nombre, tipo_socio, numero_socio, mensaje_extra) {
                                             <tr>
                                                 <td style="padding:4px 0;color:#555;font-size:14px;">
                                                     <strong style="color:#182B49;">Instagram:</strong>
-                                                    <a href="https://www.instagram.com/menorcarugbyclub" style="color:#1565c0;text-decoration:none;">@menorcarugbyclub</a>
+                                                    <a href="https://www.instagram.com/menorcarugby/" style="color:#1565c0;text-decoration:none;">@menorcarugby</a>
                                                 </td>
                                             </tr>
                                             <tr>
@@ -161,10 +161,11 @@ function buildWelcomeEmail(nombre, tipo_socio, numero_socio, mensaje_extra) {
                             <p style="color:rgba(255,255,255,0.6);font-size:12px;margin:0;">
                                 Menorca Rugby Club &bull; Sa Terranova 8, Mao, Illes Balears
                             </p>
-                            <div style="margin-top:15px;">
-                                <a href="https://www.instagram.com/menorcarugbyclub" style="color:#FFC72C;text-decoration:none;margin:0 8px;font-size:13px;">Instagram</a>
-                                <a href="https://www.facebook.com/menorcarugbyclub" style="color:#FFC72C;text-decoration:none;margin:0 8px;font-size:13px;">Facebook</a>
-                                <a href="https://www.menorcarugbyclub.com" style="color:#FFC72C;text-decoration:none;margin:0 8px;font-size:13px;">Web</a>
+                            <p style="color:rgba(255,255,255,0.5);font-size:12px;margin:15px 0 8px;text-transform:uppercase;letter-spacing:1px;">Siguenos en redes</p>
+                            <div>
+                                <a href="https://www.instagram.com/menorcarugby/" style="color:#FFC72C;text-decoration:none;margin:0 8px;font-size:13px;">Instagram</a>
+                                <a href="https://www.facebook.com/menorcarugby" style="color:#FFC72C;text-decoration:none;margin:0 8px;font-size:13px;">Facebook</a>
+                                <a href="https://www.tiktok.com/@menorcarugby" style="color:#FFC72C;text-decoration:none;margin:0 8px;font-size:13px;">TikTok</a>
                             </div>
                         </td>
                     </tr>
