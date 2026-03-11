@@ -1633,7 +1633,7 @@
             emailAttachName.textContent = 'Sin archivo adjunto';
             emailAttachRemove.style.display = 'none';
             emailFileInput.value = '';
-            document.getElementById('emailNumSocio').value = '';
+            document.getElementById('emailNumSocio').value = getNextSocioNumber(socio);
             document.getElementById('carnetPreviewContainer').style.display = 'none';
             emailModalMsg.className = 'admin-modal-msg';
             emailModalMsg.textContent = '';
@@ -1837,7 +1837,9 @@
             carnetModalMsg.className = 'admin-modal-msg';
             carnetModalMsg.textContent = '';
             carnetFileInput.value = '';
-            carnetNumInput.value = '';
+            const autoNum = getNextSocioNumber(s);
+            carnetNumInput.value = autoNum;
+            carnetNumInput.placeholder = autoNum;
             carnetNumField.style.display = '';
             carnetModalPreview.innerHTML = `<div style="text-align:center;padding:20px;color:#999;"><i class="fas fa-id-card" style="font-size:48px;"></i><p style="margin:8px 0 0;">Sin carnet</p></div>`;
             carnetViewLink.style.display = 'none';
@@ -1909,12 +1911,7 @@
         carnetGenerateBtn.addEventListener('click', async () => {
             const s = sociosData.find(s => s.id === currentCarnetId);
             if (!s) return;
-            const num = carnetNumInput.value.trim();
-            if (!num) {
-                carnetModalMsg.textContent = 'Introduce el numero de socio.';
-                carnetModalMsg.className = 'admin-modal-msg error';
-                return;
-            }
+            const num = carnetNumInput.value.trim() || getNextSocioNumber(s);
 
             carnetGenerateBtn.disabled = true;
             carnetGenerateBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generando...';
@@ -1989,6 +1986,15 @@
             ctx.closePath();
         }
 
+        function getNextSocioNumber(socio) {
+            // Sort socios by created_at to get sequential number
+            const sorted = [...sociosData].sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+            const idx = sorted.findIndex(s => s.id === socio.id);
+            const num = String(idx + 1).padStart(5, '0');
+            const year = new Date().getFullYear();
+            return `${year}-${num}`;
+        }
+
         async function generateCarnetImage(socio, numero) {
             const W = 600, H = 950;
             const canvas = document.createElement('canvas');
@@ -1996,7 +2002,11 @@
             canvas.height = H;
             const ctx = canvas.getContext('2d');
 
+            // Auto-generate number if not provided
+            if (!numero) numero = getNextSocioNumber(socio);
+
             // ── Card outline with rounded corners ──
+            ctx.save();
             drawRoundRect(ctx, 0, 0, W, H, 24);
             ctx.clip();
 
@@ -2013,7 +2023,6 @@
                 ctx.lineTo(i + H * 0.6, H);
                 ctx.stroke();
             }
-            // Second set of lines (thicker, more spaced)
             ctx.strokeStyle = 'rgba(255,255,255,0.03)';
             ctx.lineWidth = 2;
             for (let i = -H; i < W + H; i += 45) {
@@ -2023,21 +2032,25 @@
                 ctx.stroke();
             }
 
-            // ── Yellow photo area ──
-            const yaX = 95, yaY = 50, yaW = 410, yaH = 350;
+            // ── Load logo once ──
+            let logo = null;
+            try { logo = await loadImg('/assets/images/static/logo.png'); } catch (e) {}
+
+            // ── Yellow photo area (smaller) ──
+            const yaX = 120, yaY = 50, yaW = 360, yaH = 280;
             ctx.fillStyle = '#FFC72C';
             drawRoundRect(ctx, yaX, yaY, yaW, yaH, 18);
             ctx.fill();
 
-            // ── Member photo ──
-            const photoSize = 240;
+            // ── Member photo (smaller: 180px) ──
+            const photoSize = 180;
             const photoX = (W - photoSize) / 2;
-            const photoY = yaY + 30;
+            const photoY = yaY + 25;
             try {
                 if (socio.foto_url) {
                     const photo = await loadImg(socio.foto_url);
                     ctx.save();
-                    drawRoundRect(ctx, photoX, photoY, photoSize, photoSize, 16);
+                    drawRoundRect(ctx, photoX, photoY, photoSize, photoSize, 14);
                     ctx.clip();
                     const scale = Math.max(photoSize / photo.width, photoSize / photo.height);
                     const sw = photoSize / scale, sh = photoSize / scale;
@@ -2045,35 +2058,35 @@
                     ctx.drawImage(photo, sx, sy, sw, sh, photoX, photoY, photoSize, photoSize);
                     ctx.restore();
                 } else {
-                    // Placeholder
                     ctx.save();
-                    drawRoundRect(ctx, photoX, photoY, photoSize, photoSize, 16);
+                    drawRoundRect(ctx, photoX, photoY, photoSize, photoSize, 14);
                     ctx.fillStyle = '#e0c040';
                     ctx.fill();
                     ctx.fillStyle = '#182B49';
-                    ctx.font = '80px "Font Awesome 6 Free"';
+                    ctx.font = '60px Arial';
                     ctx.textAlign = 'center';
                     ctx.textBaseline = 'middle';
-                    ctx.fillText('\uf007', photoX + photoSize / 2, photoY + photoSize / 2);
+                    ctx.fillText('?', photoX + photoSize / 2, photoY + photoSize / 2);
                     ctx.restore();
                 }
             } catch (e) {
                 console.warn('No se pudo cargar la foto:', e);
             }
 
-            // ── Small horse logo (navy, top-right of yellow area) ──
-            try {
-                const logo = await loadImg('/assets/images/static/logo.png');
-                const logoSmW = 120, logoSmH = 60;
-                ctx.drawImage(logo, yaX + yaW - logoSmW - 10, yaY + 8, logoSmW, logoSmH);
-            } catch (e) {}
+            // ── Small navy horse logo (top-right of yellow area) ──
+            if (logo) {
+                // Maintain aspect ratio: logo is ~2.5:1
+                const logoSmH = 45;
+                const logoSmW = logoSmH * (logo.width / logo.height);
+                ctx.drawImage(logo, yaX + yaW - logoSmW - 8, yaY + 6, logoSmW, logoSmH);
+            }
 
-            // ── Large yellow horse logo (center) ──
-            try {
-                const logo = await loadImg('/assets/images/static/logo.png');
-                const bigW = 320, bigH = 160;
+            // ── Large yellow horse logo (center, proportional) ──
+            if (logo) {
+                const bigH = 140;
+                const bigW = bigH * (logo.width / logo.height);
                 const offC = document.createElement('canvas');
-                offC.width = bigW;
+                offC.width = Math.ceil(bigW);
                 offC.height = bigH;
                 const offCtx = offC.getContext('2d');
                 offCtx.drawImage(logo, 0, 0, bigW, bigH);
@@ -2081,37 +2094,36 @@
                 offCtx.fillStyle = '#FFC72C';
                 offCtx.fillRect(0, 0, bigW, bigH);
                 ctx.globalAlpha = 0.7;
-                ctx.drawImage(offC, (W - bigW) / 2, 430, bigW, bigH);
+                ctx.drawImage(offC, (W - bigW) / 2, 400, bigW, bigH);
                 ctx.globalAlpha = 1;
-            } catch (e) {}
+            }
 
-            // ── "MENORCA RUGBY" text ──
+            // ── "MENORCA RUGBY" single line ──
             ctx.fillStyle = '#FFC72C';
             ctx.textAlign = 'center';
             ctx.textBaseline = 'alphabetic';
-            ctx.font = 'bold 48px Arial, sans-serif';
-            ctx.fillText('MENORCA', W / 2, 645);
-            ctx.font = 'bold 38px Arial, sans-serif';
-            ctx.fillText('R U G B Y', W / 2, 692);
+            ctx.font = 'bold 52px Arial, sans-serif';
+            ctx.fillText('MENORCA RUGBY', W / 2, 600);
 
-            // ── Vertical text on left ──
+            // ── Vertical text on left (much bigger) ──
             ctx.save();
-            ctx.translate(32, H / 2 + 40);
+            ctx.translate(35, H / 2 + 20);
             ctx.rotate(-Math.PI / 2);
             ctx.fillStyle = '#FFC72C';
-            ctx.font = 'bold 15px Arial, sans-serif';
+            ctx.font = 'bold 26px Arial, sans-serif';
             ctx.textAlign = 'center';
             ctx.fillText('WWW.MENORCARUGBYCLUB.COM', 0, 0);
             ctx.restore();
 
-            // ── Bottom: NOMBRE ──
+            // ── Bottom: NOMBRE Y APELLIDO ──
             ctx.fillStyle = '#FFC72C';
             ctx.font = 'bold 15px Arial, sans-serif';
             ctx.textAlign = 'left';
-            ctx.fillText('NOMBRE', 65, 765);
+            ctx.textBaseline = 'alphabetic';
+            ctx.fillText('NOMBRE Y APELLIDO', 75, 700);
 
             // Name background
-            drawRoundRect(ctx, 65, 775, W - 130, 48, 8);
+            drawRoundRect(ctx, 75, 710, W - 150, 50, 8);
             ctx.fillStyle = 'rgba(255,255,255,0.92)';
             ctx.fill();
 
@@ -2121,29 +2133,30 @@
             ctx.font = 'bold 26px Arial, sans-serif';
             ctx.textAlign = 'left';
             ctx.textBaseline = 'middle';
-            ctx.fillText(nombre, 82, 799);
+            ctx.fillText(nombre, 90, 735);
 
             // ── Bottom: NUMERO DE SOCIO ──
             ctx.fillStyle = '#FFC72C';
             ctx.font = 'bold 15px Arial, sans-serif';
             ctx.textAlign = 'left';
             ctx.textBaseline = 'alphabetic';
-            ctx.fillText('NUMERO DE SOCIO', 65, 855);
+            ctx.fillText('NUMERO DE SOCIO', 75, 795);
 
-            // Number background (right-aligned)
-            const numW = 140, numH = 44;
-            const numX = W - 65 - numW;
-            drawRoundRect(ctx, numX, 863, numW, numH, 8);
+            // Number background
+            const numW = 180, numH = 48;
+            const numX = W - 75 - numW;
+            drawRoundRect(ctx, numX, 805, numW, numH, 8);
             ctx.fillStyle = 'rgba(255,255,255,0.92)';
             ctx.fill();
 
-            // Number text
+            // Number text (YEAR-00001)
             ctx.fillStyle = '#182B49';
             ctx.font = 'bold 24px Arial, sans-serif';
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
-            ctx.fillText(numero || '-----', numX + numW / 2, 885);
+            ctx.fillText(numero, numX + numW / 2, 829);
 
+            ctx.restore();
             return canvas.toDataURL('image/png');
         }
 
