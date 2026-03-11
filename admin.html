@@ -2131,13 +2131,14 @@
 
             // Logo circle (top-left)
             if (logoDark) {
-                // Circle background
+                const logoR = 65;
+                const logoCX = pad + logoR, logoCY = pad + logoR;
                 ctx.beginPath();
-                ctx.arc(pad + 38, pad + 38, 40, 0, Math.PI * 2);
+                ctx.arc(logoCX, logoCY, logoR, 0, Math.PI * 2);
                 ctx.fillStyle = 'rgba(255,255,255,0.08)';
                 ctx.fill();
                 // Recolor logo to white for dark backgrounds
-                const lW = 55, lH = 55 * (logoDark.height / logoDark.width);
+                const lW = 95, lH = 95 * (logoDark.height / logoDark.width);
                 const offC = document.createElement('canvas');
                 offC.width = lW; offC.height = lH;
                 const oCtx = offC.getContext('2d');
@@ -2145,7 +2146,7 @@
                 oCtx.globalCompositeOperation = 'source-in';
                 oCtx.fillStyle = isProtector ? '#c9a84c' : '#ffffff';
                 oCtx.fillRect(0, 0, lW, lH);
-                ctx.drawImage(offC, pad + 38 - lW / 2, pad + 38 - lH / 2, lW, lH);
+                ctx.drawImage(offC, logoCX - lW / 2, logoCY - lH / 2, lW, lH);
             }
 
             // Club name (top-right)
