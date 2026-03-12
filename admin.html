@@ -2096,6 +2096,16 @@
             const isProtector = tipo === 'protector';
             const isGym = tipo === 'gym';
             const isPlayer = tipo === 'jugador' || tipo === 'player';
+            const isFamiliar = tipo === 'familiar';
+
+            const labels = {
+                protector: 'SOCIO PROTECTOR',
+                gym: 'GYM',
+                jugador: 'JUGADOR',
+                player: 'JUGADOR',
+                familiar: 'FAMILIA',
+                normal: 'SOCIO',
+            };
 
             const theme = {
                 bg1: isProtector ? '#0a0a0a' : '#0a1628',
@@ -2104,7 +2114,7 @@
                 accent: isProtector ? '#c9a84c' : '#f2b705',
                 accentRgba: isProtector ? '201,168,76' : '242,183,5',
                 lineAlpha: isProtector ? '0.03' : '0.025',
-                label: isProtector ? 'SOCIO PROTECTOR' : isGym ? 'SOCIO GYM' : isPlayer ? 'JUGADOR' : 'SOCIO',
+                label: labels[tipo] || 'SOCIO',
             };
 
             // ── Card clip (rounded corners) ──
