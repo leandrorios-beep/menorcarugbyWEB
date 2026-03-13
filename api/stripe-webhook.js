@@ -30,60 +30,160 @@ module.exports = async function handler(req, res) {
         return res.status(400).json({ error: 'Invalid signature' });
     }
 
-    // Only handle completed checkout sessions
-    if (event.type !== 'checkout.session.completed') {
-        return res.status(200).json({ received: true });
-    }
-
-    const session = event.data.object;
-    const customerEmail = session.customer_details?.email || session.customer_email;
-
-    if (!customerEmail) {
-        console.error('No customer email in checkout session:', session.id);
-        return res.status(200).json({ received: true, warning: 'no email found' });
-    }
-
-    // Update estado_pago in Supabase
     const supabase = createClient(
         process.env.SUPABASE_URL,
         process.env.SUPABASE_SERVICE_ROLE_KEY
     );
 
-    const fechaPago = new Date(event.created * 1000).toISOString();
-    let fechaProximoPago = null;
+    // --- Helper: get customer email from Stripe customer ID ---
+    async function getCustomerEmail(customerId) {
+        if (!customerId) return null;
+        const customer = await stripe.customers.retrieve(customerId);
+        return customer.email;
+    }
 
-    // If it's a subscription, get the next billing date from Stripe
-    if (session.subscription) {
-        const subscription = await stripe.subscriptions.retrieve(session.subscription);
-        if (subscription.current_period_end) {
-            fechaProximoPago = new Date(subscription.current_period_end * 1000).toISOString();
+    // ============================================================
+    // 1) First checkout completed — socio just paid for first time
+    // ============================================================
+    if (event.type === 'checkout.session.completed') {
+        const session = event.data.object;
+        const customerEmail = session.customer_details?.email || session.customer_email;
+
+        if (!customerEmail) {
+            console.error('No customer email in checkout session:', session.id);
+            return res.status(200).json({ received: true, warning: 'no email found' });
         }
+
+        const fechaPago = new Date(event.created * 1000).toISOString();
+        let fechaProximoPago = null;
+
+        if (session.subscription) {
+            const subscription = await stripe.subscriptions.retrieve(session.subscription);
+            if (subscription.current_period_end) {
+                fechaProximoPago = new Date(subscription.current_period_end * 1000).toISOString();
+            }
+        }
+
+        const updateData = {
+            estado_pago: 'completado',
+            fecha_pago: fechaPago
+        };
+        if (fechaProximoPago) {
+            updateData.fecha_proximo_pago = fechaProximoPago;
+        }
+
+        const { data, error } = await supabase
+            .from('socios')
+            .update(updateData)
+            .eq('email', customerEmail.toLowerCase())
+            .eq('estado_pago', 'pendiente')
+            .select('id, nombre, apellido, email');
+
+        if (error) {
+            console.error('Supabase update error:', error);
+            return res.status(500).json({ error: 'Database update failed' });
+        }
+
+        console.log(`Checkout completed for ${customerEmail}. Updated ${data?.length || 0} socio(s)`);
+        return res.status(200).json({ received: true, updated: data?.length || 0 });
     }
 
-    const updateData = {
-        estado_pago: 'completado',
-        fecha_pago: fechaPago
-    };
-    if (fechaProximoPago) {
-        updateData.fecha_proximo_pago = fechaProximoPago;
+    // ============================================================
+    // 2) Recurring invoice paid — subscription renewed successfully
+    // ============================================================
+    if (event.type === 'invoice.paid') {
+        const invoice = event.data.object;
+        const customerEmail = invoice.customer_email || await getCustomerEmail(invoice.customer);
+
+        if (!customerEmail || !invoice.subscription) {
+            return res.status(200).json({ received: true });
+        }
+
+        const subscription = await stripe.subscriptions.retrieve(invoice.subscription);
+        const fechaPago = new Date(event.created * 1000).toISOString();
+        const fechaProximoPago = subscription.current_period_end
+            ? new Date(subscription.current_period_end * 1000).toISOString()
+            : null;
+
+        const updateData = {
+            estado_pago: 'completado',
+            fecha_pago: fechaPago
+        };
+        if (fechaProximoPago) {
+            updateData.fecha_proximo_pago = fechaProximoPago;
+        }
+
+        const { data, error } = await supabase
+            .from('socios')
+            .update(updateData)
+            .eq('email', customerEmail.toLowerCase())
+            .select('id, nombre, apellido, email');
+
+        if (error) {
+            console.error('Supabase update error (invoice.paid):', error);
+            return res.status(500).json({ error: 'Database update failed' });
+        }
+
+        console.log(`Invoice paid for ${customerEmail}. Updated ${data?.length || 0} socio(s)`);
+        return res.status(200).json({ received: true, updated: data?.length || 0 });
     }
 
-    const { data, error } = await supabase
-        .from('socios')
-        .update(updateData)
-        .eq('email', customerEmail.toLowerCase())
-        .eq('estado_pago', 'pendiente')
-        .select('id, nombre, apellido, email');
+    // ============================================================
+    // 3) Invoice payment failed — recurring charge failed
+    // ============================================================
+    if (event.type === 'invoice.payment_failed') {
+        const invoice = event.data.object;
+        const customerEmail = invoice.customer_email || await getCustomerEmail(invoice.customer);
 
-    if (error) {
-        console.error('Supabase update error:', error);
-        return res.status(500).json({ error: 'Database update failed' });
+        if (!customerEmail) {
+            return res.status(200).json({ received: true });
+        }
+
+        const { data, error } = await supabase
+            .from('socios')
+            .update({ estado_pago: 'impago' })
+            .eq('email', customerEmail.toLowerCase())
+            .eq('estado_pago', 'completado')
+            .select('id, nombre, apellido, email');
+
+        if (error) {
+            console.error('Supabase update error (payment_failed):', error);
+            return res.status(500).json({ error: 'Database update failed' });
+        }
+
+        console.log(`Payment FAILED for ${customerEmail}. Marked ${data?.length || 0} socio(s) as impago`);
+        return res.status(200).json({ received: true, updated: data?.length || 0 });
     }
 
-    console.log(`Payment completed for ${customerEmail}. Updated ${data?.length || 0} socio(s):`, data);
+    // ============================================================
+    // 4) Subscription cancelled or expired
+    // ============================================================
+    if (event.type === 'customer.subscription.deleted') {
+        const subscription = event.data.object;
+        const customerEmail = await getCustomerEmail(subscription.customer);
 
-    return res.status(200).json({
-        received: true,
-        updated: data?.length || 0
-    });
+        if (!customerEmail) {
+            return res.status(200).json({ received: true });
+        }
+
+        const { data, error } = await supabase
+            .from('socios')
+            .update({
+                estado_pago: 'cancelado',
+                fecha_proximo_pago: null
+            })
+            .eq('email', customerEmail.toLowerCase())
+            .select('id, nombre, apellido, email');
+
+        if (error) {
+            console.error('Supabase update error (subscription.deleted):', error);
+            return res.status(500).json({ error: 'Database update failed' });
+        }
+
+        console.log(`Subscription cancelled for ${customerEmail}. Updated ${data?.length || 0} socio(s)`);
+        return res.status(200).json({ received: true, updated: data?.length || 0 });
+    }
+
+    // Event not handled
+    return res.status(200).json({ received: true });
 };
