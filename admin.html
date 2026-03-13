@@ -1245,6 +1245,8 @@
                 { key: 'email', label: 'Email' },
                 { key: 'tipo_socio', label: 'Tipo' },
                 { key: 'estado_pago', label: 'Pago' },
+                { key: 'fecha_pago', label: 'Fecha pago' },
+                { key: 'fecha_proximo_pago', label: 'Próximo pago' },
                 { key: 'familiar_de', label: 'Familiar de' },
                 { key: 'created_at', label: 'Alta' },
                 { key: null, label: 'Acc.', noSort: true }
@@ -1278,6 +1280,8 @@
                     <td>${escapeHtml(s.email || '')}</td>
                     <td><span class="admin-badge admin-badge--${tipo}">${escapeHtml(tipo)}</span></td>
                     <td><span class="admin-badge admin-badge--${s.estado_pago || 'pendiente'}">${escapeHtml(s.estado_pago || 'pendiente')}</span></td>
+                    <td>${formatDate(s.fecha_pago)}</td>
+                    <td>${formatDate(s.fecha_proximo_pago)}</td>
                     <td class="familiar-de-cell">${escapeHtml(s.familiar_de || '')}</td>
                     <td>${formatDate(s.created_at)}</td>
                     <td><div class="admin-actions">
@@ -1295,6 +1299,8 @@
                         <div class="mobile-card-detail"><span class="admin-badge admin-badge--${tipo}">${escapeHtml(tipo)}</span> ${formatDate(s.created_at)}</div>
                         <div class="mobile-card-detail">${escapeHtml(s.email || '')}</div>
                         ${s.documento ? `<div class="mobile-card-detail"><strong>Doc:</strong> ${escapeHtml(s.documento)}</div>` : ''}
+                        ${s.fecha_pago ? `<div class="mobile-card-detail"><strong>Pagó:</strong> ${formatDate(s.fecha_pago)}</div>` : ''}
+                        ${s.fecha_proximo_pago ? `<div class="mobile-card-detail"><strong>Próx. pago:</strong> ${formatDate(s.fecha_proximo_pago)}</div>` : ''}
                         ${s.familiar_de ? `<div class="mobile-card-detail"><strong>Familiar de:</strong> ${escapeHtml(s.familiar_de)}</div>` : ''}
                     </div>
                     <div class="mobile-card-actions">
