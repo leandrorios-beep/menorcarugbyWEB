@@ -799,7 +799,8 @@
 
                 // Redirect to Stripe
                 closeModal();
-                window.open(pendingStripeLink, '_blank', 'noopener');
+                const emailForStripe = encodeURIComponent(email.value.trim());
+                window.open(pendingStripeLink + '?prefilled_email=' + emailForStripe, '_blank', 'noopener');
             });
 
             // Update modal translations when language changes

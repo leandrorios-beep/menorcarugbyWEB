@@ -49,9 +49,28 @@ module.exports = async function handler(req, res) {
         process.env.SUPABASE_SERVICE_ROLE_KEY
     );
 
+    const fechaPago = new Date(event.created * 1000).toISOString();
+    let fechaProximoPago = null;
+
+    // If it's a subscription, get the next billing date from Stripe
+    if (session.subscription) {
+        const subscription = await stripe.subscriptions.retrieve(session.subscription);
+        if (subscription.current_period_end) {
+            fechaProximoPago = new Date(subscription.current_period_end * 1000).toISOString();
+        }
+    }
+
+    const updateData = {
+        estado_pago: 'completado',
+        fecha_pago: fechaPago
+    };
+    if (fechaProximoPago) {
+        updateData.fecha_proximo_pago = fechaProximoPago;
+    }
+
     const { data, error } = await supabase
         .from('socios')
-        .update({ estado_pago: 'completado' })
+        .update(updateData)
         .eq('email', customerEmail.toLowerCase())
         .eq('estado_pago', 'pendiente')
         .select('id, nombre, apellido, email');
