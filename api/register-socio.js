@@ -5,7 +5,7 @@ module.exports = async function handler(req, res) {
         return res.status(405).json({ error: 'Method not allowed' });
     }
 
-    const { nombre, apellido, documento, email, tipo_socio, foto_url, stripe_link } = req.body;
+    const { nombre, apellido, documento, email, tipo_socio, foto_url, stripe_link, familiar_de } = req.body;
 
     if (!nombre || !apellido || !documento || !email || !tipo_socio) {
         return res.status(400).json({ error: 'Missing required fields' });
@@ -61,6 +61,7 @@ module.exports = async function handler(req, res) {
 
         if (foto_url) updateData.foto_url = foto_url;
         if (stripe_link) updateData.stripe_link = stripe_link;
+        if (familiar_de) updateData.familiar_de = familiar_de;
 
         const { error: updateError } = await supabase
             .from('socios')
@@ -83,6 +84,7 @@ module.exports = async function handler(req, res) {
                 tipo_socio,
                 foto_url: foto_url || null,
                 stripe_link: stripe_link || null,
+                familiar_de: familiar_de || null,
             })
             .select('id')
             .single();

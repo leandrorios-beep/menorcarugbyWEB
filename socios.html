@@ -163,10 +163,11 @@
                     <h3 data-i18n-membership="types.family.title">Socio Familiar</h3>
                     <div class="type-price"><span class="type-badge" data-i18n-membership="types.family.badge">Gratis</span></div>
                     <ul class="type-features">
-                        <li><i class="fas fa-check"></i> <span data-i18n-membership="types.family.f1">Alta automatica al federar menor</span></li>
+                        <li><i class="fas fa-check"></i> <span data-i18n-membership="types.family.f1">Para familiares de jugadores del club</span></li>
                         <li><i class="fas fa-check"></i> <span data-i18n-membership="types.family.f2">Carnet digital personalizado</span></li>
                         <li><i class="fas fa-check"></i> <span data-i18n-membership="types.family.f3">Opcion gimnasio 10&#8364;/mes</span></li>
                     </ul>
+                    <p style="font-size:0.75rem;color:var(--text-muted,#999);margin-top:0.5rem;text-align:center;" data-i18n-membership="types.family.note">* Requiere un jugador/a inscrito en el club</p>
                     <a href="#" class="type-cta-btn" data-socio-type="familiar">
                         <span data-i18n-membership="types.family.cta">Hacerse socio</span>
                         <i class="fas fa-arrow-right"></i>
@@ -511,7 +512,11 @@
                     success_title: '¡Registro completado!',
                     success_existing: '¡Ya estás apuntado/a! Hemos actualizado tus datos.',
                     success_desc: 'Ya eres socio del Menorca Rugby Club. Tu carnet se generará próximamente.',
-                    success_close: 'Cerrar'
+                    success_close: 'Cerrar',
+                    player_search_label: 'Nombre del jugador/a',
+                    player_search_hint: 'Busque por nombre o apellido del jugador/a federado en el club',
+                    player_required: 'Debe seleccionar un jugador/a del club',
+                    player_not_found: 'Jugador no encontrado. Comuníquese con la directiva del club.'
                 },
                 ca: {
                     title: 'Dades del soci',
@@ -533,7 +538,11 @@
                     success_title: 'Registre completat!',
                     success_existing: 'Ja estàs apuntat/da! Hem actualitzat les teves dades.',
                     success_desc: 'Ja ets soci del Menorca Rugby Club. El teu carnet es generarà pròximament.',
-                    success_close: 'Tancar'
+                    success_close: 'Tancar',
+                    player_search_label: 'Nom del jugador/a',
+                    player_search_hint: 'Cerqueu per nom o cognom del jugador/a federat al club',
+                    player_required: 'Heu de seleccionar un jugador/a del club',
+                    player_not_found: 'Jugador no trobat. Poseu-vos en contacte amb la directiva del club.'
                 },
                 en: {
                     title: 'Member details',
@@ -555,7 +564,11 @@
                     success_title: 'Registration complete!',
                     success_existing: 'You\'re already registered! We\'ve updated your details.',
                     success_desc: 'You are now a member of Menorca Rugby Club. Your card will be generated soon.',
-                    success_close: 'Close'
+                    success_close: 'Close',
+                    player_search_label: 'Player name',
+                    player_search_hint: 'Search by first or last name of a registered club player',
+                    player_required: 'You must select a club player',
+                    player_not_found: 'Player not found. Please contact the club management.'
                 },
                 fr: {
                     title: 'Donnees du membre',
@@ -577,7 +590,11 @@
                     success_title: 'Inscription terminee !',
                     success_existing: 'Vous etes deja inscrit(e) ! Nous avons mis a jour vos donnees.',
                     success_desc: 'Vous etes maintenant membre du Menorca Rugby Club. Votre carte sera generee prochainement.',
-                    success_close: 'Fermer'
+                    success_close: 'Fermer',
+                    player_search_label: 'Nom du joueur',
+                    player_search_hint: 'Recherchez par nom ou prenom du joueur federe au club',
+                    player_required: 'Vous devez selectionner un joueur du club',
+                    player_not_found: 'Joueur non trouve. Contactez la direction du club.'
                 },
                 it: {
                     title: 'Dati del socio',
@@ -599,7 +616,11 @@
                     success_title: 'Registrazione completata!',
                     success_existing: 'Sei gia iscritto/a! Abbiamo aggiornato i tuoi dati.',
                     success_desc: 'Sei ora socio del Menorca Rugby Club. La tua tessera verra generata a breve.',
-                    success_close: 'Chiudi'
+                    success_close: 'Chiudi',
+                    player_search_label: 'Nome del giocatore',
+                    player_search_hint: 'Cerca per nome o cognome del giocatore tesserato nel club',
+                    player_required: 'Devi selezionare un giocatore del club',
+                    player_not_found: 'Giocatore non trovato. Contatta la dirigenza del club.'
                 },
                 pt: {
                     title: 'Dados do socio',
@@ -621,7 +642,11 @@
                     success_title: 'Registo concluido!',
                     success_existing: 'Ja estas inscrito/a! Atualizamos os teus dados.',
                     success_desc: 'Ja es socio do Menorca Rugby Club. O teu cartao sera gerado em breve.',
-                    success_close: 'Fechar'
+                    success_close: 'Fechar',
+                    player_search_label: 'Nome do jogador',
+                    player_search_hint: 'Procure pelo nome ou apelido do jogador federado no clube',
+                    player_required: 'Deve selecionar um jogador do clube',
+                    player_not_found: 'Jogador nao encontrado. Contacte a direcao do clube.'
                 }
             };
 
@@ -633,6 +658,28 @@
                     <h2 class="socio-modal-title" data-i18n-modal="title">Datos del socio</h2>
                     <p class="socio-modal-subtitle" data-i18n-modal="subtitle">Completa tus datos antes de continuar al pago</p>
                     <form id="socioForm" novalidate>
+                        <div id="socioPlayerSearch" style="display:none;margin-bottom:1.25rem;">
+                            <div class="socio-modal-field" style="position:relative;">
+                                <label data-i18n-modal="player_search_label">Nombre del jugador/a</label>
+                                <div style="position:relative;">
+                                    <input type="text" id="socioPlayerQuery" autocomplete="off" style="padding-right:2.5rem;">
+                                    <i class="fas fa-search" style="position:absolute;right:0.75rem;top:50%;transform:translateY(-50%);color:#888;pointer-events:none;"></i>
+                                </div>
+                                <div id="socioPlayerResults" style="position:absolute;left:0;right:0;background:var(--bg-card,#1a1a2e);border:1px solid rgba(255,255,255,0.15);border-radius:0.5rem;max-height:200px;overflow-y:auto;z-index:10;display:none;box-shadow:0 4px 12px rgba(0,0,0,0.3);margin-top:0.25rem;"></div>
+                                <span class="socio-modal-error" data-i18n-modal="player_required">Debe seleccionar un jugador/a del club</span>
+                            </div>
+                            <div id="socioPlayerFound" style="display:none;padding:0.75rem 1rem;background:rgba(40,167,69,0.1);border:1px solid rgba(40,167,69,0.3);border-radius:0.5rem;margin-top:0.5rem;">
+                                <i class="fas fa-check-circle" style="color:#28a745;margin-right:0.5rem;"></i>
+                                <strong id="socioPlayerName"></strong>
+                                <span id="socioPlayerCategory" style="margin-left:0.5rem;opacity:0.7;font-size:0.9rem;"></span>
+                                <button type="button" id="socioPlayerClear" style="float:right;background:none;border:none;cursor:pointer;font-size:1.2rem;color:#888;line-height:1;">&times;</button>
+                            </div>
+                            <div id="socioPlayerNotFound" style="display:none;padding:0.75rem 1rem;background:rgba(220,53,69,0.1);border:1px solid rgba(220,53,69,0.3);border-radius:0.5rem;margin-top:0.5rem;color:#dc3545;font-size:0.9rem;">
+                                <i class="fas fa-exclamation-circle" style="margin-right:0.5rem;"></i>
+                                <span data-i18n-modal="player_not_found">Jugador no encontrado. Comuniquese con la directiva del club.</span>
+                            </div>
+                            <p style="font-size:0.78rem;color:#888;margin-top:0.5rem;" data-i18n-modal="player_search_hint">Busque por nombre o apellido del jugador/a federado en el club</p>
+                        </div>
                         <div class="socio-modal-row">
                             <div class="socio-modal-field">
                                 <label for="socioNombre" data-i18n-modal="nombre">Nombre</label>
@@ -744,10 +791,18 @@
                 submitBtn.disabled = false;
                 submitBtn.classList.remove('is-loading');
 
-                // Show/hide gym toggle for familiar type
+                // Show/hide player search and gym toggle for familiar type
+                const isFamiliar = socioType === 'familiar';
+                document.getElementById('socioPlayerSearch').style.display = isFamiliar ? '' : 'none';
+                document.getElementById('socioPlayerQuery').value = '';
+                document.getElementById('socioPlayerResults').style.display = 'none';
+                document.getElementById('socioPlayerFound').style.display = 'none';
+                document.getElementById('socioPlayerNotFound').style.display = 'none';
+                selectedPlayer = null;
+
                 const gymField = document.getElementById('socioGymField');
                 const gymCheck = document.getElementById('socioGymCheck');
-                gymField.style.display = socioType === 'familiar' ? '' : 'none';
+                gymField.style.display = isFamiliar ? '' : 'none';
                 if (gymCheck) gymCheck.checked = false;
 
                 // Set submit button text based on type
@@ -808,6 +863,98 @@
                 });
             });
 
+            // Player search logic (for familiar type)
+            let selectedPlayer = null;
+            let playerSearchTimeout = null;
+            const playerQuery = document.getElementById('socioPlayerQuery');
+            const playerResults = document.getElementById('socioPlayerResults');
+            const playerFound = document.getElementById('socioPlayerFound');
+            const playerNotFoundEl = document.getElementById('socioPlayerNotFound');
+
+            playerQuery.addEventListener('input', () => {
+                clearTimeout(playerSearchTimeout);
+                const q = playerQuery.value.trim();
+                playerFound.style.display = 'none';
+                playerNotFoundEl.style.display = 'none';
+                selectedPlayer = null;
+                // Clear player_required error when typing
+                playerQuery.closest('.socio-modal-field').classList.remove('has-error');
+
+                if (q.length < 2) {
+                    playerResults.style.display = 'none';
+                    return;
+                }
+
+                playerSearchTimeout = setTimeout(async () => {
+                    try {
+                        const resp = await fetch('/api/search-player?q=' + encodeURIComponent(q));
+                        const data = await resp.json();
+
+                        if (data.players && data.players.length > 0) {
+                            playerResults.innerHTML = data.players.map(p =>
+                                '<div class="socio-player-result" data-id="' + p.id + '" data-name="' + p.name.replace(/"/g, '&quot;') + '" data-category="' + (p.category || '').replace(/"/g, '&quot;') + '" style="padding:0.75rem 1rem;cursor:pointer;border-bottom:1px solid rgba(255,255,255,0.05);transition:background 0.15s;">' +
+                                '<strong>' + p.name + '</strong>' +
+                                (p.category ? '<span style="margin-left:0.5rem;font-size:0.85rem;opacity:0.7;">' + p.category + '</span>' : '') +
+                                '</div>'
+                            ).join('');
+                            playerResults.style.display = '';
+                            playerNotFoundEl.style.display = 'none';
+                        } else {
+                            playerResults.style.display = 'none';
+                            playerNotFoundEl.style.display = '';
+                        }
+                    } catch (err) {
+                        console.error('Player search error:', err);
+                    }
+                }, 300);
+            });
+
+            // Hover effect on results
+            playerResults.addEventListener('mouseover', e => {
+                const item = e.target.closest('.socio-player-result');
+                if (item) item.style.background = 'rgba(255,199,44,0.1)';
+            });
+            playerResults.addEventListener('mouseout', e => {
+                const item = e.target.closest('.socio-player-result');
+                if (item) item.style.background = '';
+            });
+
+            // Select a player from results
+            playerResults.addEventListener('click', e => {
+                const item = e.target.closest('.socio-player-result');
+                if (!item) return;
+
+                selectedPlayer = {
+                    id: item.dataset.id,
+                    name: item.dataset.name,
+                    category: item.dataset.category
+                };
+
+                document.getElementById('socioPlayerName').textContent = selectedPlayer.name;
+                document.getElementById('socioPlayerCategory').textContent = selectedPlayer.category || '';
+
+                playerResults.style.display = 'none';
+                playerFound.style.display = '';
+                playerNotFoundEl.style.display = 'none';
+                playerQuery.value = '';
+                playerQuery.closest('.socio-modal-field').classList.remove('has-error');
+            });
+
+            // Clear selected player
+            document.getElementById('socioPlayerClear').addEventListener('click', () => {
+                selectedPlayer = null;
+                playerFound.style.display = 'none';
+                playerQuery.value = '';
+                playerQuery.focus();
+            });
+
+            // Close results on click outside
+            document.addEventListener('click', e => {
+                if (!e.target.closest('#socioPlayerSearch')) {
+                    playerResults.style.display = 'none';
+                }
+            });
+
             function closeModal() {
                 overlay.classList.remove('is-active');
                 document.body.style.overflow = '';
@@ -839,6 +986,12 @@
                 // Reset errors
                 overlay.querySelectorAll('.socio-modal-field').forEach(f => f.classList.remove('has-error'));
                 let valid = true;
+
+                // Validate player selection for familiar type
+                if (pendingSocioType === 'familiar' && !selectedPlayer) {
+                    playerQuery.closest('.socio-modal-field').classList.add('has-error');
+                    valid = false;
+                }
 
                 [nombre, apellido, documento].forEach(input => {
                     if (!input.value.trim()) {
@@ -903,7 +1056,8 @@
                             email: email.value.trim(),
                             tipo_socio: pendingSocioType,
                             foto_url,
-                            stripe_link: stripeForType
+                            stripe_link: stripeForType,
+                            familiar_de: selectedPlayer ? selectedPlayer.name : null
                         })
                     });
 
@@ -1000,7 +1154,8 @@
                         'types.normal.cta': 'Hacerme socio',
                         'types.family.title': 'Socio Familiar',
                         'types.family.badge': 'Gratis',
-                        'types.family.f1': 'Alta automatica al federar menor',
+                        'types.family.f1': 'Para familiares de jugadores del club',
+                        'types.family.note': '* Requiere un jugador/a inscrito en el club',
                         'types.family.f2': 'Carnet digital personalizado',
                         'types.family.f3': 'Opcion gimnasio 10\u20AC/mes',
                         'types.family.cta': 'Hacerse socio',
@@ -1086,7 +1241,8 @@
                         'types.normal.cta': 'Fer-me soci',
                         'types.family.title': 'Soci Familiar',
                         'types.family.badge': 'Gratis',
-                        'types.family.f1': 'Alta automatica en federar menor',
+                        'types.family.f1': 'Per a familiars de jugadors del club',
+                        'types.family.note': '* Requereix un jugador/a inscrit al club',
                         'types.family.f2': 'Carnet digital personalitzat',
                         'types.family.f3': 'Opcio gimnas 10\u20AC/mes',
                         'types.family.cta': 'Fer-se soci',
@@ -1172,7 +1328,8 @@
                         'types.normal.cta': 'Become a member',
                         'types.family.title': 'Family Member',
                         'types.family.badge': 'Free',
-                        'types.family.f1': 'Automatic registration when registering a minor',
+                        'types.family.f1': 'For families of club players',
+                        'types.family.note': '* Requires a registered club player',
                         'types.family.f2': 'Personalized digital card',
                         'types.family.f3': 'Gym option \u20AC10/month',
                         'types.family.cta': 'Become a member',
@@ -1258,7 +1415,8 @@
                         'types.normal.cta': 'Devenir membre',
                         'types.family.title': 'Membre Familial',
                         'types.family.badge': 'Gratuit',
-                        'types.family.f1': 'Inscription automatique en federant un mineur',
+                        'types.family.f1': 'Pour les familles de joueurs du club',
+                        'types.family.note': '* Necessite un joueur inscrit au club',
                         'types.family.f2': 'Carte numerique personnalisee',
                         'types.family.f3': 'Option salle de sport 10\u20AC/mois',
                         'types.family.cta': 'Devenir membre',
@@ -1344,7 +1502,8 @@
                         'types.normal.cta': 'Diventa socio',
                         'types.family.title': 'Socio Familiare',
                         'types.family.badge': 'Gratis',
-                        'types.family.f1': 'Iscrizione automatica federando un minore',
+                        'types.family.f1': 'Per familiari di giocatori del club',
+                        'types.family.note': '* Richiede un giocatore iscritto nel club',
                         'types.family.f2': 'Tessera digitale personalizzata',
                         'types.family.f3': 'Opzione palestra 10\u20AC/mese',
                         'types.family.cta': 'Diventare socio',
@@ -1430,7 +1589,8 @@
                         'types.normal.cta': 'Tornar-me socio',
                         'types.family.title': 'Socio Familiar',
                         'types.family.badge': 'Gratis',
-                        'types.family.f1': 'Inscricao automatica ao federar menor',
+                        'types.family.f1': 'Para familiares de jogadores do clube',
+                        'types.family.note': '* Requer um jogador inscrito no clube',
                         'types.family.f2': 'Cartao digital personalizado',
                         'types.family.f3': 'Opcao ginasio 10\u20AC/mes',
                         'types.family.cta': 'Tornar-se socio',
