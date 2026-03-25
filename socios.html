@@ -513,8 +513,8 @@
                     success_existing: '¡Ya estás apuntado/a! Hemos actualizado tus datos.',
                     success_desc: 'Ya eres socio del Menorca Rugby Club. Tu carnet se generará próximamente.',
                     success_close: 'Cerrar',
-                    player_search_label: 'Nombre del jugador/a',
-                    player_search_hint: 'Busque por nombre o apellido del jugador/a federado en el club',
+                    player_warning: 'Para ser socio familiar es obligatorio que haya un jugador/a con ficha federativa en el club.',
+                    player_search_label: 'Soy familiar de:',
                     player_required: 'Debe seleccionar un jugador/a del club',
                     player_not_found: 'Jugador no encontrado. Comuníquese con la directiva del club.'
                 },
@@ -539,8 +539,8 @@
                     success_existing: 'Ja estàs apuntat/da! Hem actualitzat les teves dades.',
                     success_desc: 'Ja ets soci del Menorca Rugby Club. El teu carnet es generarà pròximament.',
                     success_close: 'Tancar',
-                    player_search_label: 'Nom del jugador/a',
-                    player_search_hint: 'Cerqueu per nom o cognom del jugador/a federat al club',
+                    player_warning: 'Per ser soci familiar es obligatori que hi hagi un jugador/a amb fitxa federativa al club.',
+                    player_search_label: 'Soc familiar de:',
                     player_required: 'Heu de seleccionar un jugador/a del club',
                     player_not_found: 'Jugador no trobat. Poseu-vos en contacte amb la directiva del club.'
                 },
@@ -565,8 +565,8 @@
                     success_existing: 'You\'re already registered! We\'ve updated your details.',
                     success_desc: 'You are now a member of Menorca Rugby Club. Your card will be generated soon.',
                     success_close: 'Close',
-                    player_search_label: 'Player name',
-                    player_search_hint: 'Search by first or last name of a registered club player',
+                    player_warning: 'To become a family member, there must be a registered player with a federation license in the club.',
+                    player_search_label: 'I am a family member of:',
                     player_required: 'You must select a club player',
                     player_not_found: 'Player not found. Please contact the club management.'
                 },
@@ -591,8 +591,8 @@
                     success_existing: 'Vous etes deja inscrit(e) ! Nous avons mis a jour vos donnees.',
                     success_desc: 'Vous etes maintenant membre du Menorca Rugby Club. Votre carte sera generee prochainement.',
                     success_close: 'Fermer',
-                    player_search_label: 'Nom du joueur',
-                    player_search_hint: 'Recherchez par nom ou prenom du joueur federe au club',
+                    player_warning: 'Pour devenir membre familial, un joueur avec licence federative doit etre inscrit au club.',
+                    player_search_label: 'Je suis parent de :',
                     player_required: 'Vous devez selectionner un joueur du club',
                     player_not_found: 'Joueur non trouve. Contactez la direction du club.'
                 },
@@ -617,8 +617,8 @@
                     success_existing: 'Sei gia iscritto/a! Abbiamo aggiornato i tuoi dati.',
                     success_desc: 'Sei ora socio del Menorca Rugby Club. La tua tessera verra generata a breve.',
                     success_close: 'Chiudi',
-                    player_search_label: 'Nome del giocatore',
-                    player_search_hint: 'Cerca per nome o cognome del giocatore tesserato nel club',
+                    player_warning: 'Per diventare socio familiare e obbligatorio che ci sia un giocatore tesserato nel club.',
+                    player_search_label: 'Sono familiare di:',
                     player_required: 'Devi selezionare un giocatore del club',
                     player_not_found: 'Giocatore non trovato. Contatta la dirigenza del club.'
                 },
@@ -643,8 +643,8 @@
                     success_existing: 'Ja estas inscrito/a! Atualizamos os teus dados.',
                     success_desc: 'Ja es socio do Menorca Rugby Club. O teu cartao sera gerado em breve.',
                     success_close: 'Fechar',
-                    player_search_label: 'Nome do jogador',
-                    player_search_hint: 'Procure pelo nome ou apelido do jogador federado no clube',
+                    player_warning: 'Para ser socio familiar e obrigatorio que haja um jogador com ficha federativa no clube.',
+                    player_search_label: 'Sou familiar de:',
                     player_required: 'Deve selecionar um jogador do clube',
                     player_not_found: 'Jogador nao encontrado. Contacte a direcao do clube.'
                 }
@@ -659,26 +659,29 @@
                     <p class="socio-modal-subtitle" data-i18n-modal="subtitle">Completa tus datos antes de continuar al pago</p>
                     <form id="socioForm" novalidate>
                         <div id="socioPlayerSearch" style="display:none;margin-bottom:1.25rem;">
+                            <div style="padding:0.75rem 1rem;background:rgba(255,199,44,0.12);border:1px solid rgba(255,199,44,0.35);border-radius:0.5rem;margin-bottom:1rem;display:flex;align-items:flex-start;gap:0.6rem;">
+                                <i class="fas fa-exclamation-triangle" style="color:#FFC72C;margin-top:0.15rem;font-size:1rem;flex-shrink:0;"></i>
+                                <span style="font-size:0.88rem;color:#FFC72C;line-height:1.4;" data-i18n-modal="player_warning">Para ser socio familiar es obligatorio que haya un jugador/a con ficha federativa en el club.</span>
+                            </div>
                             <div class="socio-modal-field" style="position:relative;">
-                                <label data-i18n-modal="player_search_label">Nombre del jugador/a</label>
+                                <label data-i18n-modal="player_search_label" style="font-size:0.95rem;">Soy familiar de:</label>
                                 <div style="position:relative;">
-                                    <input type="text" id="socioPlayerQuery" autocomplete="off" style="padding-right:2.5rem;">
+                                    <input type="text" id="socioPlayerQuery" autocomplete="off" placeholder="Buscar jugador/a..." style="padding-right:2.5rem;">
                                     <i class="fas fa-search" style="position:absolute;right:0.75rem;top:50%;transform:translateY(-50%);color:#888;pointer-events:none;"></i>
                                 </div>
-                                <div id="socioPlayerResults" style="position:absolute;left:0;right:0;background:var(--bg-card,#1a1a2e);border:1px solid rgba(255,255,255,0.15);border-radius:0.5rem;max-height:200px;overflow-y:auto;z-index:10;display:none;box-shadow:0 4px 12px rgba(0,0,0,0.3);margin-top:0.25rem;"></div>
+                                <div id="socioPlayerResults" style="position:absolute;left:0;right:0;background:#243045;border:1px solid rgba(255,199,44,0.3);border-radius:0.5rem;max-height:200px;overflow-y:auto;z-index:10;display:none;box-shadow:0 4px 16px rgba(0,0,0,0.4);margin-top:0.25rem;"></div>
                                 <span class="socio-modal-error" data-i18n-modal="player_required">Debe seleccionar un jugador/a del club</span>
                             </div>
-                            <div id="socioPlayerFound" style="display:none;padding:0.75rem 1rem;background:rgba(40,167,69,0.1);border:1px solid rgba(40,167,69,0.3);border-radius:0.5rem;margin-top:0.5rem;">
-                                <i class="fas fa-check-circle" style="color:#28a745;margin-right:0.5rem;"></i>
-                                <strong id="socioPlayerName"></strong>
-                                <span id="socioPlayerCategory" style="margin-left:0.5rem;opacity:0.7;font-size:0.9rem;"></span>
-                                <button type="button" id="socioPlayerClear" style="float:right;background:none;border:none;cursor:pointer;font-size:1.2rem;color:#888;line-height:1;">&times;</button>
+                            <div id="socioPlayerFound" style="display:none;padding:0.75rem 1rem;background:rgba(255,199,44,0.12);border:1px solid rgba(255,199,44,0.4);border-radius:0.5rem;margin-top:0.5rem;color:#FFC72C;">
+                                <i class="fas fa-check-circle" style="color:#FFC72C;margin-right:0.5rem;"></i>
+                                <strong id="socioPlayerName" style="color:#FFC72C;"></strong>
+                                <span id="socioPlayerCategory" style="margin-left:0.5rem;opacity:0.85;font-size:0.9rem;color:#FFC72C;"></span>
+                                <button type="button" id="socioPlayerClear" style="float:right;background:none;border:none;cursor:pointer;font-size:1.2rem;color:#FFC72C;line-height:1;">&times;</button>
                             </div>
                             <div id="socioPlayerNotFound" style="display:none;padding:0.75rem 1rem;background:rgba(220,53,69,0.1);border:1px solid rgba(220,53,69,0.3);border-radius:0.5rem;margin-top:0.5rem;color:#dc3545;font-size:0.9rem;">
                                 <i class="fas fa-exclamation-circle" style="margin-right:0.5rem;"></i>
                                 <span data-i18n-modal="player_not_found">Jugador no encontrado. Comuniquese con la directiva del club.</span>
                             </div>
-                            <p style="font-size:0.78rem;color:#888;margin-top:0.5rem;" data-i18n-modal="player_search_hint">Busque por nombre o apellido del jugador/a federado en el club</p>
                         </div>
                         <div class="socio-modal-row">
                             <div class="socio-modal-field">
