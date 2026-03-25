@@ -513,6 +513,8 @@
                     success_existing: '¡Ya estás apuntado/a! Hemos actualizado tus datos.',
                     success_desc: 'Ya eres socio del Menorca Rugby Club. Tu carnet se generará próximamente.',
                     success_close: 'Cerrar',
+                    already_confirmed: '¡Ya estás registrado/a como socio!',
+                    already_confirmed_desc: 'Ya eres socio N.° %n. No es necesario volver a registrarse.',
                     player_warning: 'Para ser socio familiar es obligatorio que haya un jugador/a con ficha federativa en el club.',
                     player_search_label: 'Soy familiar de:',
                     player_required: 'Debe seleccionar un jugador/a del club',
@@ -539,6 +541,8 @@
                     success_existing: 'Ja estàs apuntat/da! Hem actualitzat les teves dades.',
                     success_desc: 'Ja ets soci del Menorca Rugby Club. El teu carnet es generarà pròximament.',
                     success_close: 'Tancar',
+                    already_confirmed: 'Ja estàs registrat/da com a soci!',
+                    already_confirmed_desc: 'Ja ets soci N.° %n. No cal tornar a registrar-se.',
                     player_warning: 'Per ser soci familiar es obligatori que hi hagi un jugador/a amb fitxa federativa al club.',
                     player_search_label: 'Soc familiar de:',
                     player_required: 'Heu de seleccionar un jugador/a del club',
@@ -565,6 +569,8 @@
                     success_existing: 'You\'re already registered! We\'ve updated your details.',
                     success_desc: 'You are now a member of Menorca Rugby Club. Your card will be generated soon.',
                     success_close: 'Close',
+                    already_confirmed: 'You are already registered as a member!',
+                    already_confirmed_desc: 'You are member N.° %n. No need to register again.',
                     player_warning: 'To become a family member, there must be a registered player with a federation license in the club.',
                     player_search_label: 'I am a family member of:',
                     player_required: 'You must select a club player',
@@ -591,6 +597,8 @@
                     success_existing: 'Vous etes deja inscrit(e) ! Nous avons mis a jour vos donnees.',
                     success_desc: 'Vous etes maintenant membre du Menorca Rugby Club. Votre carte sera generee prochainement.',
                     success_close: 'Fermer',
+                    already_confirmed: 'Vous êtes déjà inscrit(e) comme membre !',
+                    already_confirmed_desc: 'Vous êtes membre N.° %n. Pas besoin de vous réinscrire.',
                     player_warning: 'Pour devenir membre familial, un joueur avec licence federative doit etre inscrit au club.',
                     player_search_label: 'Je suis parent de :',
                     player_required: 'Vous devez selectionner un joueur du club',
@@ -617,6 +625,8 @@
                     success_existing: 'Sei gia iscritto/a! Abbiamo aggiornato i tuoi dati.',
                     success_desc: 'Sei ora socio del Menorca Rugby Club. La tua tessera verra generata a breve.',
                     success_close: 'Chiudi',
+                    already_confirmed: 'Sei già registrato/a come socio!',
+                    already_confirmed_desc: 'Sei socio N.° %n. Non è necessario registrarsi di nuovo.',
                     player_warning: 'Per diventare socio familiare e obbligatorio che ci sia un giocatore tesserato nel club.',
                     player_search_label: 'Sono familiare di:',
                     player_required: 'Devi selezionare un giocatore del club',
@@ -643,6 +653,8 @@
                     success_existing: 'Ja estas inscrito/a! Atualizamos os teus dados.',
                     success_desc: 'Ja es socio do Menorca Rugby Club. O teu cartao sera gerado em breve.',
                     success_close: 'Fechar',
+                    already_confirmed: 'Já estás registado/a como sócio!',
+                    already_confirmed_desc: 'Já és sócio N.° %n. Não é necessário registar-se novamente.',
                     player_warning: 'Para ser socio familiar e obrigatorio que haja um jogador com ficha federativa no clube.',
                     player_search_label: 'Sou familiar de:',
                     player_required: 'Deve selecionar um jogador do clube',
@@ -1077,13 +1089,27 @@
                         const titleEl = document.getElementById('socioSuccessTitle');
                         const descEl = document.getElementById('socioSuccessDesc');
 
-                        if (result.existing) {
+                        if (result.confirmed) {
+                            // Already a confirmed member — can't re-register
+                            titleEl.textContent = t.already_confirmed || '¡Ya estás registrado/a como socio!';
+                            descEl.textContent = (t.already_confirmed_desc || 'Ya eres socio N.° %n. No es necesario volver a registrarse.').replace('%n', result.numero_socio || '');
+                            document.querySelector('#socioModalSuccess .fa-check-circle').style.color = '#FFC72C';
+                        } else if (result.existing) {
                             titleEl.textContent = t.success_existing || '¡Ya estás apuntado/a! Hemos actualizado tus datos.';
                             descEl.textContent = '';
                         } else {
                             titleEl.textContent = t.success_title || '¡Registro completado!';
                             descEl.textContent = t.success_desc || 'Ya eres socio del Menorca Rugby Club.';
                         }
+                        successDiv.style.display = '';
+                    } else if (result.confirmed) {
+                        // Already confirmed — show message instead of Stripe redirect
+                        form.style.display = 'none';
+                        overlay.querySelector('.socio-modal-privacy').style.display = 'none';
+                        const successDiv = document.getElementById('socioModalSuccess');
+                        document.getElementById('socioSuccessTitle').textContent = t.already_confirmed || '¡Ya estás registrado/a como socio!';
+                        document.getElementById('socioSuccessDesc').textContent = (t.already_confirmed_desc || 'Ya eres socio N.° %n. No es necesario volver a registrarse.').replace('%n', result.numero_socio || '');
+                        document.querySelector('#socioModalSuccess .fa-check-circle').style.color = '#FFC72C';
                         successDiv.style.display = '';
                     } else {
                         // Redirect to Stripe (normal, protector, or familiar+gym)

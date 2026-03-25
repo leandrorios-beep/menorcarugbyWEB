@@ -46,6 +46,8 @@ module.exports = async function handler(req, res) {
             return res.status(200).json({
                 success: true,
                 existing: true,
+                confirmed: true,
+                numero_socio: existing[0].numero_socio,
                 socio_id: socioId,
                 estado_pago: estadoPago,
             });
