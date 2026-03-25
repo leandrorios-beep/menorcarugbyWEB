@@ -808,19 +808,6 @@
                 gymField.style.display = isFamiliar ? '' : 'none';
                 if (gymCheck) gymCheck.checked = false;
 
-                // Set submit button text based on type
-                const lang = getModalLang();
-                const t = modalTranslations[lang] || modalTranslations.es;
-                const submitSpan = submitBtn.querySelector('span');
-                if (socioType === 'familiar') {
-                    submitSpan.textContent = t.submit_register || 'Registrarse';
-                    // Update subtitle for familiar (no payment mention)
-                    const subtitleEl = overlay.querySelector('.socio-modal-subtitle');
-                    if (subtitleEl) subtitleEl.textContent = t.subtitle_register || 'Completa tus datos para registrarte como socio';
-                } else {
-                    submitSpan.textContent = t.submit || 'Continuar al pago';
-                }
-
                 // Show form step, hide success step
                 form.style.display = '';
                 overlay.querySelector('.socio-modal-privacy').style.display = '';
@@ -834,7 +821,16 @@
                 if (saved.documento) document.getElementById('socioDocumento').value = saved.documento;
                 if (saved.email) document.getElementById('socioEmail').value = saved.email;
 
+                // Apply translations first, then override for familiar type
                 updateModalTranslations();
+                const lang = getModalLang();
+                const t = modalTranslations[lang] || modalTranslations.es;
+                const submitSpan = submitBtn.querySelector('span');
+                if (isFamiliar) {
+                    submitSpan.textContent = t.submit_register || 'Registrarse';
+                    const subtitleEl = overlay.querySelector('.socio-modal-subtitle');
+                    if (subtitleEl) subtitleEl.textContent = t.subtitle_register || 'Completa tus datos para registrarte como socio';
+                }
                 overlay.classList.add('is-active');
                 document.body.style.overflow = 'hidden';
                 document.getElementById('socioNombre').focus();

@@ -63,6 +63,20 @@ module.exports = async function handler(req, res) {
         if (stripe_link) updateData.stripe_link = stripe_link;
         if (familiar_de) updateData.familiar_de = familiar_de;
 
+        // Familiar type: auto-assign number and mark as completed
+        if (tipo_socio === 'familiar') {
+            const { data: maxData } = await supabase
+                .from('socios')
+                .select('numero_socio')
+                .not('numero_socio', 'is', null)
+                .order('numero_socio', { ascending: false })
+                .limit(1)
+                .single();
+            updateData.numero_socio = (maxData?.numero_socio || 0) + 1;
+            updateData.estado_pago = 'completado';
+            estadoPago = 'completado';
+        }
+
         const { error: updateError } = await supabase
             .from('socios')
             .update(updateData)
@@ -73,20 +87,41 @@ module.exports = async function handler(req, res) {
             return res.status(500).json({ error: 'Database error' });
         }
     } else {
+        // Auto-assign next numero_socio for familiar type (free, no payment needed)
+        let nextNumero = null;
+        if (tipo_socio === 'familiar') {
+            const { data: maxData } = await supabase
+                .from('socios')
+                .select('numero_socio')
+                .not('numero_socio', 'is', null)
+                .order('numero_socio', { ascending: false })
+                .limit(1)
+                .single();
+            nextNumero = (maxData?.numero_socio || 0) + 1;
+        }
+
         // Insert new record
+        const insertData = {
+            nombre: nombre.trim(),
+            apellido: apellido.trim(),
+            documento: documento.trim(),
+            email: email.trim(),
+            tipo_socio,
+            foto_url: foto_url || null,
+            stripe_link: stripe_link || null,
+            familiar_de: familiar_de || null,
+        };
+
+        // Familiar type: free membership, auto-complete
+        if (tipo_socio === 'familiar') {
+            insertData.estado_pago = 'completado';
+            insertData.numero_socio = nextNumero;
+        }
+
         const { data: insertResult, error: insertError } = await supabase
             .from('socios')
-            .insert({
-                nombre: nombre.trim(),
-                apellido: apellido.trim(),
-                documento: documento.trim(),
-                email: email.trim(),
-                tipo_socio,
-                foto_url: foto_url || null,
-                stripe_link: stripe_link || null,
-                familiar_de: familiar_de || null,
-            })
-            .select('id')
+            .insert(insertData)
+            .select('id, numero_socio')
             .single();
 
         if (insertError) {
@@ -95,6 +130,9 @@ module.exports = async function handler(req, res) {
         }
 
         socioId = insertResult.id;
+        if (tipo_socio === 'familiar') {
+            estadoPago = 'completado';
+        }
     }
 
     return res.status(200).json({
