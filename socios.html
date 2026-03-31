@@ -1153,19 +1153,28 @@
                             const credsDiv = document.getElementById('socioCredentials');
                             const carnetLink = credsDiv.querySelector('a[href="/mi-carnet"]');
                             if (carnetLink) {
-                                carnetLink.href = payLink + '?prefilled_email=' + emailForStripe;
+                                const stripeUrl = payLink + '?prefilled_email=' + emailForStripe;
+                                carnetLink.href = stripeUrl;
                                 carnetLink.target = '_blank';
                                 carnetLink.rel = 'noopener';
                                 carnetLink.innerHTML = '<i class="fas fa-lock"></i> Continuar al pago';
+                                // After clicking pay, save email and redirect this tab to /mi-carnet
+                                carnetLink.addEventListener('click', () => {
+                                    sessionStorage.setItem('mrc_login_email', email.value.trim());
+                                    setTimeout(() => { window.location.href = '/mi-carnet'; }, 500);
+                                });
                             }
                             successDiv.style.display = '';
                         } else {
-                            closeModal();
+                            // No password (confirmed socio re-paying) — open Stripe and redirect to mi-carnet
                             const emailForStripe = encodeURIComponent(email.value.trim());
                             const link = (pendingSocioType === 'familiar' && wantsGym)
                                 ? GYM_STRIPE_LINK
                                 : pendingStripeLink;
+                            sessionStorage.setItem('mrc_login_email', email.value.trim());
+                            closeModal();
                             window.open(link + '?prefilled_email=' + emailForStripe, '_blank', 'noopener');
+                            window.location.href = '/mi-carnet';
                         }
                     }
                 } catch (err) {

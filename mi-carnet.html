@@ -406,6 +406,13 @@
         let currentSocio = null;
         let authToken = null;
 
+        // ── Auto-fill email from registration redirect ──
+        const savedEmail = sessionStorage.getItem('mrc_login_email');
+        if (savedEmail) {
+            document.getElementById('loginEmail').value = savedEmail;
+            sessionStorage.removeItem('mrc_login_email');
+        }
+
         // ── Check for existing session ──
         const savedToken = localStorage.getItem('mrc_token');
         if (savedToken) {
