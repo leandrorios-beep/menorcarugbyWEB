@@ -35,12 +35,16 @@ module.exports = async function handler(req, res) {
     }
 
     // Options: generate for all socios without password, or for a specific socio_id
-    const { socio_id } = req.body || {};
+    // force: true → regenerate even if socio already has a password (for individual resend)
+    const { socio_id, force } = req.body || {};
 
     let query = supabase
         .from('socios')
-        .select('id, nombre, apellido, email, numero_socio, tipo_socio')
-        .is('password_hash', null);
+        .select('id, nombre, apellido, email, numero_socio, tipo_socio');
+
+    if (!force) {
+        query = query.is('password_hash', null);
+    }
 
     if (socio_id) {
         query = query.eq('id', socio_id);

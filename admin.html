@@ -1377,6 +1377,7 @@
                         <button class="admin-action-btn" onclick="openFotoModal('socio','${s.id}')" title="Foto"><i class="fas fa-camera"></i></button>
                         <button class="admin-action-btn" onclick="openCarnetModal('${s.id}')" title="Carnet digital" style="color:#1565c0;border-color:#1565c0;${s.carnet_url ? 'background:#e3f2fd;' : ''}"><i class="fas fa-id-card"></i></button>
                         <button class="admin-action-btn" onclick="openEmailModal('${s.id}')" title="Enviar email bienvenida" style="color:#2e7d32;border-color:#2e7d32;"><i class="fas fa-envelope"></i></button>
+                        <button class="admin-action-btn" onclick="sendSocioAccess('${s.id}')" title="Enviar acceso Zona Socios" style="color:#e6a000;border-color:#e6a000;${s.password_hash ? 'background:rgba(255,199,44,0.12);' : ''}"><i class="fas fa-key"></i></button>
                     </div></td>
                 </tr>`;
 
@@ -1396,6 +1397,7 @@
                         <button class="admin-action-btn" onclick="openFotoModal('socio','${s.id}')" title="Foto"><i class="fas fa-camera"></i></button>
                         <button class="admin-action-btn" onclick="openCarnetModal('${s.id}')" title="Carnet" style="color:#1565c0;border-color:#1565c0;${s.carnet_url ? 'background:#e3f2fd;' : ''}"><i class="fas fa-id-card"></i></button>
                         <button class="admin-action-btn" onclick="openEmailModal('${s.id}')" title="Email" style="color:#2e7d32;border-color:#2e7d32;"><i class="fas fa-envelope"></i></button>
+                        <button class="admin-action-btn" onclick="sendSocioAccess('${s.id}')" title="Acceso Zona Socios" style="color:#e6a000;border-color:#e6a000;${s.password_hash ? 'background:rgba(255,199,44,0.12);' : ''}"><i class="fas fa-key"></i></button>
                     </div>
                 </div>`;
             });
@@ -1725,6 +1727,57 @@
         let currentEmailSocio = null;
         let emailAttachmentBase64 = null;
         let emailAttachmentFilename = null;
+
+        // ── Send individual Zona Socios access ──
+        async function sendSocioAccess(id) {
+            const socio = sociosData.find(s => s.id === id);
+            if (!socio) return;
+            if (!socio.email) { alert('Este socio no tiene email registrado.'); return; }
+
+            const hasPassword = !!socio.password_hash;
+            const action = hasPassword ? 'reenviar' : 'generar y enviar';
+            if (!confirm(`¿${action.charAt(0).toUpperCase() + action.slice(1)} acceso a Zona Socios para ${socio.nombre} ${socio.apellido} (${socio.email})?`)) return;
+
+            try {
+                const { data: { session } } = await sb.auth.getSession();
+                if (!session) throw new Error('No hay sesión');
+
+                // Generate password (API only generates if socio doesn't have one, but we force re-gen for individual)
+                const genResp = await fetch('/api/admin-generate-passwords', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + session.access_token },
+                    body: JSON.stringify({ socio_id: id, force: true })
+                });
+                const genData = await genResp.json();
+                if (!genResp.ok || !genData.success) throw new Error(genData.error || 'Error');
+
+                const socioResult = genData.socios && genData.socios[0];
+                if (!socioResult || !socioResult.password) throw new Error('No se generó contraseña');
+
+                // Send email
+                const emailResp = await fetch('/api/send-welcome-email', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + session.access_token },
+                    body: JSON.stringify({
+                        to: socio.email,
+                        nombre: socio.nombre + ' ' + socio.apellido,
+                        tipo_socio: socio.tipo_socio,
+                        numero_socio: socio.numero_socio ? String(socio.numero_socio) : null,
+                        mensaje_extra: 'Tu acceso a la Zona Socios:\n\n'
+                            + 'Web: www.menorcarugbyclub.com/mi-carnet\n'
+                            + 'Email: ' + socio.email + '\n'
+                            + 'Contraseña: ' + socioResult.password + '\n\n'
+                            + 'Desde ahí podrás ver tu carnet digital, estado de pago, cambiar tu foto y gestionar tu cuenta.'
+                    })
+                });
+                if (!emailResp.ok) throw new Error('Error enviando email');
+
+                alert('Acceso enviado a ' + socio.email);
+                loadSocios();
+            } catch (err) {
+                alert('Error: ' + err.message);
+            }
+        }
 
         function openEmailModal(id) {
             const socio = sociosData.find(s => s.id === id);
