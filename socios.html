@@ -743,7 +743,17 @@
                     <div id="socioModalSuccess" style="display:none;text-align:center;padding:2rem 0;">
                         <div style="font-size:4rem;color:#28a745;margin-bottom:1rem;"><i class="fas fa-check-circle"></i></div>
                         <h2 class="socio-modal-title" id="socioSuccessTitle"></h2>
-                        <p class="socio-modal-subtitle" id="socioSuccessDesc" style="margin-bottom:1.5rem;"></p>
+                        <p class="socio-modal-subtitle" id="socioSuccessDesc" style="margin-bottom:1rem;"></p>
+                        <!-- Password & Mi Carnet info (shown on new registration) -->
+                        <div id="socioCredentials" style="display:none;background:rgba(255,199,44,0.08);border:2px solid var(--primary-yellow,#FFC72C);border-radius:0.75rem;padding:1.25rem;margin:0 auto 1.5rem;max-width:360px;text-align:center;">
+                            <p style="font-size:0.85rem;color:var(--text-muted,#999);margin:0 0 0.5rem;">Tu contraseña de acceso:</p>
+                            <div id="socioPasswordDisplay" style="font-family:'JetBrains Mono',monospace;font-size:1.4rem;font-weight:700;color:var(--primary-yellow,#FFC72C);letter-spacing:2px;padding:0.5rem;background:rgba(0,0,0,0.3);border-radius:0.5rem;margin-bottom:0.75rem;user-select:all;"></div>
+                            <p style="font-size:0.8rem;color:#ff6b7a;margin:0 0 0.75rem;font-weight:600;"><i class="fas fa-exclamation-triangle"></i> Guarda esta contraseña. No se mostrara de nuevo.</p>
+                            <a href="/mi-carnet" style="display:inline-flex;align-items:center;gap:0.4rem;background:var(--primary-yellow,#FFC72C);color:var(--primary-navy,#182B49);padding:0.7rem 1.5rem;border-radius:0.6rem;font-weight:700;text-decoration:none;font-size:0.9rem;">
+                                <i class="fas fa-id-card"></i> Ir a Mi Carnet
+                            </a>
+                            <p style="font-size:0.75rem;color:var(--text-muted,#999);margin-top:0.5rem;">menorcarugbyclub.com/mi-carnet</p>
+                        </div>
                         <button type="button" class="socio-modal-submit" id="socioSuccessClose">
                             <span data-i18n-modal="success_close">Cerrar</span>
                         </button>
@@ -1080,9 +1090,20 @@
                     const lang = getModalLang();
                     const t = modalTranslations[lang] || modalTranslations.es;
 
+                    // Helper: show credentials in success modal
+                    function showCredentials(password) {
+                        const creds = document.getElementById('socioCredentials');
+                        if (password) {
+                            document.getElementById('socioPasswordDisplay').textContent = password;
+                            creds.style.display = '';
+                        } else {
+                            creds.style.display = 'none';
+                        }
+                    }
+
                     // 3. Handle response based on socio type
                     if (pendingSocioType === 'familiar' && !wantsGym) {
-                        // Show success step in modal
+                        // Show success step in modal (familiar sin gym = gratis)
                         form.style.display = 'none';
                         overlay.querySelector('.socio-modal-privacy').style.display = 'none';
                         const successDiv = document.getElementById('socioModalSuccess');
@@ -1090,35 +1111,62 @@
                         const descEl = document.getElementById('socioSuccessDesc');
 
                         if (result.confirmed) {
-                            // Already a confirmed member — can't re-register
                             titleEl.textContent = t.already_confirmed || '¡Ya estás registrado/a como socio!';
                             descEl.textContent = (t.already_confirmed_desc || 'Ya eres socio N.° %n. No es necesario volver a registrarse.').replace('%n', result.numero_socio || '');
                             document.querySelector('#socioModalSuccess .fa-check-circle').style.color = '#FFC72C';
+                            showCredentials(null);
                         } else if (result.existing) {
                             titleEl.textContent = t.success_existing || '¡Ya estás apuntado/a! Hemos actualizado tus datos.';
                             descEl.textContent = '';
+                            showCredentials(result.password);
                         } else {
                             titleEl.textContent = t.success_title || '¡Registro completado!';
                             descEl.textContent = t.success_desc || 'Ya eres socio del Menorca Rugby Club.';
+                            showCredentials(result.password);
                         }
                         successDiv.style.display = '';
-                    } else if (result.confirmed) {
-                        // Already confirmed — show message instead of Stripe redirect
+                    } else if (result.confirmed && !wantsGym) {
+                        // Already confirmed and NOT wanting gym — show message instead of Stripe
                         form.style.display = 'none';
                         overlay.querySelector('.socio-modal-privacy').style.display = 'none';
                         const successDiv = document.getElementById('socioModalSuccess');
                         document.getElementById('socioSuccessTitle').textContent = t.already_confirmed || '¡Ya estás registrado/a como socio!';
                         document.getElementById('socioSuccessDesc').textContent = (t.already_confirmed_desc || 'Ya eres socio N.° %n. No es necesario volver a registrarse.').replace('%n', result.numero_socio || '');
                         document.querySelector('#socioModalSuccess .fa-check-circle').style.color = '#FFC72C';
+                        showCredentials(null);
                         successDiv.style.display = '';
                     } else {
                         // Redirect to Stripe (normal, protector, or familiar+gym)
-                        closeModal();
-                        const emailForStripe = encodeURIComponent(email.value.trim());
-                        const link = (pendingSocioType === 'familiar' && wantsGym)
-                            ? GYM_STRIPE_LINK
-                            : pendingStripeLink;
-                        window.open(link + '?prefilled_email=' + emailForStripe, '_blank', 'noopener');
+                        // Show password briefly before redirect if available
+                        if (result.password) {
+                            form.style.display = 'none';
+                            overlay.querySelector('.socio-modal-privacy').style.display = 'none';
+                            const successDiv = document.getElementById('socioModalSuccess');
+                            document.getElementById('socioSuccessTitle').textContent = t.success_title || '¡Registro completado!';
+                            document.getElementById('socioSuccessDesc').textContent = 'Guarda tu contraseña y continua al pago seguro con Stripe.';
+                            showCredentials(result.password);
+                            // Replace "Ir a Mi Carnet" with "Continuar al pago" in this context
+                            const payLink = (pendingSocioType === 'familiar' && wantsGym)
+                                ? GYM_STRIPE_LINK
+                                : pendingStripeLink;
+                            const emailForStripe = encodeURIComponent(email.value.trim());
+                            const credsDiv = document.getElementById('socioCredentials');
+                            const carnetLink = credsDiv.querySelector('a[href="/mi-carnet"]');
+                            if (carnetLink) {
+                                carnetLink.href = payLink + '?prefilled_email=' + emailForStripe;
+                                carnetLink.target = '_blank';
+                                carnetLink.rel = 'noopener';
+                                carnetLink.innerHTML = '<i class="fas fa-lock"></i> Continuar al pago';
+                            }
+                            successDiv.style.display = '';
+                        } else {
+                            closeModal();
+                            const emailForStripe = encodeURIComponent(email.value.trim());
+                            const link = (pendingSocioType === 'familiar' && wantsGym)
+                                ? GYM_STRIPE_LINK
+                                : pendingStripeLink;
+                            window.open(link + '?prefilled_email=' + emailForStripe, '_blank', 'noopener');
+                        }
                     }
                 } catch (err) {
                     console.error('Registration error:', err);

@@ -1,4 +1,5 @@
 const { createClient } = require('@supabase/supabase-js');
+const { generatePassword, hashPassword } = require('./_lib/auth');
 
 module.exports = async function handler(req, res) {
     if (req.method !== 'POST') {
@@ -34,6 +35,7 @@ module.exports = async function handler(req, res) {
     let isExisting = false;
     let socioId = null;
     let estadoPago = 'pendiente';
+    let plainPassword = null;
 
     if (existing && existing.length > 0) {
         isExisting = true;
@@ -42,7 +44,17 @@ module.exports = async function handler(req, res) {
 
         // If socio already has numero_socio, they're confirmed — don't allow
         // public form to overwrite their data (only admin can edit confirmed socios)
+        // Exception: familiar + gym (stripe_link set) — allow gym payment
         if (existing[0].numero_socio) {
+            const wantsGym = tipo_socio === 'familiar' && stripe_link;
+            if (wantsGym) {
+                // Confirmed familiar wants gym — update stripe_link and set pendiente
+                await supabase
+                    .from('socios')
+                    .update({ stripe_link, estado_pago: 'pendiente' })
+                    .eq('id', socioId);
+                estadoPago = 'pendiente';
+            }
             return res.status(200).json({
                 success: true,
                 existing: true,
@@ -65,7 +77,11 @@ module.exports = async function handler(req, res) {
         if (stripe_link) updateData.stripe_link = stripe_link;
         if (familiar_de) updateData.familiar_de = familiar_de;
 
-        // Familiar type: auto-assign number and mark as completed
+        // Generate password for this socio
+        plainPassword = generatePassword();
+        updateData.password_hash = hashPassword(plainPassword);
+
+        // Familiar type: auto-assign number
         if (tipo_socio === 'familiar') {
             const { data: maxData } = await supabase
                 .from('socios')
@@ -75,8 +91,14 @@ module.exports = async function handler(req, res) {
                 .limit(1)
                 .single();
             updateData.numero_socio = (maxData?.numero_socio || 0) + 1;
-            updateData.estado_pago = 'completado';
-            estadoPago = 'completado';
+            // Familiar + gym = pendiente (must pay); familiar sin gym = completado (free)
+            if (stripe_link) {
+                updateData.estado_pago = 'pendiente';
+                estadoPago = 'pendiente';
+            } else {
+                updateData.estado_pago = 'completado';
+                estadoPago = 'completado';
+            }
         }
 
         const { error: updateError } = await supabase
@@ -89,7 +111,7 @@ module.exports = async function handler(req, res) {
             return res.status(500).json({ error: 'Database error' });
         }
     } else {
-        // Auto-assign next numero_socio for familiar type (free, no payment needed)
+        // Auto-assign next numero_socio for familiar type
         let nextNumero = null;
         if (tipo_socio === 'familiar') {
             const { data: maxData } = await supabase
@@ -102,6 +124,9 @@ module.exports = async function handler(req, res) {
             nextNumero = (maxData?.numero_socio || 0) + 1;
         }
 
+        // Generate password for new socio
+        plainPassword = generatePassword();
+
         // Insert new record
         const insertData = {
             nombre: nombre.trim(),
@@ -112,12 +137,13 @@ module.exports = async function handler(req, res) {
             foto_url: foto_url || null,
             stripe_link: stripe_link || null,
             familiar_de: familiar_de || null,
+            password_hash: hashPassword(plainPassword),
         };
 
-        // Familiar type: free membership, auto-complete
+        // Familiar type: assign numero_socio; free if no gym, pendiente if gym
         if (tipo_socio === 'familiar') {
-            insertData.estado_pago = 'completado';
             insertData.numero_socio = nextNumero;
+            insertData.estado_pago = stripe_link ? 'pendiente' : 'completado';
         }
 
         const { data: insertResult, error: insertError } = await supabase
@@ -133,7 +159,7 @@ module.exports = async function handler(req, res) {
 
         socioId = insertResult.id;
         if (tipo_socio === 'familiar') {
-            estadoPago = 'completado';
+            estadoPago = stripe_link ? 'pendiente' : 'completado';
         }
     }
 
@@ -142,5 +168,6 @@ module.exports = async function handler(req, res) {
         existing: isExisting,
         socio_id: socioId,
         estado_pago: estadoPago,
+        password: plainPassword,
     });
 };

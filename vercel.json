@@ -37,6 +37,16 @@
       "source": "/admin",
       "destination": "/admin.html",
       "permanent": false
+    },
+    {
+      "source": "/mi-carnet",
+      "destination": "/mi-carnet.html",
+      "permanent": false
+    },
+    {
+      "source": "/miCarnet",
+      "destination": "/mi-carnet.html",
+      "permanent": false
     }
   ]
 }
