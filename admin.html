@@ -833,6 +833,18 @@
             <div class="admin-tab-panel active" id="panel-socios">
                 <div class="admin-stats" id="sociosStats"></div>
                 <button class="admin-filter-clear" id="sociosFilterClear"><i class="fas fa-times"></i> Quitar filtro</button>
+                <!-- Zona Socios: generar contraseñas y enviar accesos -->
+                <div id="zonaSociosPanel" style="background:rgba(255,199,44,0.08);border:2px solid var(--primary-yellow,#FFC72C);border-radius:12px;padding:1.25rem;margin-bottom:1rem;display:flex;align-items:center;gap:1rem;flex-wrap:wrap;">
+                    <div style="flex:1;min-width:200px;">
+                        <strong style="color:var(--primary-yellow,#FFC72C);"><i class="fas fa-key"></i> Zona Socios</strong>
+                        <p style="font-size:0.8rem;color:#999;margin:0.25rem 0 0;">Genera contraseñas para socios existentes y enviales un email con su acceso a /mi-carnet</p>
+                    </div>
+                    <button id="btnGeneratePasswords" style="background:var(--primary-yellow,#FFC72C);color:var(--primary-navy,#182B49);border:none;border-radius:8px;padding:0.65rem 1.25rem;font-weight:700;font-family:inherit;cursor:pointer;font-size:0.85rem;white-space:nowrap;">
+                        <i class="fas fa-paper-plane"></i> Generar y enviar accesos
+                    </button>
+                    <div id="generatePasswordsResult" style="width:100%;display:none;font-size:0.8rem;margin-top:0.5rem;"></div>
+                </div>
+
                 <div class="admin-table-wrapper">
                     <div class="admin-table-header">
                         <h2 id="sociosTableTitle">Socios registrados</h2>
@@ -1087,6 +1099,80 @@
 
         document.getElementById('refreshSocios').addEventListener('click', loadSocios);
         document.getElementById('refreshJugadores').addEventListener('click', loadPlayers);
+
+        // ── Generate passwords & send access emails ──
+        document.getElementById('btnGeneratePasswords').addEventListener('click', async () => {
+            const btn = document.getElementById('btnGeneratePasswords');
+            const resultDiv = document.getElementById('generatePasswordsResult');
+            if (!confirm('¿Generar contraseñas para todos los socios que aún no tienen y enviarles email con acceso a /mi-carnet?')) return;
+
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generando...';
+            resultDiv.style.display = 'none';
+
+            try {
+                const { data: { session } } = await sb.auth.getSession();
+                if (!session) throw new Error('No hay sesión activa');
+
+                // 1. Generate passwords
+                const genResp = await fetch('/api/admin-generate-passwords', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + session.access_token,
+                    },
+                    body: JSON.stringify({})
+                });
+                const genData = await genResp.json();
+                if (!genResp.ok || !genData.success) throw new Error(genData.error || 'Error generando contraseñas');
+
+                if (genData.generated === 0) {
+                    resultDiv.innerHTML = '<span style="color:#28a745;"><i class="fas fa-check"></i> Todos los socios ya tienen contraseña.</span>';
+                    resultDiv.style.display = '';
+                    return;
+                }
+
+                // 2. Send emails to each socio with their credentials
+                let sent = 0;
+                let errors = 0;
+                for (const socio of genData.socios) {
+                    if (socio.error || !socio.email || !socio.password) { errors++; continue; }
+                    try {
+                        const emailResp = await fetch('/api/send-welcome-email', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': 'Bearer ' + session.access_token,
+                            },
+                            body: JSON.stringify({
+                                to: socio.email,
+                                nombre: socio.nombre + ' ' + socio.apellido,
+                                tipo_socio: socio.tipo_socio,
+                                numero_socio: socio.numero_socio ? String(socio.numero_socio) : null,
+                                mensaje_extra: 'Tu acceso a la Zona Socios:\n\n'
+                                    + 'Web: www.menorcarugbyclub.com/mi-carnet\n'
+                                    + 'Email: ' + socio.email + '\n'
+                                    + 'Contraseña: ' + socio.password + '\n\n'
+                                    + 'Desde ahí podrás ver tu carnet digital, estado de pago, cambiar tu foto y gestionar tu cuenta.'
+                            })
+                        });
+                        if (emailResp.ok) sent++;
+                        else errors++;
+                    } catch { errors++; }
+                }
+
+                resultDiv.innerHTML = '<span style="color:#28a745;"><i class="fas fa-check"></i> ' + genData.generated + ' contraseñas generadas, ' + sent + ' emails enviados.</span>'
+                    + (errors > 0 ? '<span style="color:#ff6b7a;margin-left:0.5rem;">(' + errors + ' errores)</span>' : '');
+                resultDiv.style.display = '';
+                loadSocios(); // Refresh table
+            } catch (err) {
+                resultDiv.innerHTML = '<span style="color:#ff6b7a;"><i class="fas fa-times"></i> ' + err.message + '</span>';
+                resultDiv.style.display = '';
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-paper-plane"></i> Generar y enviar accesos';
+            }
+        });
 
         document.getElementById('sociosFilterClear').addEventListener('click', () => {
             sociosFilter = null;
