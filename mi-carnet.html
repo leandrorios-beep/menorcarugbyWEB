@@ -289,6 +289,21 @@
                             <div class="carnet-doc" id="carnetDoc"></div>
                         </div>
                     </div>
+                    <!-- Carnet PNG download -->
+                    <div id="carnetPngSection" style="display:none;margin-top:1.25rem;text-align:center;">
+                        <img id="carnetPngImg" src="" alt="Carnet de socio" style="width:100%;border-radius:0.5rem;margin-bottom:0.75rem;cursor:pointer;border:1px solid rgba(255,255,255,0.1);">
+                        <div style="display:flex;gap:0.5rem;justify-content:center;flex-wrap:wrap;">
+                            <a id="carnetPngDownload" href="#" download="mi-carnet-menorca-rugby.png" style="display:inline-flex;align-items:center;gap:0.4rem;background:var(--primary-yellow,#FFC72C);color:var(--primary-navy,#182B49);padding:0.55rem 1.25rem;border-radius:0.5rem;font-weight:700;text-decoration:none;font-size:0.8rem;">
+                                <i class="fas fa-download"></i> Descargar carnet
+                            </a>
+                            <button id="carnetPngShare" style="display:none;align-items:center;gap:0.4rem;background:rgba(255,255,255,0.08);color:#fff;border:1px solid rgba(255,255,255,0.15);padding:0.55rem 1.25rem;border-radius:0.5rem;font-weight:600;font-family:inherit;cursor:pointer;font-size:0.8rem;">
+                                <i class="fas fa-share-alt"></i> Compartir
+                            </button>
+                        </div>
+                    </div>
+                    <div id="carnetPngPending" style="display:none;margin-top:1rem;text-align:center;padding:0.75rem;background:rgba(255,255,255,0.04);border-radius:0.5rem;">
+                        <p style="color:var(--text-muted,#999);font-size:0.8rem;margin:0;"><i class="fas fa-clock" style="color:var(--primary-yellow);margin-right:0.3rem;"></i> Tu carnet digital se esta generando. Lo veras aqui pronto.</p>
+                    </div>
                 </div>
 
                 <!-- Estado de Pago -->
@@ -520,6 +535,37 @@
             document.getElementById('carnetNumber').textContent = s.numero_socio ? `#${s.numero_socio}` : 'Pendiente';
             document.getElementById('carnetType').textContent = (s.tipo_socio || 'socio').toUpperCase();
             document.getElementById('carnetDoc').textContent = s.documento || '';
+
+            // Carnet PNG image
+            const pngSection = document.getElementById('carnetPngSection');
+            const pngPending = document.getElementById('carnetPngPending');
+            if (s.carnet_url) {
+                pngSection.style.display = '';
+                pngPending.style.display = 'none';
+                document.getElementById('carnetPngImg').src = s.carnet_url;
+                document.getElementById('carnetPngDownload').href = s.carnet_url;
+                // Click image to open full size
+                document.getElementById('carnetPngImg').onclick = () => window.open(s.carnet_url, '_blank');
+                // Share button (mobile)
+                const shareBtn = document.getElementById('carnetPngShare');
+                if (navigator.share) {
+                    shareBtn.style.display = 'inline-flex';
+                    shareBtn.onclick = async () => {
+                        try {
+                            const resp = await fetch(s.carnet_url);
+                            const blob = await resp.blob();
+                            const file = new File([blob], 'carnet-menorca-rugby.png', { type: 'image/png' });
+                            await navigator.share({ title: 'Mi Carnet - Menorca Rugby Club', files: [file] });
+                        } catch {}
+                    };
+                }
+            } else if (s.numero_socio) {
+                pngSection.style.display = 'none';
+                pngPending.style.display = '';
+            } else {
+                pngSection.style.display = 'none';
+                pngPending.style.display = 'none';
+            }
 
             // Payment status
             const estado = s.estado_pago || 'pendiente';
