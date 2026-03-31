@@ -174,6 +174,29 @@
         .toast.is-visible { opacity: 1; }
         .toast--error { background: #dc3545; }
 
+        /* ── Service buttons ── */
+        .service-item {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0.85rem 0; border-bottom: 1px solid rgba(255,255,255,0.05);
+            gap: 0.75rem; flex-wrap: wrap;
+        }
+        .service-item:last-child { border-bottom: none; }
+        .service-info { flex: 1; min-width: 140px; }
+        .service-name { color: #fff; font-size: 0.9rem; font-weight: 600; }
+        .service-desc { color: var(--text-muted, #999); font-size: 0.75rem; margin-top: 0.15rem; }
+        .service-price { color: var(--primary-yellow, #FFC72C); font-weight: 700; font-size: 0.85rem; white-space: nowrap; margin-right: 0.75rem; }
+        .service-btn {
+            background: var(--primary-yellow, #FFC72C); color: var(--primary-navy, #182B49);
+            border: none; border-radius: 0.5rem; padding: 0.5rem 1rem;
+            font-size: 0.8rem; font-weight: 700; font-family: inherit; cursor: pointer;
+            text-decoration: none; white-space: nowrap; transition: opacity 0.15s;
+        }
+        .service-btn:hover { opacity: 0.88; }
+        .service-btn--active {
+            background: rgba(40,167,69,0.15); color: #28a745;
+            cursor: default; pointer-events: none;
+        }
+
         /* ── Responsive ── */
         @media (max-width: 480px) {
             .mi-carnet-section { padding: 100px 0 40px; }
@@ -291,6 +314,12 @@
                         </a>
                         <p class="pay-info">Pago seguro con Stripe. Se abrira en una nueva pestaña.</p>
                     </div>
+                </div>
+
+                <!-- Contratar / Mejorar -->
+                <div class="info-card" id="servicesCard">
+                    <h3><i class="fas fa-shopping-cart"></i> Contratar Servicios</h3>
+                    <div id="servicesList"></div>
                 </div>
 
                 <!-- Datos Personales -->
@@ -458,7 +487,7 @@
             localStorage.removeItem('mrc_token');
             authToken = null;
             currentSocio = null;
-            loginView.style.display = '';
+            loginView.style.display = 'block';
             dashView.style.display = 'none';
             loginForm.reset();
         });
@@ -483,7 +512,7 @@
         function showDashboard() {
             const s = currentSocio;
             loginView.style.display = 'none';
-            dashView.style.display = '';
+            dashView.style.display = 'block';
 
             // Carnet
             document.getElementById('carnetPhoto').src = s.foto_url || 'assets/images/static/logo.png';
@@ -531,6 +560,9 @@
                 paySection.style.display = 'none';
             }
 
+            // Services / upgrade options
+            renderServices(s);
+
             // Personal info
             document.getElementById('infoNombre').textContent = `${s.nombre} ${s.apellido}`;
             document.getElementById('infoEmail').textContent = s.email;
@@ -551,6 +583,55 @@
             try {
                 return new Date(iso).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
             } catch { return iso; }
+        }
+
+        function renderServices(s) {
+            const list = document.getElementById('servicesList');
+            const emailParam = '?prefilled_email=' + encodeURIComponent(s.email);
+            const tipo = s.tipo_socio || '';
+            let html = '';
+
+            // Socio Normal (50€/año)
+            const isNormal = tipo === 'normal';
+            html += `<div class="service-item">
+                <div class="service-info">
+                    <div class="service-name"><i class="fas fa-user" style="color:var(--primary-yellow);margin-right:0.3rem;"></i> Socio Normal</div>
+                    <div class="service-desc">10% dto. ropa oficial, 1ª consumicion gratis, newsletter, carnet digital</div>
+                </div>
+                <span class="service-price">50€/año</span>
+                ${isNormal
+                    ? '<span class="service-btn service-btn--active"><i class="fas fa-check"></i> Activo</span>'
+                    : '<a class="service-btn" href="' + STRIPE_LINKS.normal + emailParam + '" target="_blank" rel="noopener"><i class="fas fa-arrow-right"></i> Contratar</a>'}
+            </div>`;
+
+            // Socio Protector (~1€/día)
+            const isProtector = tipo === 'protector';
+            html += `<div class="service-item">
+                <div class="service-info">
+                    <div class="service-name"><i class="fas fa-hand-holding-heart" style="color:var(--primary-yellow);margin-right:0.3rem;"></i> Socio Protector</div>
+                    <div class="service-desc">Todo lo del socio normal + reconocimiento especial del club</div>
+                </div>
+                <span class="service-price">~1€/dia</span>
+                ${isProtector
+                    ? '<span class="service-btn service-btn--active"><i class="fas fa-check"></i> Activo</span>'
+                    : '<a class="service-btn" href="' + STRIPE_LINKS.protector + emailParam + '" target="_blank" rel="noopener"><i class="fas fa-arrow-right"></i> Contratar</a>'}
+            </div>`;
+
+            // Gimnasio (10€/mes)
+            const gymLink = s.stripe_link === STRIPE_LINKS.gym;
+            const gymActive = gymLink && s.estado_pago === 'completado';
+            html += `<div class="service-item">
+                <div class="service-info">
+                    <div class="service-name"><i class="fas fa-dumbbell" style="color:var(--primary-yellow);margin-right:0.3rem;"></i> Gimnasio</div>
+                    <div class="service-desc">Acceso al gimnasio del club, complemento a cualquier tipo de socio</div>
+                </div>
+                <span class="service-price">10€/mes</span>
+                ${gymActive
+                    ? '<span class="service-btn service-btn--active"><i class="fas fa-check"></i> Activo</span>'
+                    : '<a class="service-btn" href="' + STRIPE_LINKS.gym + emailParam + '" target="_blank" rel="noopener"><i class="fas fa-dumbbell"></i> Contratar</a>'}
+            </div>`;
+
+            list.innerHTML = html;
         }
 
         // ── Photo Change ──
