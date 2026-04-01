@@ -921,17 +921,18 @@
                 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
                 const timestamp = Date.now();
                 const ext = file.name.split('.').pop();
-                const filePath = `${timestamp}_${currentSocio.documento.replace(/[^a-zA-Z0-9]/g, '')}.${ext}`;
+                const filePath = `socio_${currentSocio.id}.${ext}`;
 
                 const { data: uploadData, error: uploadError } = await sb.storage
                     .from('fotos-socios')
-                    .upload(filePath, file, { cacheControl: '3600', upsert: false });
+                    .upload(filePath, file, { cacheControl: '0', upsert: true });
 
                 if (uploadError) throw new Error('Error al subir foto');
 
                 const { data: urlData } = sb.storage.from('fotos-socios').getPublicUrl(filePath);
-                const newUrl = urlData?.publicUrl;
-                if (!newUrl) throw new Error('No se pudo obtener URL');
+                const baseUrl = urlData?.publicUrl;
+                if (!baseUrl) throw new Error('No se pudo obtener URL');
+                const newUrl = baseUrl + '?v=' + Date.now();
 
                 // Update via API
                 const resp = await fetch('/api/socio-update-photo', {
