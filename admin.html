@@ -1195,6 +1195,9 @@
             resultDiv.style.display = 'none';
 
             try {
+                const { data: { session } } = await sb.auth.getSession();
+                if (!session) throw new Error('No hay sesion activa');
+
                 const resp = await fetch('/api/sync-stripe-payments', {
                     method: 'POST',
                     headers: {
