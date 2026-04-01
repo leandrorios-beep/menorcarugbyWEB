@@ -13,9 +13,9 @@ module.exports = async function handler(req, res) {
         return res.status(401).json({ error: 'No autorizado' });
     }
 
-    const { foto_url } = req.body;
-    if (!foto_url) {
-        return res.status(400).json({ error: 'foto_url es obligatorio' });
+    const { foto_url, carnet_url } = req.body;
+    if (!foto_url && !carnet_url) {
+        return res.status(400).json({ error: 'foto_url o carnet_url es obligatorio' });
     }
 
     const supabase = createClient(
@@ -23,11 +23,15 @@ module.exports = async function handler(req, res) {
         process.env.SUPABASE_SERVICE_ROLE_KEY
     );
 
+    const updateData = {};
+    if (foto_url) updateData.foto_url = foto_url;
+    if (carnet_url) updateData.carnet_url = carnet_url;
+
     const { data, error } = await supabase
         .from('socios')
-        .update({ foto_url })
+        .update(updateData)
         .eq('id', payload.socio_id)
-        .select('id, foto_url')
+        .select('id, foto_url, carnet_url')
         .single();
 
     if (error) {

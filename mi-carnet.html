@@ -946,14 +946,10 @@
                 if (!resp.ok || !data.success) throw new Error('Error al actualizar');
 
                 currentSocio.foto_url = newUrl;
-                // Update HTML card photo (visible when no PNG)
                 document.getElementById('carnetPhoto').src = newUrl;
-                // If PNG carnet is showing, notify user it needs regeneration
-                if (currentSocio.carnet_url) {
-                    toast('Foto actualizada. Tu carnet se regenerara con la nueva foto pronto.');
-                } else {
-                    toast('Foto actualizada correctamente');
-                }
+                toast('Foto actualizada. Regenerando carnet...');
+                // Auto-regenerate carnet with new photo
+                await regenerateCarnet(currentSocio);
             } catch (err) {
                 toast(err.message || 'Error al cambiar foto', true);
             }
@@ -997,6 +993,286 @@
                 msg.textContent = err.message;
             }
         });
+
+        // ── Carnet Auto-Regeneration ──
+        async function regenerateCarnet(socio) {
+            try {
+                const num = socio.numero_socio
+                    ? new Date().getFullYear() + '-' + String(socio.numero_socio).padStart(5, '0')
+                    : '';
+                const dataUrl = await generateCarnetImage(socio, num);
+
+                // Upload to Supabase Storage
+                const base64 = dataUrl.split(',')[1];
+                const byteChars = atob(base64);
+                const byteArr = new Uint8Array(byteChars.length);
+                for (let i = 0; i < byteChars.length; i++) byteArr[i] = byteChars.charCodeAt(i);
+                const blob = new Blob([byteArr], { type: 'image/png' });
+                const filePath = `carnets/carnet_${socio.id}.png`;
+
+                const sbClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+                const { error: upErr } = await sbClient.storage
+                    .from('fotos-socios')
+                    .upload(filePath, blob, { cacheControl: '0', upsert: true });
+                if (upErr) throw new Error(upErr.message);
+
+                const { data: urlData } = sbClient.storage.from('fotos-socios').getPublicUrl(filePath);
+                const carnetUrl = (urlData?.publicUrl || '') + '?v=' + Date.now();
+
+                // Update carnet_url in DB
+                await fetch('/api/socio-update-photo', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + authToken,
+                    },
+                    body: JSON.stringify({ carnet_url: carnetUrl })
+                });
+
+                // Update display
+                currentSocio.carnet_url = carnetUrl;
+                const pngSection = document.getElementById('carnetPngSection');
+                const htmlSection = document.getElementById('carnetHtmlSection');
+                pngSection.style.display = '';
+                htmlSection.style.display = 'none';
+                document.getElementById('carnetPngImg').src = carnetUrl;
+                document.getElementById('carnetPngDownload').href = carnetUrl;
+                document.getElementById('carnetPngDownload').style.display = 'inline-flex';
+                document.getElementById('carnetPngPending').style.display = 'none';
+                toast('Carnet regenerado correctamente');
+            } catch (err) {
+                console.error('Carnet regen error:', err);
+                toast('Foto actualizada, pero el carnet no se pudo regenerar', true);
+            }
+        }
+
+        // ── Carnet Image Generator (Canvas) ──
+        function loadImg(src) {
+            return new Promise((resolve, reject) => {
+                const img = new Image();
+                img.crossOrigin = 'anonymous';
+                img.onload = () => resolve(img);
+                img.onerror = () => reject(new Error('No se pudo cargar: ' + src));
+                img.src = src;
+            });
+        }
+
+        function drawRoundRect(ctx, x, y, w, h, r) {
+            ctx.beginPath();
+            ctx.moveTo(x + r, y);
+            ctx.lineTo(x + w - r, y);
+            ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+            ctx.lineTo(x + w, y + h - r);
+            ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+            ctx.lineTo(x + r, y + h);
+            ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+            ctx.lineTo(x, y + r);
+            ctx.quadraticCurveTo(x, y, x + r, y);
+            ctx.closePath();
+        }
+
+        function generateQRMatrix(text) {
+            const size = 25;
+            const matrix = Array.from({length: size}, () => Array(size).fill(false));
+            function setFinder(ox, oy) {
+                for (let r = 0; r < 7; r++) for (let c = 0; c < 7; c++) {
+                    const edge = r === 0 || r === 6 || c === 0 || c === 6;
+                    const inner = r >= 2 && r <= 4 && c >= 2 && c <= 4;
+                    matrix[oy + r][ox + c] = edge || inner;
+                }
+            }
+            setFinder(0, 0);
+            setFinder(size - 7, 0);
+            setFinder(0, size - 7);
+            for (let i = 8; i < size - 8; i++) {
+                matrix[6][i] = i % 2 === 0;
+                matrix[i][6] = i % 2 === 0;
+            }
+            let hash = 0;
+            for (let i = 0; i < text.length; i++) {
+                hash = ((hash << 5) - hash + text.charCodeAt(i)) | 0;
+            }
+            let seed = Math.abs(hash);
+            function rng() { seed = (seed * 1103515245 + 12345) & 0x7fffffff; return seed; }
+            for (let r = 0; r < size; r++) {
+                for (let c = 0; c < size; c++) {
+                    if ((r < 9 && c < 9) || (r < 9 && c >= size - 8) || (r >= size - 8 && c < 9)) continue;
+                    if (r === 6 || c === 6) continue;
+                    matrix[r][c] = rng() % 3 !== 0;
+                }
+            }
+            return matrix;
+        }
+
+        function drawQR(ctx, matrix, x, y, size) {
+            const cellSize = size / matrix.length;
+            drawRoundRect(ctx, x - 6, y - 6, size + 12, size + 12, 8);
+            ctx.fillStyle = '#ffffff';
+            ctx.fill();
+            ctx.fillStyle = '#0f1f3a';
+            for (let r = 0; r < matrix.length; r++) {
+                for (let c = 0; c < matrix[r].length; c++) {
+                    if (matrix[r][c]) {
+                        ctx.fillRect(x + c * cellSize, y + r * cellSize, cellSize + 0.5, cellSize + 0.5);
+                    }
+                }
+            }
+        }
+
+        async function generateCarnetImage(socio, numero) {
+            const W = 1080, H = 680;
+            const canvas = document.createElement('canvas');
+            canvas.width = W;
+            canvas.height = H;
+            const ctx = canvas.getContext('2d');
+
+            const tipo = (socio.tipo_socio || 'normal').toLowerCase();
+            const themes = {
+                protector: { bg1: '#0a0a0a', bg2: '#1a1a1a', bg3: '#0d0d0d', accent: '#c9a84c', accentRgba: '201,168,76', lineAlpha: '0.03', label: 'SOCIO PROTECTOR', logoTint: '#c9a84c' },
+                jugador: { bg1: '#1a0000', bg2: '#2d0a0a', bg3: '#120000', accent: '#ff4444', accentRgba: '255,68,68', lineAlpha: '0.03', label: 'SOCIO JUGADOR', logoTint: '#ffffff' },
+                player: { bg1: '#1a0000', bg2: '#2d0a0a', bg3: '#120000', accent: '#ff4444', accentRgba: '255,68,68', lineAlpha: '0.03', label: 'SOCIO JUGADOR', logoTint: '#ffffff' },
+                familiar: { bg1: '#1a1400', bg2: '#2d2200', bg3: '#121000', accent: '#ffd700', accentRgba: '255,215,0', lineAlpha: '0.03', label: 'SOCIO FAMILIAR', logoTint: '#ffd700' },
+                gym: { bg1: '#141414', bg2: '#2a2a2a', bg3: '#1a1a1a', accent: '#aaaaaa', accentRgba: '170,170,170', lineAlpha: '0.03', label: 'SOCIO GYM', logoTint: '#cccccc' },
+                normal: { bg1: '#0a1628', bg2: '#1a2d4d', bg3: '#0f1e38', accent: '#f2b705', accentRgba: '242,183,5', lineAlpha: '0.025', label: 'SOCIO NORMAL', logoTint: '#ffffff' },
+            };
+            const theme = themes[tipo] || themes.normal;
+
+            ctx.save();
+            drawRoundRect(ctx, 0, 0, W, H, 36);
+            ctx.clip();
+
+            const bg = ctx.createLinearGradient(0, 0, W, H);
+            bg.addColorStop(0, theme.bg1);
+            bg.addColorStop(0.4, theme.bg2);
+            bg.addColorStop(1, theme.bg3);
+            ctx.fillStyle = bg;
+            ctx.fillRect(0, 0, W, H);
+
+            ctx.strokeStyle = `rgba(255,255,255,${theme.lineAlpha})`;
+            ctx.lineWidth = 1;
+            for (let i = -H; i < W + H; i += 24) {
+                ctx.beginPath();
+                ctx.moveTo(i, 0);
+                ctx.lineTo(i + H * 0.5, H);
+                ctx.stroke();
+            }
+
+            const glow = ctx.createRadialGradient(W - 100, 0, 20, W - 100, 0, 300);
+            glow.addColorStop(0, `rgba(${theme.accentRgba},0.12)`);
+            glow.addColorStop(1, `rgba(${theme.accentRgba},0)`);
+            ctx.fillStyle = glow;
+            ctx.fillRect(0, 0, W, H);
+
+            const accentGrad = ctx.createLinearGradient(0, 0, W, 0);
+            accentGrad.addColorStop(0, `rgba(${theme.accentRgba},0.2)`);
+            accentGrad.addColorStop(0.5, theme.accent);
+            accentGrad.addColorStop(1, `rgba(${theme.accentRgba},0.2)`);
+            ctx.fillStyle = accentGrad;
+            ctx.fillRect(0, H - 5, W, 5);
+
+            let logoDark = null;
+            try { logoDark = await loadImg('/assets/images/static/logo.png'); } catch (e) {}
+
+            const pad = 55;
+            if (logoDark) {
+                const logoR = 65;
+                const logoCX = pad + logoR, logoCY = pad + logoR;
+                ctx.beginPath();
+                ctx.arc(logoCX, logoCY, logoR, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(255,255,255,0.08)';
+                ctx.fill();
+                const lW = 95, lH = 95 * (logoDark.height / logoDark.width);
+                const offC = document.createElement('canvas');
+                offC.width = lW; offC.height = lH;
+                const oCtx = offC.getContext('2d');
+                oCtx.drawImage(logoDark, 0, 0, lW, lH);
+                oCtx.globalCompositeOperation = 'source-in';
+                oCtx.fillStyle = theme.logoTint || '#ffffff';
+                oCtx.fillRect(0, 0, lW, lH);
+                ctx.drawImage(offC, logoCX - lW / 2, logoCY - lH / 2, lW, lH);
+            }
+
+            ctx.textAlign = 'right';
+            ctx.textBaseline = 'top';
+            ctx.fillStyle = theme.accent;
+            ctx.font = 'bold 20px Arial, sans-serif';
+            ctx.letterSpacing = '3px';
+            ctx.fillText('MENORCA RUGBY', W - pad, pad + 8);
+            ctx.fillStyle = 'rgba(255,255,255,0.4)';
+            ctx.font = '500 15px Arial, sans-serif';
+            ctx.fillText('CLUB', W - pad, pad + 35);
+
+            if (theme.label) {
+                ctx.textAlign = 'right';
+                ctx.textBaseline = 'top';
+                ctx.fillStyle = theme.accent;
+                ctx.font = 'bold 14px Arial, sans-serif';
+                ctx.fillText(theme.label, W - pad, pad + 62);
+            }
+
+            const nombre = `${socio.nombre || ''} ${socio.apellido || ''}`.trim();
+            ctx.textAlign = 'left';
+            ctx.textBaseline = 'alphabetic';
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 52px Arial, sans-serif';
+            ctx.fillText(nombre, pad, 240);
+
+            ctx.fillStyle = 'rgba(255,255,255,0.45)';
+            ctx.font = '500 22px Arial, sans-serif';
+            ctx.fillText('SOCIO N\u00BA ' + numero, pad, 280);
+
+            ctx.fillStyle = 'rgba(255,255,255,0.35)';
+            ctx.font = '18px Arial, sans-serif';
+            ctx.textAlign = 'left';
+            ctx.textBaseline = 'alphabetic';
+            ctx.fillText('menorcarugbyclub.com', pad, H - pad);
+
+            if (socio.documento) {
+                ctx.fillStyle = 'rgba(255,255,255,0.25)';
+                ctx.font = '16px Arial, sans-serif';
+                ctx.fillText(socio.documento, pad, H - pad - 30);
+            }
+
+            const qrData = `${nombre}|${socio.documento || ''}|${numero}`;
+            const qrMatrix = generateQRMatrix(qrData);
+            const qrSize = 130;
+            drawQR(ctx, qrMatrix, W - pad - qrSize, H - pad - qrSize - 10, qrSize);
+
+            const photoW = 170, photoH = 210;
+            const photoX = W - pad - photoW;
+            const photoYpos = 140;
+
+            ctx.save();
+            ctx.shadowColor = 'rgba(0,0,0,0.4)';
+            ctx.shadowBlur = 20;
+            ctx.shadowOffsetY = 4;
+            drawRoundRect(ctx, photoX, photoYpos, photoW, photoH, 14);
+            ctx.fillStyle = '#fff';
+            ctx.fill();
+            ctx.restore();
+
+            ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+            ctx.lineWidth = 2;
+            drawRoundRect(ctx, photoX, photoYpos, photoW, photoH, 14);
+            ctx.stroke();
+
+            try {
+                if (socio.foto_url) {
+                    const photo = await loadImg(socio.foto_url);
+                    ctx.save();
+                    drawRoundRect(ctx, photoX + 2, photoYpos + 2, photoW - 4, photoH - 4, 12);
+                    ctx.clip();
+                    const sc = Math.max(photoW / photo.width, photoH / photo.height);
+                    const sw = photoW / sc, sh = photoH / sc;
+                    const sx = (photo.width - sw) / 2, sy = (photo.height - sh) / 2;
+                    ctx.drawImage(photo, sx, sy, sw, sh, photoX + 2, photoYpos + 2, photoW - 4, photoH - 4);
+                    ctx.restore();
+                }
+            } catch (e) { console.warn('Foto error:', e); }
+
+            ctx.restore();
+            return canvas.toDataURL('image/png');
+        }
 
         // ── Toast helper ──
         function toast(text, isError) {
