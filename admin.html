@@ -1161,11 +1161,8 @@
                                 nombre: socio.nombre + ' ' + socio.apellido,
                                 tipo_socio: socio.tipo_socio,
                                 numero_socio: socio.numero_socio ? String(socio.numero_socio) : null,
-                                mensaje_extra: 'Tu acceso a la Zona Socios:\n\n'
-                                    + 'Web: www.menorcarugbyclub.com/mi-carnet\n'
-                                    + 'Email: ' + socio.email + '\n'
-                                    + 'Contraseña: ' + socio.password + '\n\n'
-                                    + 'Desde ahí podrás ver tu carnet digital, estado de pago, cambiar tu foto y gestionar tu cuenta.'
+                                login_email: socio.email,
+                                login_password: socio.password,
                             })
                         });
                         if (emailResp.ok) sent++;
@@ -1811,11 +1808,8 @@
                         nombre: socio.nombre + ' ' + socio.apellido,
                         tipo_socio: socio.tipo_socio,
                         numero_socio: socio.numero_socio ? String(socio.numero_socio) : null,
-                        mensaje_extra: 'Tu acceso a la Zona Socios:\n\n'
-                            + 'Web: www.menorcarugbyclub.com/mi-carnet\n'
-                            + 'Email: ' + socio.email + '\n'
-                            + 'Contraseña: ' + socioResult.password + '\n\n'
-                            + 'Desde ahí podrás ver tu carnet digital, estado de pago, cambiar tu foto y gestionar tu cuenta.'
+                        login_email: socio.email,
+                        login_password: socioResult.password,
                     })
                 });
                 if (!emailResp.ok) throw new Error('Error enviando email');

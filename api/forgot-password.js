@@ -77,40 +77,45 @@ function buildResetEmail(nombre, password) {
     return `
 <!DOCTYPE html>
 <html>
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"></head>
-<body style="margin:0;padding:0;background:#f0f2f5;font-family:Arial,Helvetica,sans-serif;">
-<table width="100%" cellpadding="0" cellspacing="0" style="background:#f0f2f5;padding:20px 0;">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <meta name="color-scheme" content="light only">
+    <meta name="supported-color-schemes" content="light only">
+</head>
+<body style="margin:0;padding:0;background-color:#f0f2f5;font-family:Arial,Helvetica,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="background-color:#f0f2f5;padding:20px 0;">
 <tr><td align="center">
-<table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.08);">
+<table width="600" cellpadding="0" cellspacing="0" role="presentation" style="max-width:600px;width:100%;background-color:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.08);">
 
     <!-- Header -->
-    <tr><td style="background:#182B49;padding:25px 40px;text-align:center;">
-        <img src="https://www.menorcarugbyclub.com/assets/images/static/logo.png" alt="MRC" width="60" style="background:#fff;border-radius:50%;padding:6px;">
+    <tr><td style="background-color:#182B49;padding:25px 40px;text-align:center;">
+        <img src="https://www.menorcarugbyclub.com/assets/images/static/logo.png" alt="MRC" width="60" style="background-color:#ffffff;border-radius:50%;padding:6px;">
         <h1 style="color:#FFC72C;font-size:20px;margin:10px 0 0;">MENORCA RUGBY CLUB</h1>
     </td></tr>
 
     <!-- Body -->
-    <tr><td style="padding:30px 40px;">
+    <tr><td style="padding:30px 40px;background-color:#ffffff;">
         <h2 style="color:#182B49;font-size:20px;margin:0 0 15px;">Hola ${escapeHtml(nombre)},</h2>
-        <p style="color:#333;font-size:15px;line-height:1.6;margin:0 0 20px;">
+        <p style="color:#333333;font-size:15px;line-height:1.6;margin:0 0 20px;">
             Hemos generado una nueva contraseña para tu cuenta en la Zona de Socios.
         </p>
-        <table width="100%" cellpadding="0" cellspacing="0" style="background:#f8f9fa;border-radius:8px;border:2px solid #FFC72C;">
-            <tr><td style="padding:20px;text-align:center;">
-                <p style="color:#666;font-size:13px;margin:0 0 8px;text-transform:uppercase;letter-spacing:1px;">Tu nueva contraseña</p>
-                <p style="color:#182B49;font-size:28px;font-weight:700;margin:0;font-family:'Courier New',monospace;letter-spacing:2px;">${escapeHtml(password)}</p>
+        <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#182B49;border-radius:12px;">
+            <tr><td style="padding:25px 30px;">
+                <p style="color:rgba(255,255,255,0.5);font-size:11px;margin:0 0 6px;text-transform:uppercase;letter-spacing:1px;">Tu nueva contraseña</p>
+                <p style="color:#FFC72C;font-size:28px;font-weight:700;margin:0;font-family:'Courier New',monospace;letter-spacing:3px;">${escapeHtml(password)}</p>
             </td></tr>
         </table>
-        <p style="color:#333;font-size:15px;line-height:1.6;margin:20px 0 0;">
+        <p style="color:#333333;font-size:15px;line-height:1.6;margin:20px 0 0;">
             Accede a tu zona de socio y cambia la contraseña desde <strong>Seguridad</strong>.
         </p>
         <div style="text-align:center;margin:25px 0 10px;">
-            <a href="https://www.menorcarugbyclub.com/mi-carnet" style="display:inline-block;background:#FFC72C;color:#182B49;padding:12px 30px;border-radius:8px;font-weight:700;text-decoration:none;font-size:15px;">Ir a Mi Carnet</a>
+            <a href="https://www.menorcarugbyclub.com/mi-carnet" style="display:inline-block;background-color:#FFC72C;color:#182B49;padding:12px 30px;border-radius:8px;font-weight:700;text-decoration:none;font-size:15px;">Ir a Mi Carnet</a>
         </div>
     </td></tr>
 
     <!-- Footer -->
-    <tr><td style="background:#182B49;padding:20px 40px;text-align:center;">
+    <tr><td style="background-color:#182B49;padding:20px 40px;text-align:center;">
         <p style="color:rgba(255,255,255,0.6);font-size:12px;margin:0;">
             Si no solicitaste este cambio, contacta con nosotros en info@menorcarugbyclub.com
         </p>
