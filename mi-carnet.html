@@ -671,7 +671,7 @@
 
             // Gimnasio (10€/mes)
             const gymLink = s.stripe_link === STRIPE_LINKS.gym;
-            const gymActive = gymLink && s.estado_pago === 'completado';
+            const gymActive = gymLink && s.estado_pago === 'completado' && !!s.fecha_pago;
             html += `<div class="service-item">
                 <div class="service-info">
                     <div class="service-name"><i class="fas fa-dumbbell" style="color:var(--primary-yellow);margin-right:0.3rem;"></i> Gimnasio</div>
