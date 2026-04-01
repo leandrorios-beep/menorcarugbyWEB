@@ -72,11 +72,12 @@ module.exports = async function handler(req, res) {
             updateData.fecha_proximo_pago = fechaProximoPago;
         }
 
+        // Try matching any estado_pago (not just 'pendiente') so gym add-ons
+        // and re-subscriptions also get their dates updated
         const { data, error } = await supabase
             .from('socios')
             .update(updateData)
             .eq('email', customerEmail.toLowerCase())
-            .eq('estado_pago', 'pendiente')
             .select('id, nombre, apellido, email');
 
         if (error) {
