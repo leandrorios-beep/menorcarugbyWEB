@@ -17,6 +17,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
+    <script async src="https://js.stripe.com/v3/pricing-table.js"></script>
     <style>
         .mi-carnet-section { min-height: 100vh; padding: 120px 0 60px; background: var(--bg-primary, #0a0f1a); }
         .mi-carnet-container { max-width: 600px; margin: 0 auto; padding: 0 1.5rem; transition: max-width 0.3s; }
@@ -248,6 +249,25 @@
         }
         .toast.is-visible { opacity: 1; }
         .toast--error { background: #dc3545; }
+
+        /* ── Pricing Modal ── */
+        .pricing-modal {
+            position: fixed; inset: 0; z-index: 10000;
+            background: rgba(0,0,0,0.85); display: none;
+            align-items: center; justify-content: center; padding: 1rem;
+        }
+        .pricing-modal.is-active { display: flex; }
+        .pricing-modal-content {
+            background: #fff; border-radius: 1rem;
+            max-width: 850px; width: 100%; max-height: 90vh;
+            overflow-y: auto; position: relative; padding: 1.5rem 1rem;
+        }
+        .pricing-modal-close {
+            position: absolute; top: 0.5rem; right: 0.75rem;
+            background: none; border: none; font-size: 1.75rem;
+            cursor: pointer; color: #666; z-index: 1; line-height: 1;
+        }
+        .pricing-modal-close:hover { color: #333; }
 
         /* ── Footer logo → yellow ── */
         .footer .footer-logo {
@@ -499,6 +519,14 @@
     <!-- Toast -->
     <div class="toast" id="toast"></div>
 
+    <!-- Pricing Table Modal -->
+    <div class="pricing-modal" id="pricingModal">
+        <div class="pricing-modal-content">
+            <button class="pricing-modal-close" id="pricingModalClose">&times;</button>
+            <div id="pricingTableWrap"></div>
+        </div>
+    </div>
+
     <script src="js/config-loader.js" defer></script>
     <script src="js/main.js" defer></script>
 
@@ -731,6 +759,15 @@
 
             // Services
             renderServices(s);
+
+            // Protector pricing table button
+            document.querySelectorAll('.protector-cta').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const wrap = document.getElementById('pricingTableWrap');
+                    wrap.innerHTML = `<stripe-pricing-table pricing-table-id="prctbl_1THK7rD17JiQW1dx1FuoZtDf" publishable-key="pk_live_51Rg5o4D17JiQW1dxQmo6sbSpkdJyYXXHgR6en6dOXvLlaXrb0IrC5fAf8sBQEsUXTk1FDlhDgbYT2UjP5eWJaDJd00W6NKmpfl" customer-email="${s.email}"></stripe-pricing-table>`;
+                    document.getElementById('pricingModal').classList.add('is-active');
+                });
+            });
         }
 
         function getStripeLink(s) {
@@ -754,9 +791,9 @@
                 { icon: 'fa-user', name: 'Socio Normal', price: '50\u20AC/a\u00F1o',
                   desc: '10% dto. ropa oficial, 1\u00AA consumicion gratis, newsletter, carnet digital',
                   active: tipo === 'normal', link: STRIPE_LINKS.normal + emailParam },
-                { icon: 'fa-hand-holding-heart', name: 'Socio Protector', price: '~1\u20AC/dia',
+                { icon: 'fa-hand-holding-heart', name: 'Socio Protector', price: 'desde 33\u20AC/mes',
                   desc: 'Todo lo del socio normal + reconocimiento especial del club',
-                  active: tipo === 'protector', link: STRIPE_LINKS.protector + emailParam },
+                  active: tipo === 'protector', usePricingTable: true },
                 { icon: 'fa-dumbbell', name: 'Gimnasio', price: '10\u20AC/mes',
                   desc: 'Acceso al gimnasio del club, complemento a cualquier tipo de socio',
                   active: gymActive, link: STRIPE_LINKS.gym + emailParam },
@@ -771,10 +808,24 @@
                     <div class="service-card-desc">${svc.desc}</div>
                     ${svc.active
                         ? '<span class="service-btn service-btn--active"><i class="fas fa-check"></i> Activo</span>'
-                        : `<a class="service-btn" href="${svc.link}" target="_blank" rel="noopener"><i class="fas fa-arrow-right"></i> Contratar</a>`}
+                        : svc.usePricingTable
+                            ? '<button class="service-btn protector-cta"><i class="fas fa-arrow-right"></i> Ver planes</button>'
+                            : `<a class="service-btn" href="${svc.link}" target="_blank" rel="noopener"><i class="fas fa-arrow-right"></i> Contratar</a>`}
                 </div>
             `).join('');
         }
+
+        // ── Pricing Modal Close ──
+        document.getElementById('pricingModalClose').addEventListener('click', () => {
+            document.getElementById('pricingModal').classList.remove('is-active');
+            document.getElementById('pricingTableWrap').innerHTML = '';
+        });
+        document.getElementById('pricingModal').addEventListener('click', e => {
+            if (e.target === document.getElementById('pricingModal')) {
+                document.getElementById('pricingModal').classList.remove('is-active');
+                document.getElementById('pricingTableWrap').innerHTML = '';
+            }
+        });
 
         // ── Photo Change ──
         const photoWrap = document.getElementById('carnetPhotoWrap');
