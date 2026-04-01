@@ -340,7 +340,20 @@
                 </form>
                 <div class="login-footer">
                     <p>¿No tienes cuenta? <a href="socios.html">Hazte socio aqui</a></p>
-                    <p style="margin-top:0.5rem;">¿Olvidaste tu contraseña? Escribe a <a href="mailto:info@menorcarugbyclub.com">info@menorcarugbyclub.com</a></p>
+                    <p style="margin-top:0.5rem;"><a href="#" id="forgotLink" style="color:var(--primary-yellow,#FFC72C);text-decoration:none;">¿Olvidaste tu contraseña?</a></p>
+                </div>
+
+                <!-- Forgot password form (hidden by default) -->
+                <div id="forgotView" style="display:none;margin-top:1.5rem;padding-top:1.5rem;border-top:1px solid rgba(255,255,255,0.08);">
+                    <p style="color:#ccc;font-size:0.85rem;margin-bottom:1rem;">Introduce tu email y te enviaremos una nueva contraseña.</p>
+                    <div id="forgotMsg" style="display:none;padding:0.65rem 1rem;border-radius:0.6rem;font-size:0.82rem;margin-bottom:1rem;"></div>
+                    <div class="login-field">
+                        <input type="email" id="forgotEmail" required autocomplete="email" placeholder="tu@email.com">
+                    </div>
+                    <button type="button" class="login-btn" id="forgotBtn" style="margin-top:0;">
+                        <i class="fas fa-paper-plane"></i> Enviar nueva contraseña
+                    </button>
+                    <p style="margin-top:0.75rem;"><a href="#" id="forgotBack" style="color:var(--text-muted,#999);font-size:0.8rem;text-decoration:none;">Volver al login</a></p>
                 </div>
             </div>
 
@@ -814,6 +827,68 @@
                 </div>
             `).join('');
         }
+
+        // ── Forgot Password ──
+        const forgotLink = document.getElementById('forgotLink');
+        const forgotView = document.getElementById('forgotView');
+        const forgotBack = document.getElementById('forgotBack');
+        const forgotBtn = document.getElementById('forgotBtn');
+        const forgotMsg = document.getElementById('forgotMsg');
+
+        forgotLink.addEventListener('click', e => {
+            e.preventDefault();
+            loginForm.style.display = 'none';
+            document.querySelector('.login-footer').style.display = 'none';
+            forgotView.style.display = '';
+            // Pre-fill with login email if available
+            const loginEmailVal = document.getElementById('loginEmail').value;
+            if (loginEmailVal) document.getElementById('forgotEmail').value = loginEmailVal;
+        });
+
+        forgotBack.addEventListener('click', e => {
+            e.preventDefault();
+            forgotView.style.display = 'none';
+            loginForm.style.display = '';
+            document.querySelector('.login-footer').style.display = '';
+            forgotMsg.style.display = 'none';
+        });
+
+        forgotBtn.addEventListener('click', async () => {
+            const email = document.getElementById('forgotEmail').value.trim();
+            if (!email) {
+                forgotMsg.style.display = '';
+                forgotMsg.style.background = 'rgba(220,53,69,0.15)';
+                forgotMsg.style.color = '#ff6b7a';
+                forgotMsg.textContent = 'Introduce tu email';
+                return;
+            }
+            forgotBtn.disabled = true;
+            forgotBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
+            forgotMsg.style.display = 'none';
+
+            try {
+                const resp = await fetch('/api/forgot-password', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email })
+                });
+                const data = await resp.json();
+                if (!resp.ok) throw new Error(data.error || 'Error');
+
+                forgotMsg.style.display = '';
+                forgotMsg.style.background = 'rgba(40,167,69,0.15)';
+                forgotMsg.style.color = '#28a745';
+                forgotMsg.textContent = 'Si el email existe, recibiras tu nueva contraseña en breve. Revisa tu bandeja de entrada y spam.';
+            } catch (err) {
+                forgotMsg.style.display = '';
+                forgotMsg.style.background = 'rgba(220,53,69,0.15)';
+                forgotMsg.style.color = '#ff6b7a';
+                forgotMsg.textContent = err.message || 'Error al procesar la solicitud';
+            } finally {
+                forgotBtn.disabled = false;
+                forgotBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Enviar nueva contraseña';
+            }
+        });
 
         // ── Pricing Modal Close ──
         document.getElementById('pricingModalClose').addEventListener('click', () => {
