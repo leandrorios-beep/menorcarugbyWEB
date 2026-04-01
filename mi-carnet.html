@@ -920,8 +920,7 @@
                 // Upload to Supabase Storage
                 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
                 const timestamp = Date.now();
-                const ext = file.name.split('.').pop();
-                const filePath = `socio_${currentSocio.id}.${ext}`;
+                const filePath = `socio_${currentSocio.id}`;
 
                 const { data: uploadData, error: uploadError } = await sb.storage
                     .from('fotos-socios')
@@ -947,8 +946,14 @@
                 if (!resp.ok || !data.success) throw new Error('Error al actualizar');
 
                 currentSocio.foto_url = newUrl;
+                // Update HTML card photo (visible when no PNG)
                 document.getElementById('carnetPhoto').src = newUrl;
-                toast('Foto actualizada correctamente');
+                // If PNG carnet is showing, notify user it needs regeneration
+                if (currentSocio.carnet_url) {
+                    toast('Foto actualizada. Tu carnet se regenerara con la nueva foto pronto.');
+                } else {
+                    toast('Foto actualizada correctamente');
+                }
             } catch (err) {
                 toast(err.message || 'Error al cambiar foto', true);
             }
