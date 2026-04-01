@@ -845,6 +845,18 @@
                     <div id="generatePasswordsResult" style="width:100%;display:none;font-size:0.8rem;margin-top:0.5rem;"></div>
                 </div>
 
+                <!-- Stripe Sync -->
+                <div style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap;padding:1rem 1.25rem;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:10px;margin-bottom:1.5rem;">
+                    <div style="flex:1;min-width:200px;">
+                        <strong style="color:var(--primary-yellow,#FFC72C);"><i class="fas fa-sync-alt"></i> Sincronizar Stripe</strong>
+                        <p style="font-size:0.8rem;color:#999;margin:0.25rem 0 0;">Sincroniza fechas de pago y proximo pago de todas las suscripciones activas en Stripe</p>
+                    </div>
+                    <button id="btnSyncStripe" style="background:var(--primary-yellow,#FFC72C);color:var(--primary-navy,#182B49);border:none;border-radius:8px;padding:0.65rem 1.25rem;font-weight:700;font-family:inherit;cursor:pointer;font-size:0.85rem;white-space:nowrap;">
+                        <i class="fas fa-sync-alt"></i> Sincronizar pagos
+                    </button>
+                    <div id="syncStripeResult" style="width:100%;display:none;font-size:0.8rem;margin-top:0.5rem;"></div>
+                </div>
+
                 <div class="admin-table-wrapper">
                     <div class="admin-table-header">
                         <h2 id="sociosTableTitle">Socios registrados</h2>
@@ -1171,6 +1183,39 @@
             } finally {
                 btn.disabled = false;
                 btn.innerHTML = '<i class="fas fa-paper-plane"></i> Generar y enviar accesos';
+            }
+        });
+
+        // ── Stripe Sync ──
+        document.getElementById('btnSyncStripe').addEventListener('click', async () => {
+            const btn = document.getElementById('btnSyncStripe');
+            const resultDiv = document.getElementById('syncStripeResult');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sincronizando...';
+            resultDiv.style.display = 'none';
+
+            try {
+                const resp = await fetch('/api/sync-stripe-payments', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + session.access_token,
+                    }
+                });
+                const data = await resp.json();
+                if (!resp.ok) throw new Error(data.error || 'Error');
+
+                resultDiv.innerHTML = '<span style="color:#28a745;"><i class="fas fa-check"></i> '
+                    + data.socios_updated + ' socios actualizados de '
+                    + data.total_stripe_records + ' registros en Stripe.</span>';
+                resultDiv.style.display = '';
+                loadSocios();
+            } catch (err) {
+                resultDiv.innerHTML = '<span style="color:#ff6b7a;"><i class="fas fa-times"></i> ' + err.message + '</span>';
+                resultDiv.style.display = '';
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-sync-alt"></i> Sincronizar pagos';
             }
         });
 
