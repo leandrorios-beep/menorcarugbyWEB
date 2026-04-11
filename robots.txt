@@ -4,14 +4,15 @@ Allow: /
 # Sitemap
 Sitemap: https://www.menorcarugbyclub.com/sitemap.xml
 
-# Block access to admin or sensitive areas (if any)
-Disallow: /admin/
+# Block private / admin areas
+Disallow: /admin
+Disallow: /admin.html
+Disallow: /mi-carnet
+Disallow: /mi-carnet.html
+Disallow: /api/
 Disallow: /.vercel/
-Disallow: /css/
-Disallow: /js/
 
-# Allow search engines to access images
-Allow: /assets/images/
-
-# Crawl-delay for better server performance
-Crawl-delay: 1
+# Explicitly allow CSS/JS so crawlers can render pages properly
+Allow: /css/
+Allow: /js/
+Allow: /assets/

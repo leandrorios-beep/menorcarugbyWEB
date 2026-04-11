@@ -1860,6 +1860,7 @@ img {
     width: auto;
     object-fit: contain;
     object-position: left center;
+    filter: brightness(0) invert(1);
 }
 
 .footer-brand h3 {

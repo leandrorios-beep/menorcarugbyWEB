@@ -29,6 +29,11 @@
       "permanent": false
     },
     {
+      "source": "/noticias",
+      "destination": "/noticias.html",
+      "permanent": false
+    },
+    {
       "source": "/privacidad",
       "destination": "/privacidad.html",
       "permanent": false
