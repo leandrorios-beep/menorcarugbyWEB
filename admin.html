@@ -890,53 +890,58 @@
             <!-- Administracion / Contabilidad Panel -->
             <div class="admin-tab-panel" id="panel-contabilidad">
                 <style>
-                  #panel-contabilidad .cont-subtabs{display:flex;gap:.5rem;margin-bottom:1.25rem;border-bottom:1px solid rgba(255,255,255,.08);padding-bottom:.75rem;flex-wrap:wrap}
-                  #panel-contabilidad .cont-subtab{background:rgba(255,255,255,.04);color:#bbb;border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:.55rem 1.15rem;font-family:inherit;font-weight:600;font-size:.9rem;cursor:pointer;display:flex;align-items:center;gap:.45rem;transition:all .15s}
-                  #panel-contabilidad .cont-subtab:hover{color:#fff}
+                  #panel-contabilidad .cont-subtabs{display:flex;gap:.5rem;margin-bottom:1.25rem;border-bottom:1px solid #e2e5ea;padding-bottom:.75rem;flex-wrap:wrap}
+                  #panel-contabilidad .cont-subtab{background:#f0f2f5;color:#556;border:1px solid #dcdfe4;border-radius:8px;padding:.55rem 1.15rem;font-family:inherit;font-weight:600;font-size:.9rem;cursor:pointer;display:flex;align-items:center;gap:.45rem;transition:all .15s}
+                  #panel-contabilidad .cont-subtab:hover{color:#182B49;border-color:#c7ccd3}
                   #panel-contabilidad .cont-subtab.active{background:var(--primary-yellow,#FFC72C);color:var(--primary-navy,#182B49);border-color:var(--primary-yellow,#FFC72C)}
                   #panel-contabilidad .cont-sources{display:flex;gap:.6rem;flex-wrap:wrap;margin-bottom:1.35rem}
-                  #panel-contabilidad .cont-source{background:transparent;color:#9aa;border:1px solid rgba(255,255,255,.15);border-radius:10px;padding:.7rem 1.4rem;font-family:inherit;font-weight:700;font-size:1rem;cursor:pointer;display:flex;align-items:center;gap:.55rem;transition:all .15s}
-                  #panel-contabilidad .cont-source:hover{color:#fff;border-color:rgba(255,255,255,.35)}
-                  #panel-contabilidad .cont-source.active{background:var(--primary-navy,#182B49);color:var(--primary-yellow,#FFC72C);border-color:var(--primary-yellow,#FFC72C);box-shadow:0 0 0 1px var(--primary-yellow,#FFC72C) inset}
+                  #panel-contabilidad .cont-source{background:#fff;color:#556;border:1px solid #dcdfe4;border-radius:10px;padding:.7rem 1.4rem;font-family:inherit;font-weight:700;font-size:1rem;cursor:pointer;display:flex;align-items:center;gap:.55rem;transition:all .15s}
+                  #panel-contabilidad .cont-source:hover{color:#182B49;border-color:#182B49}
+                  #panel-contabilidad .cont-source.active{background:var(--primary-navy,#182B49);color:var(--primary-yellow,#FFC72C);border-color:var(--primary-navy,#182B49)}
                   #panel-contabilidad .cont-srcpanel{display:none}
                   #panel-contabilidad .cont-srcpanel.active{display:block}
-                  #panel-contabilidad .cont-placeholder{background:rgba(255,255,255,.03);border:1px dashed rgba(255,255,255,.2);border-radius:12px;padding:2.5rem 1.5rem;text-align:center;color:#9aa}
-                  #panel-contabilidad .cont-placeholder code{background:rgba(255,255,255,.08);padding:.1rem .4rem;border-radius:5px;color:#eee}
+                  #panel-contabilidad .cont-placeholder{background:#f8f9fa;border:1px dashed #ccc;border-radius:12px;padding:2.5rem 1.5rem;text-align:center;color:#667}
+                  #panel-contabilidad .cont-placeholder code{background:#eef0f3;padding:.1rem .4rem;border-radius:5px;color:#182B49}
                   #panel-contabilidad .cont-subpanel{display:none}
                   #panel-contabilidad .cont-subpanel.active{display:block}
                   #panel-contabilidad .cont-kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:.85rem;margin-bottom:1.25rem}
-                  #panel-contabilidad .cont-kpi{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:1rem 1.15rem}
-                  #panel-contabilidad .cont-kpi .v{font-size:1.45rem;font-weight:800;color:var(--primary-yellow,#FFC72C);line-height:1.1}
-                  #panel-contabilidad .cont-kpi .l{font-size:.7rem;color:#9aa;text-transform:uppercase;letter-spacing:.5px;margin-top:.3rem}
+                  #panel-contabilidad .cont-kpi{background:#fff;border:1px solid #e5e8ec;border-radius:12px;padding:1rem 1.15rem;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+                  #panel-contabilidad .cont-kpi .v{font-size:1.45rem;font-weight:800;color:var(--primary-navy,#182B49);line-height:1.1}
+                  #panel-contabilidad .cont-kpi .l{font-size:.7rem;color:#7a8290;text-transform:uppercase;letter-spacing:.5px;margin-top:.3rem}
                   #panel-contabilidad .cont-kpi.err .v{color:#E74C3C}
                   #panel-contabilidad .cont-filters{display:flex;gap:.6rem;flex-wrap:wrap;align-items:center;margin-bottom:.75rem}
-                  #panel-contabilidad .cont-filters select,#panel-contabilidad .cont-filters input[type=date]{background:#0f1d33;color:#eee;border:1px solid rgba(255,255,255,.15);border-radius:8px;padding:.5rem .7rem;font-family:inherit;font-size:.85rem;cursor:pointer}
-                  #panel-contabilidad .cont-datef{display:flex;align-items:center;gap:.35rem;font-size:.78rem;color:#9aa}
-                  #panel-contabilidad .cont-clear{background:rgba(231,76,60,.15);color:#E74C3C;border:1px solid rgba(231,76,60,.3);border-radius:8px;padding:.5rem .8rem;font-family:inherit;font-size:.82rem;font-weight:600;cursor:pointer}
+                  #panel-contabilidad .cont-filters select,#panel-contabilidad .cont-filters input[type=date],#panel-contabilidad .cont-filters input[type=text]{background:#fff;color:#333;border:1px solid #cfd4da;border-radius:8px;padding:.5rem .7rem;font-family:inherit;font-size:.85rem;cursor:pointer}
+                  #panel-contabilidad .cont-datef{display:flex;align-items:center;gap:.35rem;font-size:.78rem;color:#667}
+                  #panel-contabilidad .cont-clear{background:#fdecea;color:#c0392b;border:1px solid #f5c6cb;border-radius:8px;padding:.5rem .8rem;font-family:inherit;font-size:.82rem;font-weight:600;cursor:pointer}
                   #panel-contabilidad .cont-chips{display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:1.25rem;min-height:.5rem}
-                  #panel-contabilidad .cont-chip{background:rgba(255,199,44,.15);color:var(--primary-yellow,#FFC72C);border:1px solid rgba(255,199,44,.35);border-radius:20px;padding:.25rem .7rem;font-size:.78rem;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:.4rem}
-                  #panel-contabilidad .cont-chip:hover{background:rgba(255,199,44,.3)}
-                  #panel-contabilidad .cont-hint{font-size:.6rem;color:#8bd;font-weight:600;text-transform:uppercase;letter-spacing:.3px;background:rgba(46,134,222,.15);padding:.1rem .4rem;border-radius:6px;margin-left:.4rem}
+                  #panel-contabilidad .cont-chip{background:#fff8e1;color:#8a6d00;border:1px solid #ffe082;border-radius:20px;padding:.25rem .7rem;font-size:.78rem;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:.4rem}
+                  #panel-contabilidad .cont-chip:hover{background:#ffecb3}
+                  #panel-contabilidad .cont-hint{font-size:.6rem;color:#1565c0;font-weight:600;text-transform:uppercase;letter-spacing:.3px;background:#e3f2fd;padding:.1rem .45rem;border-radius:6px;margin-left:.4rem}
                   #panel-contabilidad .cont-charts{display:grid;grid-template-columns:repeat(12,1fr);gap:1rem;margin-bottom:1.5rem}
-                  #panel-contabilidad .cont-card{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:1rem;grid-column:span 12}
+                  #panel-contabilidad .cont-card{background:#fff;border:1px solid #e5e8ec;border-radius:12px;padding:1rem;grid-column:span 12;box-shadow:0 1px 3px rgba(0,0,0,.05)}
                   #panel-contabilidad .cont-card.c4{grid-column:span 4}
                   #panel-contabilidad .cont-card.c6{grid-column:span 6}
                   @media(max-width:820px){#panel-contabilidad .cont-card.c4,#panel-contabilidad .cont-card.c6{grid-column:span 12}}
-                  #panel-contabilidad .cont-card h4{margin:0 0 .75rem;font-size:.85rem;color:#cdd;font-weight:700;display:flex;align-items:center}
+                  #panel-contabilidad .cont-card h4{margin:0 0 .75rem;font-size:.85rem;color:#182B49;font-weight:700;display:flex;align-items:center}
                   #panel-contabilidad .cont-canvas-wrap{position:relative;height:240px}
                   #panel-contabilidad .cont-canvas-wrap.tall{height:340px}
-                  #panel-contabilidad .map-input{background:#0f1d33;color:#eee;border:1px solid rgba(255,255,255,.15);border-radius:6px;padding:.35rem .5rem;font-family:inherit;font-size:.8rem}
+                  #panel-contabilidad .map-input{background:#fff;color:#333;border:1px solid #cfd4da;border-radius:6px;padding:.35rem .5rem;font-family:inherit;font-size:.8rem}
                   #panel-contabilidad .map-input:focus{border-color:var(--primary-yellow,#FFC72C);outline:none}
-                  #panel-contabilidad #mapBuscar{background:#0f1d33;color:#eee;border:1px solid rgba(255,255,255,.15);border-radius:8px;padding:.5rem .7rem;font-family:inherit;font-size:.85rem}
+                  #panel-contabilidad #mapBuscar{background:#fff;color:#333;border:1px solid #cfd4da;border-radius:8px;padding:.5rem .7rem;font-family:inherit;font-size:.85rem}
+                  #panel-contabilidad .map-tipos{display:flex;flex-wrap:wrap;gap:.35rem;align-items:center}
+                  #panel-contabilidad .map-chip{background:#e3f2fd;color:#1565c0;border:1px solid #bbdcf5;border-radius:16px;padding:.15rem .55rem;font-size:.75rem;font-weight:600;display:inline-flex;align-items:center;gap:.35rem}
+                  #panel-contabilidad .map-chip i{cursor:pointer;opacity:.55}
+                  #panel-contabilidad .map-chip i:hover{opacity:1}
+                  #panel-contabilidad .map-add{background:#fff;color:#556;border:1px dashed #cfd4da;border-radius:16px;padding:.22rem .5rem;font-family:inherit;font-size:.75rem;cursor:pointer}
                   #panel-contabilidad table{width:100%;border-collapse:collapse;font-size:.8rem}
-                  #panel-contabilidad th,#panel-contabilidad td{padding:.5rem .6rem;text-align:left;border-bottom:1px solid rgba(255,255,255,.06);white-space:nowrap}
-                  #panel-contabilidad th{color:#9aa;font-weight:600;position:sticky;top:0;background:#0d1a2e}
-                  #panel-contabilidad .cont-table-scroll{max-height:460px;overflow:auto;border-radius:10px;border:1px solid rgba(255,255,255,.06)}
+                  #panel-contabilidad th,#panel-contabilidad td{padding:.5rem .6rem;text-align:left;border-bottom:1px solid #eceef1;white-space:nowrap;color:#333}
+                  #panel-contabilidad th{color:#556;font-weight:700;position:sticky;top:0;background:#f4f6f8}
+                  #panel-contabilidad .cont-table-scroll{max-height:460px;overflow:auto;border-radius:10px;border:1px solid #e5e8ec}
                   #panel-contabilidad .cont-badge{padding:.15rem .5rem;border-radius:20px;font-size:.7rem;font-weight:700}
-                  #panel-contabilidad .cont-badge.pagado{background:rgba(40,180,99,.2);color:#28B463}
-                  #panel-contabilidad .cont-badge.error{background:rgba(231,76,60,.2);color:#E74C3C}
-                  #panel-contabilidad .cont-badge.pendiente{background:rgba(243,156,18,.2);color:#F39C12}
-                  #panel-contabilidad .cont-badge.anulado{background:rgba(150,150,150,.2);color:#aaa}
+                  #panel-contabilidad .cont-badge.pagado{background:#e8f5e9;color:#2e7d32}
+                  #panel-contabilidad .cont-badge.error{background:#fdecea;color:#c0392b}
+                  #panel-contabilidad .cont-badge.pendiente{background:#fff3e0;color:#e65100}
+                  #panel-contabilidad .cont-badge.anulado{background:#f5f5f5;color:#888}
                 </style>
 
                 <div class="cont-sources">
@@ -1518,6 +1523,7 @@
             document.getElementById('bingTable').innerHTML = contTable(t, [['fecha', 'Fecha'], ['banco', 'Banco'], ['contraparte', 'Origen', 'trunc'], ['categoria', 'Categoría'], ['importe', 'Importe', 'eur']]);
         }
 
+        const mapTiposCanon = () => { const s = new Set(); mapeosRaw.forEach(m => (m.tipos || []).forEach(t => s.add(t))); return [...s].sort(); };
         function renderMapeos() {
             const q = (val('mapBuscar') || '').toLowerCase();
             const tot = {};
@@ -1525,26 +1531,37 @@
             let list = mapeosRaw.slice().sort((a, b) => (tot[b.proveedor] || 0) - (tot[a.proveedor] || 0));
             if (q) list = list.filter(m => (m.proveedor || '').toLowerCase().includes(q));
             document.getElementById('mapInfo').textContent = list.length + ' proveedores';
-            const body = list.map(m => '<tr><td>' + (m.proveedor || '') + '</td><td style="color:#9aa;white-space:nowrap">' + contEUR(tot[m.proveedor] || 0) + '</td>' +
-                '<td style="width:45%"><input class="map-input" data-prov="' + encodeURIComponent(m.proveedor) + '" value="' + ((m.tipos || []).join(', ')).replace(/"/g, '&quot;') + '" style="width:100%"></td>' +
-                '<td><span class="map-status" data-prov="' + encodeURIComponent(m.proveedor) + '"></span></td></tr>').join('');
-            document.getElementById('mapeosTable').innerHTML = '<div class="cont-table-scroll"><table><thead><tr><th>Proveedor</th><th>Gasto total</th><th>Tipo(s) de gasto (coma = varios)</th><th></th></tr></thead><tbody>' + body + '</tbody></table></div>';
-            document.querySelectorAll('.map-input').forEach(inp => {
-                inp.addEventListener('keydown', e => { if (e.key === 'Enter') inp.blur(); });
-                inp.addEventListener('blur', () => saveMapeo(decodeURIComponent(inp.dataset.prov), inp.value));
-            });
+            const canon = mapTiposCanon();
+            const body = list.map(m => {
+                const pv = encodeURIComponent(m.proveedor);
+                const chips = (m.tipos || []).map(t => '<span class="map-chip">' + t + ' <i class="fas fa-times" data-prov="' + pv + '" data-t="' + encodeURIComponent(t) + '"></i></span>').join('');
+                const opts = canon.filter(c => !(m.tipos || []).includes(c)).map(c => '<option value="' + c.replace(/"/g, '&quot;') + '">' + c + '</option>').join('');
+                const sel = '<select class="map-add" data-prov="' + pv + '"><option value="">＋ tipo</option>' + opts + '<option value="__new__">＋ nuevo…</option></select>';
+                return '<tr><td>' + (m.proveedor || '') + '</td><td style="color:#667;white-space:nowrap">' + contEUR(tot[m.proveedor] || 0) + '</td>' +
+                    '<td style="width:52%"><div class="map-tipos">' + chips + sel + '</div></td>' +
+                    '<td><span class="map-status" data-prov="' + pv + '"></span></td></tr>';
+            }).join('');
+            document.getElementById('mapeosTable').innerHTML = '<div class="cont-table-scroll"><table><thead><tr><th>Proveedor</th><th>Gasto total</th><th>Tipo(s) de gasto</th><th></th></tr></thead><tbody>' + body + '</tbody></table></div>';
+            document.querySelectorAll('#mapeosTable .map-chip i').forEach(x => x.addEventListener('click', () => removeTipo(decodeURIComponent(x.dataset.prov), decodeURIComponent(x.dataset.t))));
+            document.querySelectorAll('#mapeosTable .map-add').forEach(s => s.addEventListener('change', () => {
+                const prov = decodeURIComponent(s.dataset.prov), v = s.value; s.value = '';
+                if (!v) return;
+                if (v === '__new__') { const n = (window.prompt('Nuevo tipo de gasto:') || '').trim(); if (n) addTipo(prov, n); return; }
+                addTipo(prov, v);
+            }));
         }
-        async function saveMapeo(prov, str) {
-            const tipos = str.split(',').map(s => s.trim()).filter(Boolean);
+        const currentTipos = prov => { const m = mapeosRaw.find(x => x.proveedor === prov); return m ? (m.tipos || []).slice() : []; };
+        function addTipo(prov, t) { const arr = currentTipos(prov); if (!arr.includes(t)) arr.push(t); saveMapeoTipos(prov, arr); }
+        function removeTipo(prov, t) { saveMapeoTipos(prov, currentTipos(prov).filter(x => x !== t)); }
+        async function saveMapeoTipos(prov, tipos) {
             const st = document.querySelector('.map-status[data-prov="' + encodeURIComponent(prov) + '"]');
-            if (st) st.innerHTML = '<i class="fas fa-spinner fa-spin" style="color:#9aa"></i>';
+            if (st) st.innerHTML = '<i class="fas fa-spinner fa-spin" style="color:#999"></i>';
             const { error } = await sb.from('mapeos').update({ tipos }).eq('proveedor', prov);
-            if (error) { if (st) st.innerHTML = '<i class="fas fa-times" style="color:#E74C3C" title="' + (error.message || '') + '"></i>'; return; }
+            if (error) { if (st) st.innerHTML = '<i class="fas fa-times" style="color:#c0392b" title="' + (error.message || '') + '"></i>'; return; }
             mapaProv[prov] = tipos;
             const mr = mapeosRaw.find(m => m.proveedor === prov); if (mr) mr.tipos = tipos;
-            if (st) st.innerHTML = '<i class="fas fa-check" style="color:#28B463"></i>';
-            contFill('bgasTipo', [...new Set(mapeosRaw.flatMap(m => m.tipos || []))].sort());
-            renderBancoGastos();
+            contFill('bgasTipo', mapTiposCanon());
+            renderMapeos(); renderBancoGastos();
         }
         (function wireBancos() {
             const gm = { bgasBanco: 'banco', bgasTipo: 'tipo', bgasProv: 'proveedor', bgasDesde: 'desde', bgasHasta: 'hasta' };
