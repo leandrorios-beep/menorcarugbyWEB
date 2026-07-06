@@ -933,6 +933,10 @@
                   #panel-contabilidad .map-chip i{cursor:pointer;opacity:.55}
                   #panel-contabilidad .map-chip i:hover{opacity:1}
                   #panel-contabilidad .map-add{background:#fff;color:#556;border:1px dashed #cfd4da;border-radius:16px;padding:.22rem .5rem;font-family:inherit;font-size:.75rem;cursor:pointer}
+                  #panel-contabilidad .map-lado{font-size:.58rem;font-weight:700;padding:.06rem .35rem;border-radius:5px;vertical-align:middle;text-transform:uppercase}
+                  #panel-contabilidad .map-lado.gas{background:#fdecea;color:#c0392b}
+                  #panel-contabilidad .map-lado.ing{background:#e8f5e9;color:#2e7d32}
+                  #panel-contabilidad .map-lado.ambos{background:#e3f2fd;color:#1565c0}
                   #panel-contabilidad table{width:100%;border-collapse:collapse;font-size:.8rem}
                   #panel-contabilidad th,#panel-contabilidad td{padding:.5rem .6rem;text-align:left;border-bottom:1px solid #eceef1;white-space:nowrap;color:#333}
                   #panel-contabilidad th{color:#556;font-weight:700;position:sticky;top:0;background:#f4f6f8}
@@ -1043,12 +1047,13 @@
                             <label class="cont-datef">Desde <input type="date" id="bingDesde"></label>
                             <label class="cont-datef">Hasta <input type="date" id="bingHasta"></label>
                             <select id="bingBanco"><option value="">Todos los bancos</option></select>
-                            <select id="bingCat"><option value="">Todas las categorias</option></select>
+                            <select id="bingCat"><option value="">Todos los tipos</option></select>
+                            <select id="bingProv"><option value="">Todos los orígenes</option></select>
                             <button id="bingClear" class="cont-clear"><i class="fas fa-eraser"></i> Limpiar</button>
                         </div>
                         <div id="bingChips" class="cont-chips"></div>
                         <div class="cont-charts">
-                            <div class="cont-card c4"><h4>Por categoria</h4><div class="cont-canvas-wrap"><canvas id="chBingCat"></canvas></div></div>
+                            <div class="cont-card c4"><h4>Por tipo (mapeos) <span class="cont-hint">clic = filtrar</span></h4><div class="cont-canvas-wrap"><canvas id="chBingCat"></canvas></div></div>
                             <div class="cont-card c4"><h4>Por banco</h4><div class="cont-canvas-wrap"><canvas id="chBingBanco"></canvas></div></div>
                             <div class="cont-card c4"><h4>Evolucion mensual</h4><div class="cont-canvas-wrap"><canvas id="chBingMes"></canvas></div></div>
                         </div>
@@ -1460,9 +1465,9 @@
         // ═══════════════ BANCOS + MAPEOS ═══════════════
         let bancoData = [], mapeosRaw = [], mapaProv = {}, mapaSub = {}, bancoLoaded = false;
         const bgasF = { banco: '', tipo: '', subtipo: '', proveedor: '', desde: '', hasta: '' };
-        const bingF = { banco: '', categoria: '', desde: '', hasta: '' };
+        const bingF = { banco: '', categoria: '', proveedor: '', desde: '', hasta: '' };
         const BGAS_LABELS = { banco: 'Banco', tipo: 'Tipo', subtipo: 'Subtipo', proveedor: 'Proveedor', desde: 'Desde', hasta: 'Hasta' };
-        const BING_LABELS = { banco: 'Banco', categoria: 'Categoría', desde: 'Desde', hasta: 'Hasta' };
+        const BING_LABELS = { banco: 'Banco', categoria: 'Tipo', proveedor: 'Origen', desde: 'Desde', hasta: 'Hasta' };
         const tiposDe = prov => { const t = mapaProv[prov]; return (t && t.length) ? t : null; };
         const subDe = prov => { const t = mapaSub[prov]; return (t && t.length) ? t : null; };
         function bancoSumByTipo(rows) {
@@ -1483,7 +1488,8 @@
             contFill('bgasBanco', bancos); contFill('bingBanco', bancos);
             contFill('bgasTipo', mapCanon('tipos')); contFill('bgasSub', mapCanon('subtipos'));
             contFill('bgasProv', [...new Set(gastosBancoBase().map(r => r.contraparte).filter(Boolean))].sort());
-            contFill('bingCat', [...new Set(ingresosBancoBase().map(r => r.categoria).filter(Boolean))].sort());
+            contFill('bingProv', [...new Set(ingresosBancoBase().map(r => r.contraparte).filter(Boolean))].sort());
+            contFill('bingCat', [...new Set(ingresosBancoBase().flatMap(r => tiposDe(r.contraparte) || [r.categoria]).filter(Boolean))].sort());
             renderBancoGastos(); renderBancoIngresos(); renderMapeos();
         }
 
@@ -1510,21 +1516,23 @@
         }
 
         function renderBancoIngresos() {
-            setVal('bingBanco', bingF.banco); setVal('bingCat', bingF.categoria); setVal('bingDesde', bingF.desde); setVal('bingHasta', bingF.hasta);
+            setVal('bingBanco', bingF.banco); setVal('bingCat', bingF.categoria); setVal('bingProv', bingF.proveedor); setVal('bingDesde', bingF.desde); setVal('bingHasta', bingF.hasta);
             contChips('bingChips', bingF, BING_LABELS, renderBancoIngresos);
             let rows = ingresosBancoBase();
             if (bingF.banco) rows = rows.filter(r => r.banco === bingF.banco);
-            if (bingF.categoria) rows = rows.filter(r => r.categoria === bingF.categoria);
+            if (bingF.proveedor) rows = rows.filter(r => r.contraparte === bingF.proveedor);
+            if (bingF.categoria) rows = rows.filter(r => (tiposDe(r.contraparte) || [r.categoria]).includes(bingF.categoria));
             if (bingF.desde) rows = rows.filter(r => ('' + (r.fecha || '')) >= bingF.desde);
             if (bingF.hasta) rows = rows.filter(r => ('' + (r.fecha || '')) <= bingF.hasta);
             const total = rows.reduce((s, r) => s + (Number(r.importe) || 0), 0);
-            document.getElementById('bingKpis').innerHTML = [['Total ingresos', contEUR(total)], ['Movimientos', rows.length]].map(k => '<div class="cont-kpi"><div class="v">' + k[1] + '</div><div class="l">' + k[0] + '</div></div>').join('');
-            contChart('chBingCat', 'doughnut', contEntries(bancoSumAbs(rows, 'categoria')), { onSlice: l => { bingF.categoria = (bingF.categoria === l ? '' : l); renderBancoIngresos(); } });
+            const provs = new Set(rows.map(r => r.contraparte)).size;
+            document.getElementById('bingKpis').innerHTML = [['Total ingresos', contEUR(total)], ['Movimientos', rows.length], ['Orígenes', provs]].map(k => '<div class="cont-kpi"><div class="v">' + k[1] + '</div><div class="l">' + k[0] + '</div></div>').join('');
+            contChart('chBingCat', 'doughnut', contEntries(bancoSumByTipo(rows)), { onSlice: l => { bingF.categoria = (bingF.categoria === l ? '' : l); renderBancoIngresos(); } });
             contChart('chBingBanco', 'bar', contEntries(bancoSumAbs(rows, 'banco')), { color: '#28B463' });
             contChart('chBingMes', 'line', bancoByMonth(rows), { color: 'rgba(40,180,99,.15)', borderColor: '#28B463', borderWidth: 2, fill: true });
             document.getElementById('bingInfo').textContent = rows.length + ' mov · ' + contEUR(total);
-            const t = rows.slice().sort((a, b) => ('' + (b.fecha || '')).localeCompare('' + (a.fecha || '')));
-            document.getElementById('bingTable').innerHTML = contTable(t, [['fecha', 'Fecha'], ['banco', 'Banco'], ['contraparte', 'Origen', 'trunc'], ['categoria', 'Categoría'], ['importe', 'Importe', 'eur']]);
+            const t = rows.slice().sort((a, b) => ('' + (b.fecha || '')).localeCompare('' + (a.fecha || ''))).map(r => ({ ...r, _tipo: (tiposDe(r.contraparte) || [r.categoria || '—']).join(', ') }));
+            document.getElementById('bingTable').innerHTML = contTable(t, [['fecha', 'Fecha'], ['banco', 'Banco'], ['contraparte', 'Origen', 'trunc'], ['_tipo', 'Tipo (mapeos)'], ['importe', 'Importe', 'eur']]);
         }
 
         const mapPlain = t => !String(t).startsWith('sub:');
@@ -1532,9 +1540,11 @@
         const mapCurValues = (m, field) => (m.tipos || []).filter(t => field === 'tipos' ? mapPlain(t) : !mapPlain(t)).map(t => field === 'tipos' ? t : t.slice(4));
         function renderMapeos() {
             const q = (val('mapBuscar') || '').toLowerCase();
-            const tot = {};
-            gastosBancoBase().forEach(r => { tot[r.contraparte] = (tot[r.contraparte] || 0) + Math.abs(Number(r.importe) || 0); });
-            let list = mapeosRaw.slice().sort((a, b) => (tot[b.proveedor] || 0) - (tot[a.proveedor] || 0));
+            const totG = {}, totI = {};
+            gastosBancoBase().forEach(r => { totG[r.contraparte] = (totG[r.contraparte] || 0) + Math.abs(Number(r.importe) || 0); });
+            ingresosBancoBase().forEach(r => { totI[r.contraparte] = (totI[r.contraparte] || 0) + Math.abs(Number(r.importe) || 0); });
+            const totOf = p => (totG[p] || 0) + (totI[p] || 0);
+            let list = mapeosRaw.slice().sort((a, b) => totOf(b.proveedor) - totOf(a.proveedor));
             if (q) list = list.filter(m => (((m.proveedor || '') + ' ' + (m.tipos || []).map(t => t.startsWith('sub:') ? t.slice(4) : t).join(' ')).toLowerCase().includes(q)));
             document.getElementById('mapInfo').textContent = list.length + ' proveedores';
             const canonT = mapCanon('tipos'), canonS = mapCanon('subtipos');
@@ -1546,10 +1556,11 @@
                 const sel = '<select class="map-add" data-prov="' + pv + '" data-f="' + field + '"><option value="">＋</option>' + opts + '<option value="__new__">＋ nuevo…</option></select>';
                 return '<td style="width:29%"><div class="map-tipos">' + chips + sel + '</div></td>';
             };
-            const body = list.map(m => '<tr><td>' + (m.proveedor || '') + '</td><td style="color:#667;white-space:nowrap">' + contEUR(tot[m.proveedor] || 0) + '</td>' +
+            const ladoBadge = p => (totG[p] && totI[p]) ? '<span class="map-lado ambos">Ambos</span>' : (totI[p] ? '<span class="map-lado ing">Ingreso</span>' : '<span class="map-lado gas">Gasto</span>');
+            const body = list.map(m => '<tr><td>' + (m.proveedor || '') + ' ' + ladoBadge(m.proveedor) + '</td><td style="color:#667;white-space:nowrap">' + contEUR(totOf(m.proveedor)) + '</td>' +
                 cell(m, 'tipos', canonT) + cell(m, 'subtipos', canonS) +
                 '<td><span class="map-status" data-prov="' + encodeURIComponent(m.proveedor) + '"></span></td></tr>').join('');
-            document.getElementById('mapeosTable').innerHTML = '<div class="cont-table-scroll"><table><thead><tr><th>Proveedor</th><th>Gasto total</th><th>Tipo(s)</th><th>Subtipo(s)</th><th></th></tr></thead><tbody>' + body + '</tbody></table></div>';
+            document.getElementById('mapeosTable').innerHTML = '<div class="cont-table-scroll"><table><thead><tr><th>Proveedor</th><th>Total</th><th>Tipo(s)</th><th>Subtipo(s)</th><th></th></tr></thead><tbody>' + body + '</tbody></table></div>';
             document.querySelectorAll('#mapeosTable .map-chip i').forEach(x => x.addEventListener('click', () => removeField(decodeURIComponent(x.dataset.prov), x.dataset.f, decodeURIComponent(x.dataset.t))));
             document.querySelectorAll('#mapeosTable .map-add').forEach(s => s.addEventListener('change', () => {
                 const prov = decodeURIComponent(s.dataset.prov), f = s.dataset.f, v = s.value; s.value = '';
@@ -1570,13 +1581,13 @@
             const mr = mapeosRaw.find(m => m.proveedor === prov); if (mr) mr.tipos = raw;
             mapaProv[prov] = raw.filter(mapPlain); mapaSub[prov] = raw.filter(t => !mapPlain(t)).map(t => t.slice(4));
             contFill('bgasTipo', mapCanon('tipos')); contFill('bgasSub', mapCanon('subtipos'));
-            renderMapeos(); renderBancoGastos();
+            renderMapeos(); renderBancoGastos(); renderBancoIngresos();
         }
         (function wireBancos() {
             const gm = { bgasBanco: 'banco', bgasTipo: 'tipo', bgasSub: 'subtipo', bgasProv: 'proveedor', bgasDesde: 'desde', bgasHasta: 'hasta' };
             Object.entries(gm).forEach(([id, dim]) => { const e = document.getElementById(id); if (e) e.addEventListener('change', () => { bgasF[dim] = e.value; renderBancoGastos(); }); });
             const gc = document.getElementById('bgasClear'); if (gc) gc.addEventListener('click', () => { Object.keys(bgasF).forEach(k => bgasF[k] = ''); renderBancoGastos(); });
-            const im = { bingBanco: 'banco', bingCat: 'categoria', bingDesde: 'desde', bingHasta: 'hasta' };
+            const im = { bingBanco: 'banco', bingCat: 'categoria', bingProv: 'proveedor', bingDesde: 'desde', bingHasta: 'hasta' };
             Object.entries(im).forEach(([id, dim]) => { const e = document.getElementById(id); if (e) e.addEventListener('change', () => { bingF[dim] = e.value; renderBancoIngresos(); }); });
             const ic = document.getElementById('bingClear'); if (ic) ic.addEventListener('click', () => { Object.keys(bingF).forEach(k => bingF[k] = ''); renderBancoIngresos(); });
             const mb = document.getElementById('mapBuscar'); if (mb) mb.addEventListener('input', renderMapeos);
