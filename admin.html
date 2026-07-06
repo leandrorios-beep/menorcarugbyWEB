@@ -1478,7 +1478,7 @@
         async function loadBancos() {
             const [mv, mp] = await Promise.all([contFetchAll('banco_movimientos'), contFetchAll('mapeos')]);
             bancoData = mv; mapeosRaw = mp; mapaProv = {}; mapaSub = {};
-            mp.forEach(m => { mapaProv[m.proveedor] = m.tipos || []; mapaSub[m.proveedor] = m.subtipos || []; });
+            mp.forEach(m => { const all = m.tipos || []; mapaProv[m.proveedor] = all.filter(mapPlain); mapaSub[m.proveedor] = all.filter(t => !mapPlain(t)).map(t => t.slice(4)); });
             const bancos = [...new Set(bancoData.map(r => r.banco).filter(Boolean))].sort();
             contFill('bgasBanco', bancos); contFill('bingBanco', bancos);
             contFill('bgasTipo', mapCanon('tipos')); contFill('bgasSub', mapCanon('subtipos'));
@@ -1527,7 +1527,9 @@
             document.getElementById('bingTable').innerHTML = contTable(t, [['fecha', 'Fecha'], ['banco', 'Banco'], ['contraparte', 'Origen', 'trunc'], ['categoria', 'Categoría'], ['importe', 'Importe', 'eur']]);
         }
 
-        const mapCanon = field => { const s = new Set(); mapeosRaw.forEach(m => (m[field] || []).forEach(t => s.add(t))); return [...s].sort(); };
+        const mapPlain = t => !String(t).startsWith('sub:');
+        const mapCanon = field => { const s = new Set(); mapeosRaw.forEach(m => (m.tipos || []).forEach(t => { if (field === 'tipos') { if (mapPlain(t)) s.add(t); } else if (!mapPlain(t)) s.add(t.slice(4)); })); return [...s].sort(); };
+        const mapCurValues = (m, field) => (m.tipos || []).filter(t => field === 'tipos' ? mapPlain(t) : !mapPlain(t)).map(t => field === 'tipos' ? t : t.slice(4));
         function renderMapeos() {
             const q = (val('mapBuscar') || '').toLowerCase();
             const tot = {};
@@ -1538,8 +1540,9 @@
             const canonT = mapCanon('tipos'), canonS = mapCanon('subtipos');
             const cell = (m, field, canon) => {
                 const pv = encodeURIComponent(m.proveedor);
-                const chips = (m[field] || []).map(t => '<span class="map-chip">' + t + ' <i class="fas fa-times" data-prov="' + pv + '" data-f="' + field + '" data-t="' + encodeURIComponent(t) + '"></i></span>').join('');
-                const opts = canon.filter(c => !(m[field] || []).includes(c)).map(c => '<option value="' + c.replace(/"/g, '&quot;') + '">' + c + '</option>').join('');
+                const cur = mapCurValues(m, field);
+                const chips = cur.map(t => '<span class="map-chip">' + t + ' <i class="fas fa-times" data-prov="' + pv + '" data-f="' + field + '" data-t="' + encodeURIComponent(t) + '"></i></span>').join('');
+                const opts = canon.filter(c => !cur.includes(c)).map(c => '<option value="' + c.replace(/"/g, '&quot;') + '">' + c + '</option>').join('');
                 const sel = '<select class="map-add" data-prov="' + pv + '" data-f="' + field + '"><option value="">＋</option>' + opts + '<option value="__new__">＋ nuevo…</option></select>';
                 return '<td style="width:29%"><div class="map-tipos">' + chips + sel + '</div></td>';
             };
@@ -1555,18 +1558,18 @@
                 addField(prov, f, v);
             }));
         }
-        const curField = (prov, f) => { const m = mapeosRaw.find(x => x.proveedor === prov); return m ? (m[f] || []).slice() : []; };
-        function addField(prov, f, t) { const arr = curField(prov, f); if (!arr.includes(t)) arr.push(t); saveField(prov, f, arr); }
-        function removeField(prov, f, t) { saveField(prov, f, curField(prov, f).filter(x => x !== t)); }
-        async function saveField(prov, f, arr) {
+        const rawTipos = prov => { const m = mapeosRaw.find(x => x.proveedor === prov); return m ? (m.tipos || []).slice() : []; };
+        const encField = (f, v) => f === 'tipos' ? v : 'sub:' + v;
+        function addField(prov, f, v) { const raw = rawTipos(prov); const e = encField(f, v); if (!raw.includes(e)) raw.push(e); saveCombined(prov, raw); }
+        function removeField(prov, f, v) { saveCombined(prov, rawTipos(prov).filter(x => x !== encField(f, v))); }
+        async function saveCombined(prov, raw) {
             const st = document.querySelector('.map-status[data-prov="' + encodeURIComponent(prov) + '"]');
             if (st) st.innerHTML = '<i class="fas fa-spinner fa-spin" style="color:#999"></i>';
-            const patch = {}; patch[f] = arr;
-            const { error } = await sb.from('mapeos').update(patch).eq('proveedor', prov);
+            const { error } = await sb.from('mapeos').update({ tipos: raw }).eq('proveedor', prov);
             if (error) { if (st) st.innerHTML = '<i class="fas fa-times" style="color:#c0392b" title="' + (error.message || '') + '"></i>'; return; }
-            const mr = mapeosRaw.find(m => m.proveedor === prov); if (mr) mr[f] = arr;
-            if (f === 'tipos') { mapaProv[prov] = arr; contFill('bgasTipo', mapCanon('tipos')); }
-            else { mapaSub[prov] = arr; contFill('bgasSub', mapCanon('subtipos')); }
+            const mr = mapeosRaw.find(m => m.proveedor === prov); if (mr) mr.tipos = raw;
+            mapaProv[prov] = raw.filter(mapPlain); mapaSub[prov] = raw.filter(t => !mapPlain(t)).map(t => t.slice(4));
+            contFill('bgasTipo', mapCanon('tipos')); contFill('bgasSub', mapCanon('subtipos'));
             renderMapeos(); renderBancoGastos();
         }
         (function wireBancos() {
