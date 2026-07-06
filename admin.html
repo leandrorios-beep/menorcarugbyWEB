@@ -1047,7 +1047,8 @@
                             <label class="cont-datef">Desde <input type="date" id="bingDesde"></label>
                             <label class="cont-datef">Hasta <input type="date" id="bingHasta"></label>
                             <select id="bingBanco"><option value="">Todos los bancos</option></select>
-                            <select id="bingCat"><option value="">Todos los tipos</option></select>
+                            <select id="bingTipo"><option value="">Todos los tipos</option></select>
+                            <select id="bingSub"><option value="">Todos los subtipos</option></select>
                             <select id="bingProv"><option value="">Todos los orígenes</option></select>
                             <button id="bingClear" class="cont-clear"><i class="fas fa-eraser"></i> Limpiar</button>
                         </div>
@@ -1065,7 +1066,11 @@
                 </div>
 
                 <div class="cont-srcpanel" id="src-mapeos">
-                    <p style="color:#9aa;font-size:.9rem;margin:0 0 1rem;line-height:1.5">Editá el <strong>tipo de gasto</strong> de cada proveedor (varios separados por <strong>coma</strong>). Los cambios impactan en <strong>Bancos &rsaquo; Gastos</strong> al instante (Enter o click afuera para guardar).</p>
+                    <div class="cont-subtabs">
+                        <button class="cont-subtab map-ladobtn active" data-lado="gastos"><i class="fas fa-arrow-trend-down"></i> Mapeo de Gastos</button>
+                        <button class="cont-subtab map-ladobtn" data-lado="ingresos"><i class="fas fa-arrow-trend-up"></i> Mapeo de Ingresos</button>
+                    </div>
+                    <p style="color:#667;font-size:.9rem;margin:0 0 1rem;line-height:1.5">Asigná el <strong>tipo</strong> y <strong>subtipo</strong> de cada proveedor/origen desde el dropdown (sin errores de tipeo). Los cambios impactan en <strong>Bancos</strong> al instante.</p>
                     <div class="cont-filters">
                         <input type="text" id="mapBuscar" placeholder="Buscar proveedor, tipo o subtipo..." style="min-width:280px">
                         <span id="mapInfo" style="color:#9aa;font-size:.85rem"></span>
@@ -1287,6 +1292,12 @@
         async function showDashboard() {
             loginScreen.style.display = 'none';
             dashboard.style.display = 'block';
+            try {
+                const { data: { session } } = await sb.auth.getSession();
+                const email = ((session && session.user && session.user.email) || '').toLowerCase();
+                const mb = document.querySelector('.cont-source[data-src="mapeos"]');
+                if (mb) mb.style.display = (email === 'leandro.rios@menorcarugbyclub.com') ? '' : 'none';
+            } catch (e) {}
             await Promise.all([loadSocios(), loadPlayers()]);
             applyTabFromUrl();
         }
@@ -1343,19 +1354,30 @@
                 }
             });
         }
-        function contTable(rows, cols) {
-            const head = '<tr>' + cols.map(c => '<th>' + c[1] + '</th>').join('') + '</tr>';
-            const body = rows.slice(0, 400).map(r => '<tr>' + cols.map(c => {
-                let v = r[c[0]]; const fmt = c[2];
-                if (fmt === 'eur') v = contEUR(Number(v) || 0);
-                else if (fmt === 'arr') v = (Array.isArray(v) && v.length) ? v.join(', ') : '—';
-                else if (fmt === 'estado') { const cls = ('' + (v || '')).toLowerCase().split(' ')[0]; v = '<span class="cont-badge ' + cls + '">' + (v || '—') + '</span>'; }
-                else if (fmt === 'trunc') v = v ? ('' + v).slice(0, 42) : '—';
-                else v = (v == null || v === '') ? '—' : v;
-                return '<td>' + v + '</td>';
-            }).join('') + '</tr>').join('');
-            const more = rows.length > 400 ? '<div style="padding:.6rem;color:#888;font-size:.75rem">Mostrando 400 de ' + rows.length + ' filas</div>' : '';
-            return '<div class="cont-table-scroll"><table><thead>' + head + '</thead><tbody>' + body + '</tbody></table></div>' + more;
+        const contTablesReg = {};
+        function contFmtDate(v) { const s = ('' + (v == null ? '' : v)).slice(0, 10), p = s.split('-'); return (p.length === 3 && p[0].length === 4) ? (p[2] + '/' + p[1] + '/' + p[0].slice(2)) : ((v == null || v === '') ? '—' : v); }
+        function contFmtCell(v, fmt) {
+            if (fmt === 'eur') return contEUR(Number(v) || 0);
+            if (fmt === 'date') return contFmtDate(v);
+            if (fmt === 'arr') return (Array.isArray(v) && v.length) ? v.join(', ') : '—';
+            if (fmt === 'estado') { const cls = ('' + (v || '')).toLowerCase().split(' ')[0]; return '<span class="cont-badge ' + cls + '">' + (v || '—') + '</span>'; }
+            if (fmt === 'trunc') return v ? ('' + v).slice(0, 42) : '—';
+            return (v == null || v === '') ? '—' : v;
+        }
+        function contSortVal(v, fmt) { if (fmt === 'eur') return Number(v) || 0; return ('' + (v == null ? '' : (Array.isArray(v) ? v.join(',') : v))).toLowerCase(); }
+        function contRenderTable(id, rows, cols, sort) {
+            const prev = contTablesReg[id] || {};
+            const st = sort || prev._sort || { i: -1, dir: 1 };
+            contTablesReg[id] = { rows, cols, _sort: st };
+            let data = rows.slice();
+            if (st.i >= 0 && cols[st.i]) { const c = cols[st.i]; data.sort((a, b) => { const av = contSortVal(a[c[0]], c[2]), bv = contSortVal(b[c[0]], c[2]); return (av < bv ? -1 : av > bv ? 1 : 0) * st.dir; }); }
+            const shown = data.slice(0, 400);
+            const head = '<tr>' + cols.map((c, i) => '<th data-i="' + i + '" style="cursor:pointer;user-select:none">' + c[1] + (st.i === i ? (st.dir > 0 ? ' ▲' : ' ▼') : ' <span style="opacity:.25">↕</span>') + '</th>').join('') + '</tr>';
+            const body = shown.map(r => '<tr>' + cols.map(c => '<td>' + contFmtCell(r[c[0]], c[2]) + '</td>').join('') + '</tr>').join('');
+            const more = data.length > 400 ? '<div style="padding:.6rem;color:#888;font-size:.75rem">Mostrando 400 de ' + data.length + '</div>' : '';
+            const el = document.getElementById(id); if (!el) return;
+            el.innerHTML = '<div class="cont-table-scroll"><table><thead>' + head + '</thead><tbody>' + body + '</tbody></table></div>' + more;
+            el.querySelectorAll('th[data-i]').forEach(th => th.addEventListener('click', () => { const i = +th.dataset.i; const cur = contTablesReg[id]._sort; contRenderTable(id, contTablesReg[id].rows, contTablesReg[id].cols, { i, dir: (cur.i === i) ? -cur.dir : 1 }); }));
         }
 
         async function contFetchAll(table) {
@@ -1400,7 +1422,7 @@
             contChart('chGasMes', 'line', contByMonth(rows), { color: 'rgba(255,199,44,.15)', borderColor: '#FFC72C', borderWidth: 2, fill: true, onSlice: l => setGas('mes', l) });
             document.getElementById('gasTableInfo').textContent = rows.length + ' gastos · ' + contEUR(total);
             const t = rows.slice().sort((a, b) => ('' + (b.fecha || '')).localeCompare('' + (a.fecha || '')));
-            document.getElementById('gasTable').innerHTML = contTable(t, [['fecha', 'Fecha'], ['proveedor', 'Proveedor'], ['tipo_gasto', 'Tipo gasto'], ['competicion', 'Competicion'], ['equipos', 'Equipos', 'arr'], ['importe', 'Importe', 'eur']]);
+            contRenderTable('gasTable', t, [['fecha', 'Fecha', 'date'], ['proveedor', 'Proveedor'], ['tipo_gasto', 'Tipo gasto'], ['competicion', 'Competicion'], ['equipos', 'Equipos', 'arr'], ['importe', 'Importe', 'eur']]);
         }
 
         function renderIngresos() {
@@ -1416,7 +1438,7 @@
             contChart('chIngMes', 'line', contByMonth(rows), { color: 'rgba(46,134,222,.15)', borderColor: '#2E86DE', borderWidth: 2, fill: true, onSlice: l => setIng('mes', l) });
             document.getElementById('ingTableInfo').textContent = rows.length + ' movimientos · ' + contEUR(total);
             const t = rows.slice().sort((a, b) => ('' + (b.fecha_cobro || '')).localeCompare('' + (a.fecha_cobro || '')));
-            document.getElementById('ingTable').innerHTML = contTable(t, [['fecha_cobro', 'Fecha'], ['cliente', 'Cliente'], ['concepto', 'Concepto', 'trunc'], ['categoria_reporte', 'Categoria'], ['tipo_movimiento', 'Tipo'], ['estado', 'Estado', 'estado'], ['importe', 'Importe', 'eur']]);
+            contRenderTable('ingTable', t, [['fecha_cobro', 'Fecha', 'date'], ['cliente', 'Cliente'], ['concepto', 'Concepto', 'trunc'], ['categoria_reporte', 'Categoria'], ['tipo_movimiento', 'Tipo'], ['estado', 'Estado', 'estado'], ['importe', 'Importe', 'eur']]);
         }
 
         function gasFiltered() {
@@ -1463,33 +1485,40 @@
             const ic = document.getElementById('ingClear'); if (ic) ic.addEventListener('click', () => { Object.keys(ingF).forEach(k => ingF[k] = ''); renderIngresos(); });
         })();
         // ═══════════════ BANCOS + MAPEOS ═══════════════
-        let bancoData = [], mapeosRaw = [], mapaProv = {}, mapaSub = {}, bancoLoaded = false;
+        let bancoData = [], mapeosRaw = [], bancoLoaded = false, mapLadoSel = 'gastos', mapSort = { by: 'total', dir: -1 };
+        let mapaGT = {}, mapaGS = {}, mapaIT = {}, mapaIS = {};
         const bgasF = { banco: '', tipo: '', subtipo: '', proveedor: '', desde: '', hasta: '' };
-        const bingF = { banco: '', categoria: '', proveedor: '', desde: '', hasta: '' };
+        const bingF = { banco: '', tipo: '', subtipo: '', proveedor: '', desde: '', hasta: '' };
         const BGAS_LABELS = { banco: 'Banco', tipo: 'Tipo', subtipo: 'Subtipo', proveedor: 'Proveedor', desde: 'Desde', hasta: 'Hasta' };
-        const BING_LABELS = { banco: 'Banco', categoria: 'Tipo', proveedor: 'Origen', desde: 'Desde', hasta: 'Hasta' };
-        const tiposDe = prov => { const t = mapaProv[prov]; return (t && t.length) ? t : null; };
-        const subDe = prov => { const t = mapaSub[prov]; return (t && t.length) ? t : null; };
-        function bancoSumByTipo(rows) {
-            const m = {};
-            rows.forEach(r => { const tps = tiposDe(r.contraparte) || [r.categoria || '(sin tipo)']; const sh = Math.abs(Number(r.importe) || 0) / tps.length; tps.forEach(t => m[t] = (m[t] || 0) + sh); });
-            return m;
-        }
+        const BING_LABELS = { banco: 'Banco', tipo: 'Tipo', subtipo: 'Subtipo', proveedor: 'Origen', desde: 'Desde', hasta: 'Hasta' };
+        const mapPlain = t => !String(t).startsWith('sub:');
+        const splitTipos = arr => ({ tipos: (arr || []).filter(mapPlain), subs: (arr || []).filter(t => !mapPlain(t)).map(t => t.slice(4)) });
+        function tiposGasto(r) { if (r.banco === 'SumUp') return ['Gastos Bancarios']; const t = mapaGT[r.contraparte]; return (t && t.length) ? t : [r.categoria || '(sin tipo)']; }
+        function subGasto(r) { if (r.banco === 'SumUp') return []; const t = mapaGS[r.contraparte]; return (t && t.length) ? t : []; }
+        function tiposIng(r) { if (r.banco === 'SumUp') return ['Venta Datafono']; const t = mapaIT[r.contraparte]; return (t && t.length) ? t : [r.categoria || '(sin tipo)']; }
+        function subIng(r) { if (r.banco === 'SumUp') return []; const t = mapaIS[r.contraparte]; return (t && t.length) ? t : []; }
+        function bancoSumFn(rows, fn) { const m = {}; rows.forEach(r => { const tps = fn(r), arr = tps.length ? tps : ['(sin tipo)']; const sh = Math.abs(Number(r.importe) || 0) / arr.length; arr.forEach(t => m[t] = (m[t] || 0) + sh); }); return m; }
         function bancoSumAbs(rows, k) { const m = {}; rows.forEach(r => { const v = (r[k] == null || r[k] === '') ? '(sin dato)' : r[k]; m[v] = (m[v] || 0) + Math.abs(Number(r.importe) || 0); }); return m; }
         function bancoByMonth(rows) { const m = {}; rows.forEach(r => { if (r.mes) m[r.mes] = (m[r.mes] || 0) + Math.abs(Number(r.importe) || 0); }); return Object.entries(m).sort((a, b) => a[0] < b[0] ? -1 : 1); }
         const gastosBancoBase = () => bancoData.filter(r => r.tipo === 'gasto' && !r.es_interno && !r.es_tarjeta_agregada);
         const ingresosBancoBase = () => bancoData.filter(r => r.tipo === 'ingreso' && !r.es_interno);
-
+        const canonSide = (pfx, sub) => { const s = new Set(); mapeosRaw.filter(m => (m.proveedor || '').startsWith(pfx)).forEach(m => (m.tipos || []).forEach(t => { const isSub = !mapPlain(t); if (sub && isSub) s.add(t.slice(4)); else if (!sub && !isSub) s.add(t); })); return [...s].sort(); };
+        function rebuildMaps() {
+            mapaGT = {}; mapaGS = {}; mapaIT = {}; mapaIS = {};
+            mapeosRaw.forEach(m => { const key = m.proveedor || '', sp = splitTipos(m.tipos); if (key.startsWith('G:')) { mapaGT[key.slice(2)] = sp.tipos; mapaGS[key.slice(2)] = sp.subs; } else if (key.startsWith('I:')) { mapaIT[key.slice(2)] = sp.tipos; mapaIS[key.slice(2)] = sp.subs; } });
+        }
+        function fillBancoFilters() {
+            contFill('bgasTipo', [...new Set(gastosBancoBase().flatMap(tiposGasto))].sort()); contFill('bgasSub', canonSide('G:', true));
+            contFill('bingTipo', [...new Set(ingresosBancoBase().flatMap(tiposIng))].sort()); contFill('bingSub', canonSide('I:', true));
+        }
         async function loadBancos() {
             const [mv, mp] = await Promise.all([contFetchAll('banco_movimientos'), contFetchAll('mapeos')]);
-            bancoData = mv; mapeosRaw = mp; mapaProv = {}; mapaSub = {};
-            mp.forEach(m => { const all = m.tipos || []; mapaProv[m.proveedor] = all.filter(mapPlain); mapaSub[m.proveedor] = all.filter(t => !mapPlain(t)).map(t => t.slice(4)); });
+            bancoData = mv; mapeosRaw = mp; rebuildMaps();
             const bancos = [...new Set(bancoData.map(r => r.banco).filter(Boolean))].sort();
             contFill('bgasBanco', bancos); contFill('bingBanco', bancos);
-            contFill('bgasTipo', mapCanon('tipos')); contFill('bgasSub', mapCanon('subtipos'));
             contFill('bgasProv', [...new Set(gastosBancoBase().map(r => r.contraparte).filter(Boolean))].sort());
             contFill('bingProv', [...new Set(ingresosBancoBase().map(r => r.contraparte).filter(Boolean))].sort());
-            contFill('bingCat', [...new Set(ingresosBancoBase().flatMap(r => tiposDe(r.contraparte) || [r.categoria]).filter(Boolean))].sort());
+            fillBancoFilters();
             renderBancoGastos(); renderBancoIngresos(); renderMapeos();
         }
 
@@ -1499,68 +1528,68 @@
             let rows = gastosBancoBase();
             if (bgasF.banco) rows = rows.filter(r => r.banco === bgasF.banco);
             if (bgasF.proveedor) rows = rows.filter(r => r.contraparte === bgasF.proveedor);
-            if (bgasF.tipo) rows = rows.filter(r => (tiposDe(r.contraparte) || [r.categoria]).includes(bgasF.tipo));
-            if (bgasF.subtipo) rows = rows.filter(r => (subDe(r.contraparte) || []).includes(bgasF.subtipo));
+            if (bgasF.tipo) rows = rows.filter(r => tiposGasto(r).includes(bgasF.tipo));
+            if (bgasF.subtipo) rows = rows.filter(r => subGasto(r).includes(bgasF.subtipo));
             if (bgasF.desde) rows = rows.filter(r => ('' + (r.fecha || '')) >= bgasF.desde);
             if (bgasF.hasta) rows = rows.filter(r => ('' + (r.fecha || '')) <= bgasF.hasta);
             const total = rows.reduce((s, r) => s + Math.abs(Number(r.importe) || 0), 0);
             const provs = new Set(rows.map(r => r.contraparte)).size;
             document.getElementById('bgasKpis').innerHTML = [['Total gastos', contEUR(total)], ['Movimientos', rows.length], ['Proveedores', provs], ['Promedio', contEUR(rows.length ? total / rows.length : 0)]].map(k => '<div class="cont-kpi"><div class="v">' + k[1] + '</div><div class="l">' + k[0] + '</div></div>').join('');
             contChart('chBgasBanco', 'doughnut', contEntries(bancoSumAbs(rows, 'banco')));
-            contChart('chBgasTipo', 'bar', contEntries(bancoSumByTipo(rows)), { color: '#2E86DE', onSlice: l => { bgasF.tipo = (bgasF.tipo === l ? '' : l); renderBancoGastos(); } });
+            contChart('chBgasTipo', 'bar', contEntries(bancoSumFn(rows, tiposGasto)), { color: '#2E86DE', onSlice: l => { bgasF.tipo = (bgasF.tipo === l ? '' : l); renderBancoGastos(); } });
             contChart('chBgasMes', 'line', bancoByMonth(rows), { color: 'rgba(231,76,60,.15)', borderColor: '#E74C3C', borderWidth: 2, fill: true });
             contChart('chBgasProv', 'bar', contEntries(bancoSumAbs(rows, 'contraparte')).slice(0, 25), { color: '#FFC72C', horizontal: true, onSlice: l => { bgasF.proveedor = (bgasF.proveedor === l ? '' : l); renderBancoGastos(); } });
             document.getElementById('bgasInfo').textContent = rows.length + ' mov · ' + contEUR(total);
-            const t = rows.slice().sort((a, b) => ('' + (b.fecha || '')).localeCompare('' + (a.fecha || ''))).map(r => ({ ...r, _imp: Math.abs(Number(r.importe) || 0), _tipo: (tiposDe(r.contraparte) || [r.categoria || '—']).join(', '), _sub: (subDe(r.contraparte) || ['—']).join(', ') }));
-            document.getElementById('bgasTable').innerHTML = contTable(t, [['fecha', 'Fecha'], ['banco', 'Banco'], ['contraparte', 'Proveedor', 'trunc'], ['_tipo', 'Tipo'], ['_sub', 'Subtipo'], ['_imp', 'Importe', 'eur']]);
+            const t = rows.map(r => ({ ...r, _imp: Math.abs(Number(r.importe) || 0), _tipo: tiposGasto(r).join(', '), _sub: (subGasto(r).join(', ') || '—') }));
+            contRenderTable('bgasTable', t, [['fecha', 'Fecha', 'date'], ['banco', 'Banco'], ['contraparte', 'Proveedor', 'trunc'], ['_tipo', 'Tipo'], ['_sub', 'Subtipo'], ['_imp', 'Importe', 'eur']]);
         }
 
         function renderBancoIngresos() {
-            setVal('bingBanco', bingF.banco); setVal('bingCat', bingF.categoria); setVal('bingProv', bingF.proveedor); setVal('bingDesde', bingF.desde); setVal('bingHasta', bingF.hasta);
+            setVal('bingBanco', bingF.banco); setVal('bingTipo', bingF.tipo); setVal('bingSub', bingF.subtipo); setVal('bingProv', bingF.proveedor); setVal('bingDesde', bingF.desde); setVal('bingHasta', bingF.hasta);
             contChips('bingChips', bingF, BING_LABELS, renderBancoIngresos);
             let rows = ingresosBancoBase();
             if (bingF.banco) rows = rows.filter(r => r.banco === bingF.banco);
             if (bingF.proveedor) rows = rows.filter(r => r.contraparte === bingF.proveedor);
-            if (bingF.categoria) rows = rows.filter(r => (tiposDe(r.contraparte) || [r.categoria]).includes(bingF.categoria));
+            if (bingF.tipo) rows = rows.filter(r => tiposIng(r).includes(bingF.tipo));
+            if (bingF.subtipo) rows = rows.filter(r => subIng(r).includes(bingF.subtipo));
             if (bingF.desde) rows = rows.filter(r => ('' + (r.fecha || '')) >= bingF.desde);
             if (bingF.hasta) rows = rows.filter(r => ('' + (r.fecha || '')) <= bingF.hasta);
             const total = rows.reduce((s, r) => s + (Number(r.importe) || 0), 0);
             const provs = new Set(rows.map(r => r.contraparte)).size;
             document.getElementById('bingKpis').innerHTML = [['Total ingresos', contEUR(total)], ['Movimientos', rows.length], ['Orígenes', provs]].map(k => '<div class="cont-kpi"><div class="v">' + k[1] + '</div><div class="l">' + k[0] + '</div></div>').join('');
-            contChart('chBingCat', 'doughnut', contEntries(bancoSumByTipo(rows)), { onSlice: l => { bingF.categoria = (bingF.categoria === l ? '' : l); renderBancoIngresos(); } });
+            contChart('chBingCat', 'doughnut', contEntries(bancoSumFn(rows, tiposIng)), { onSlice: l => { bingF.tipo = (bingF.tipo === l ? '' : l); renderBancoIngresos(); } });
             contChart('chBingBanco', 'bar', contEntries(bancoSumAbs(rows, 'banco')), { color: '#28B463' });
             contChart('chBingMes', 'line', bancoByMonth(rows), { color: 'rgba(40,180,99,.15)', borderColor: '#28B463', borderWidth: 2, fill: true });
             document.getElementById('bingInfo').textContent = rows.length + ' mov · ' + contEUR(total);
-            const t = rows.slice().sort((a, b) => ('' + (b.fecha || '')).localeCompare('' + (a.fecha || ''))).map(r => ({ ...r, _tipo: (tiposDe(r.contraparte) || [r.categoria || '—']).join(', ') }));
-            document.getElementById('bingTable').innerHTML = contTable(t, [['fecha', 'Fecha'], ['banco', 'Banco'], ['contraparte', 'Origen', 'trunc'], ['_tipo', 'Tipo (mapeos)'], ['importe', 'Importe', 'eur']]);
+            const t = rows.map(r => ({ ...r, _tipo: tiposIng(r).join(', '), _sub: (subIng(r).join(', ') || '—') }));
+            contRenderTable('bingTable', t, [['fecha', 'Fecha', 'date'], ['banco', 'Banco'], ['contraparte', 'Origen', 'trunc'], ['_tipo', 'Tipo'], ['_sub', 'Subtipo'], ['importe', 'Importe', 'eur']]);
         }
 
-        const mapPlain = t => !String(t).startsWith('sub:');
-        const mapCanon = field => { const s = new Set(); mapeosRaw.forEach(m => (m.tipos || []).forEach(t => { if (field === 'tipos') { if (mapPlain(t)) s.add(t); } else if (!mapPlain(t)) s.add(t.slice(4)); })); return [...s].sort(); };
-        const mapCurValues = (m, field) => (m.tipos || []).filter(t => field === 'tipos' ? mapPlain(t) : !mapPlain(t)).map(t => field === 'tipos' ? t : t.slice(4));
         function renderMapeos() {
+            const gastoLado = mapLadoSel === 'gastos', prefix = gastoLado ? 'G:' : 'I:';
+            document.querySelectorAll('.map-ladobtn').forEach(b => b.classList.toggle('active', b.dataset.lado === mapLadoSel));
             const q = (val('mapBuscar') || '').toLowerCase();
-            const totG = {}, totI = {};
-            gastosBancoBase().forEach(r => { totG[r.contraparte] = (totG[r.contraparte] || 0) + Math.abs(Number(r.importe) || 0); });
-            ingresosBancoBase().forEach(r => { totI[r.contraparte] = (totI[r.contraparte] || 0) + Math.abs(Number(r.importe) || 0); });
-            const totOf = p => (totG[p] || 0) + (totI[p] || 0);
-            let list = mapeosRaw.slice().sort((a, b) => totOf(b.proveedor) - totOf(a.proveedor));
-            if (q) list = list.filter(m => (((m.proveedor || '') + ' ' + (m.tipos || []).map(t => t.startsWith('sub:') ? t.slice(4) : t).join(' ')).toLowerCase().includes(q)));
-            document.getElementById('mapInfo').textContent = list.length + ' proveedores';
-            const canonT = mapCanon('tipos'), canonS = mapCanon('subtipos');
+            const tot = {};
+            (gastoLado ? gastosBancoBase() : ingresosBancoBase()).forEach(r => { tot[r.contraparte] = (tot[r.contraparte] || 0) + Math.abs(Number(r.importe) || 0); });
+            let list = mapeosRaw.filter(m => (m.proveedor || '').startsWith(prefix));
+            if (q) list = list.filter(m => ((m.proveedor.slice(2) + ' ' + (m.tipos || []).map(t => t.startsWith('sub:') ? t.slice(4) : t).join(' ')).toLowerCase().includes(q)));
+            list.sort((a, b) => { const an = a.proveedor.slice(2), bn = b.proveedor.slice(2); let av, bv; if (mapSort.by === 'prov') { av = an.toLowerCase(); bv = bn.toLowerCase(); } else { av = tot[an] || 0; bv = tot[bn] || 0; } return (av < bv ? -1 : av > bv ? 1 : 0) * mapSort.dir; });
+            document.getElementById('mapInfo').textContent = list.length + (gastoLado ? ' proveedores' : ' orígenes');
+            const canonT = canonSide(prefix, false), canonS = canonSide(prefix, true);
             const cell = (m, field, canon) => {
                 const pv = encodeURIComponent(m.proveedor);
-                const cur = mapCurValues(m, field);
+                const cur = (m.tipos || []).filter(t => field === 'tipos' ? mapPlain(t) : !mapPlain(t)).map(t => field === 'tipos' ? t : t.slice(4));
                 const chips = cur.map(t => '<span class="map-chip">' + t + ' <i class="fas fa-times" data-prov="' + pv + '" data-f="' + field + '" data-t="' + encodeURIComponent(t) + '"></i></span>').join('');
                 const opts = canon.filter(c => !cur.includes(c)).map(c => '<option value="' + c.replace(/"/g, '&quot;') + '">' + c + '</option>').join('');
                 const sel = '<select class="map-add" data-prov="' + pv + '" data-f="' + field + '"><option value="">＋</option>' + opts + '<option value="__new__">＋ nuevo…</option></select>';
                 return '<td style="width:29%"><div class="map-tipos">' + chips + sel + '</div></td>';
             };
-            const ladoBadge = p => (totG[p] && totI[p]) ? '<span class="map-lado ambos">Ambos</span>' : (totI[p] ? '<span class="map-lado ing">Ingreso</span>' : '<span class="map-lado gas">Gasto</span>');
-            const body = list.map(m => '<tr><td>' + (m.proveedor || '') + ' ' + ladoBadge(m.proveedor) + '</td><td style="color:#667;white-space:nowrap">' + contEUR(totOf(m.proveedor)) + '</td>' +
+            const arrow = by => mapSort.by === by ? (mapSort.dir > 0 ? ' ▲' : ' ▼') : ' <span style="opacity:.25">↕</span>';
+            const body = list.map(m => '<tr><td>' + m.proveedor.slice(2) + '</td><td style="color:#667;white-space:nowrap">' + contEUR(tot[m.proveedor.slice(2)] || 0) + '</td>' +
                 cell(m, 'tipos', canonT) + cell(m, 'subtipos', canonS) +
                 '<td><span class="map-status" data-prov="' + encodeURIComponent(m.proveedor) + '"></span></td></tr>').join('');
-            document.getElementById('mapeosTable').innerHTML = '<div class="cont-table-scroll"><table><thead><tr><th>Proveedor</th><th>Total</th><th>Tipo(s)</th><th>Subtipo(s)</th><th></th></tr></thead><tbody>' + body + '</tbody></table></div>';
+            document.getElementById('mapeosTable').innerHTML = '<div class="cont-table-scroll"><table><thead><tr><th class="mapsort" data-by="prov" style="cursor:pointer;user-select:none">' + (gastoLado ? 'Proveedor' : 'Origen') + arrow('prov') + '</th><th class="mapsort" data-by="total" style="cursor:pointer;user-select:none">Total' + arrow('total') + '</th><th>Tipo(s)</th><th>Subtipo(s)</th><th></th></tr></thead><tbody>' + body + '</tbody></table></div>';
+            document.querySelectorAll('#mapeosTable .mapsort').forEach(th => th.addEventListener('click', () => { const by = th.dataset.by; mapSort = { by, dir: mapSort.by === by ? -mapSort.dir : (by === 'prov' ? 1 : -1) }; renderMapeos(); }));
             document.querySelectorAll('#mapeosTable .map-chip i').forEach(x => x.addEventListener('click', () => removeField(decodeURIComponent(x.dataset.prov), x.dataset.f, decodeURIComponent(x.dataset.t))));
             document.querySelectorAll('#mapeosTable .map-add').forEach(s => s.addEventListener('change', () => {
                 const prov = decodeURIComponent(s.dataset.prov), f = s.dataset.f, v = s.value; s.value = '';
@@ -1579,18 +1608,18 @@
             const { error } = await sb.from('mapeos').update({ tipos: raw }).eq('proveedor', prov);
             if (error) { if (st) st.innerHTML = '<i class="fas fa-times" style="color:#c0392b" title="' + (error.message || '') + '"></i>'; return; }
             const mr = mapeosRaw.find(m => m.proveedor === prov); if (mr) mr.tipos = raw;
-            mapaProv[prov] = raw.filter(mapPlain); mapaSub[prov] = raw.filter(t => !mapPlain(t)).map(t => t.slice(4));
-            contFill('bgasTipo', mapCanon('tipos')); contFill('bgasSub', mapCanon('subtipos'));
+            rebuildMaps(); fillBancoFilters();
             renderMapeos(); renderBancoGastos(); renderBancoIngresos();
         }
         (function wireBancos() {
             const gm = { bgasBanco: 'banco', bgasTipo: 'tipo', bgasSub: 'subtipo', bgasProv: 'proveedor', bgasDesde: 'desde', bgasHasta: 'hasta' };
             Object.entries(gm).forEach(([id, dim]) => { const e = document.getElementById(id); if (e) e.addEventListener('change', () => { bgasF[dim] = e.value; renderBancoGastos(); }); });
             const gc = document.getElementById('bgasClear'); if (gc) gc.addEventListener('click', () => { Object.keys(bgasF).forEach(k => bgasF[k] = ''); renderBancoGastos(); });
-            const im = { bingBanco: 'banco', bingCat: 'categoria', bingProv: 'proveedor', bingDesde: 'desde', bingHasta: 'hasta' };
+            const im = { bingBanco: 'banco', bingTipo: 'tipo', bingSub: 'subtipo', bingProv: 'proveedor', bingDesde: 'desde', bingHasta: 'hasta' };
             Object.entries(im).forEach(([id, dim]) => { const e = document.getElementById(id); if (e) e.addEventListener('change', () => { bingF[dim] = e.value; renderBancoIngresos(); }); });
             const ic = document.getElementById('bingClear'); if (ic) ic.addEventListener('click', () => { Object.keys(bingF).forEach(k => bingF[k] = ''); renderBancoIngresos(); });
             const mb = document.getElementById('mapBuscar'); if (mb) mb.addEventListener('input', renderMapeos);
+            document.querySelectorAll('.map-ladobtn').forEach(b => b.addEventListener('click', () => { mapLadoSel = b.dataset.lado; renderMapeos(); }));
         })();
 
         // ── Deep-linking de tabs por URL: /admin?tab=socios|jugadores|ingresos|gastos ──
@@ -1617,6 +1646,7 @@
             if (!v) { try { v = (sessionStorage.getItem('adminTab') || '').toLowerCase(); } catch (e) {} }
             const map = { socios: ['socios'], jugadores: ['jugadores'], contabilidad: ['contabilidad', 'gestion', 'ingresos'], administracion: ['contabilidad', 'gestion', 'ingresos'], ingresos: ['contabilidad', 'gestion', 'ingresos'], gastos: ['contabilidad', 'gestion', 'gastos'], facturas: ['contabilidad', 'gestion', 'gastos'], bancos: ['contabilidad', 'bancos', 'bgastos'], 'banco-gastos': ['contabilidad', 'bancos', 'bgastos'], 'banco-ingresos': ['contabilidad', 'bancos', 'bingresos'], mapeos: ['contabilidad', 'mapeos'] };
             const t = map[v]; if (!t) return;
+            if (t[1] === 'mapeos') { const mb = document.querySelector('.cont-source[data-src="mapeos"]'); if (!mb || mb.style.display === 'none') return; }
             activateTab(t[0]); if (t[1]) activateSource(t[1]); if (t[2]) activateSub(t[2]);
         }
 
