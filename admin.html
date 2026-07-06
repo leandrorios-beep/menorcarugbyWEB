@@ -1180,6 +1180,7 @@
             loginScreen.style.display = 'none';
             dashboard.style.display = 'block';
             await Promise.all([loadSocios(), loadPlayers()]);
+            applyTabFromUrl();
         }
 
         // ── Tabs ──
@@ -1189,6 +1190,7 @@
                 document.querySelectorAll('.admin-tab-panel').forEach(p => p.classList.remove('active'));
                 tab.classList.add('active');
                 document.getElementById('panel-' + tab.dataset.tab).classList.add('active');
+                syncUrl();
             });
         });
 
@@ -1298,12 +1300,32 @@
 
         ['gasFiltroComp', 'gasFiltroTipo', 'gasFiltroEquipo'].forEach(id => { const e = document.getElementById(id); if (e) e.addEventListener('change', renderGastos); });
         ['ingFiltroEstado', 'ingFiltroCategoria', 'ingFiltroTemporada'].forEach(id => { const e = document.getElementById(id); if (e) e.addEventListener('change', renderIngresos); });
+        // ── Deep-linking de tabs por URL: /admin?tab=socios|jugadores|ingresos|gastos ──
+        try { const _t = new URLSearchParams(window.location.search).get('tab'); if (_t) sessionStorage.setItem('adminTab', _t); } catch (e) {}
+        function contCurrentUrlValue() {
+            const at = document.querySelector('.admin-tab.active');
+            const tab = at ? at.dataset.tab : 'socios';
+            if (tab === 'contabilidad') { const s = document.querySelector('.cont-subtab.active'); return s ? s.dataset.sub : 'ingresos'; }
+            return tab;
+        }
+        function syncUrl() { try { const v = contCurrentUrlValue(); const u = new URL(window.location.href); u.searchParams.set('tab', v); history.replaceState(null, '', u); sessionStorage.setItem('adminTab', v); } catch (e) {} }
+        function activateTab(name) { const b = document.querySelector('.admin-tab[data-tab="' + name + '"]'); if (b) b.click(); }
+        function activateSub(name) { const b = document.querySelector('.cont-subtab[data-sub="' + name + '"]'); if (b) b.click(); }
+        function applyTabFromUrl() {
+            let v = (new URLSearchParams(window.location.search).get('tab') || '').toLowerCase();
+            if (!v) { try { v = (sessionStorage.getItem('adminTab') || '').toLowerCase(); } catch (e) {} }
+            const map = { socios: ['socios', null], jugadores: ['jugadores', null], contabilidad: ['contabilidad', 'ingresos'], administracion: ['contabilidad', 'ingresos'], ingresos: ['contabilidad', 'ingresos'], gastos: ['contabilidad', 'gastos'] };
+            const t = map[v]; if (!t) return;
+            activateTab(t[0]); if (t[1]) activateSub(t[1]);
+        }
+
         document.querySelectorAll('.cont-subtab').forEach(b => b.addEventListener('click', () => {
             document.querySelectorAll('.cont-subtab').forEach(x => x.classList.remove('active'));
             document.querySelectorAll('.cont-subpanel').forEach(x => x.classList.remove('active'));
             b.classList.add('active');
             document.getElementById('sub-' + b.dataset.sub).classList.add('active');
             if (b.dataset.sub === 'gastos') renderGastos(); else renderIngresos();
+            syncUrl();
         }));
         (function () { const b = document.querySelector('.admin-tab[data-tab="contabilidad"]'); if (b) b.addEventListener('click', () => { if (!contLoaded) { contLoaded = true; loadContabilidad(); } }); })();
 
