@@ -894,6 +894,14 @@
                   #panel-contabilidad .cont-subtab{background:rgba(255,255,255,.04);color:#bbb;border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:.55rem 1.15rem;font-family:inherit;font-weight:600;font-size:.9rem;cursor:pointer;display:flex;align-items:center;gap:.45rem;transition:all .15s}
                   #panel-contabilidad .cont-subtab:hover{color:#fff}
                   #panel-contabilidad .cont-subtab.active{background:var(--primary-yellow,#FFC72C);color:var(--primary-navy,#182B49);border-color:var(--primary-yellow,#FFC72C)}
+                  #panel-contabilidad .cont-sources{display:flex;gap:.6rem;flex-wrap:wrap;margin-bottom:1.35rem}
+                  #panel-contabilidad .cont-source{background:transparent;color:#9aa;border:1px solid rgba(255,255,255,.15);border-radius:10px;padding:.7rem 1.4rem;font-family:inherit;font-weight:700;font-size:1rem;cursor:pointer;display:flex;align-items:center;gap:.55rem;transition:all .15s}
+                  #panel-contabilidad .cont-source:hover{color:#fff;border-color:rgba(255,255,255,.35)}
+                  #panel-contabilidad .cont-source.active{background:var(--primary-navy,#182B49);color:var(--primary-yellow,#FFC72C);border-color:var(--primary-yellow,#FFC72C);box-shadow:0 0 0 1px var(--primary-yellow,#FFC72C) inset}
+                  #panel-contabilidad .cont-srcpanel{display:none}
+                  #panel-contabilidad .cont-srcpanel.active{display:block}
+                  #panel-contabilidad .cont-placeholder{background:rgba(255,255,255,.03);border:1px dashed rgba(255,255,255,.2);border-radius:12px;padding:2.5rem 1.5rem;text-align:center;color:#9aa}
+                  #panel-contabilidad .cont-placeholder code{background:rgba(255,255,255,.08);padding:.1rem .4rem;border-radius:5px;color:#eee}
                   #panel-contabilidad .cont-subpanel{display:none}
                   #panel-contabilidad .cont-subpanel.active{display:block}
                   #panel-contabilidad .cont-kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:.85rem;margin-bottom:1.25rem}
@@ -928,9 +936,15 @@
                   #panel-contabilidad .cont-badge.anulado{background:rgba(150,150,150,.2);color:#aaa}
                 </style>
 
+                <div class="cont-sources">
+                    <button class="cont-source active" data-src="gestion"><i class="fas fa-diagram-project"></i> Sistema de gestion</button>
+                    <button class="cont-source" data-src="bancos"><i class="fas fa-building-columns"></i> Bancos</button>
+                </div>
+
+                <div class="cont-srcpanel active" id="src-gestion">
                 <div class="cont-subtabs">
                     <button class="cont-subtab active" data-sub="ingresos"><i class="fas fa-arrow-trend-up"></i> Ingresos</button>
-                    <button class="cont-subtab" data-sub="gastos"><i class="fas fa-arrow-trend-down"></i> Gastos</button>
+                    <button class="cont-subtab" data-sub="gastos"><i class="fas fa-arrow-trend-down"></i> Gastos (facturas)</button>
                 </div>
 
                 <!-- INGRESOS -->
@@ -982,6 +996,15 @@
                     <div class="admin-table-wrapper">
                         <div class="admin-table-header"><h2>Gastos</h2><span id="gasTableInfo" style="color:#9aa;font-size:.85rem"></span></div>
                         <div id="gasTable"></div>
+                    </div>
+                </div>
+                </div>
+
+                <div class="cont-srcpanel" id="src-bancos">
+                    <div class="cont-placeholder">
+                        <div style="font-size:2.4rem;color:var(--primary-yellow,#FFC72C);margin-bottom:.8rem"><i class="fas fa-building-columns"></i></div>
+                        <h3 style="margin:0 0 .5rem;color:#eee">Bancos &mdash; proximamente</h3>
+                        <p style="max-width:580px;margin:0 auto;line-height:1.6">Aca van a ir los <strong>Ingresos</strong> y <strong>Gastos</strong> desde los extractos bancarios y tarjetas (ultimos 12 meses) y los &laquo;cargos&raquo;.<br>Subi los archivos a <code>admin/bancos</code> y avisame para procesarlos y cruzarlos con las facturas.</p>
                     </div>
                 </div>
             </div>
@@ -1379,26 +1402,41 @@
         function contCurrentUrlValue() {
             const at = document.querySelector('.admin-tab.active');
             const tab = at ? at.dataset.tab : 'socios';
-            if (tab === 'contabilidad') { const s = document.querySelector('.cont-subtab.active'); return s ? s.dataset.sub : 'ingresos'; }
-            return tab;
+            if (tab !== 'contabilidad') return tab;
+            const sEl = document.querySelector('.cont-source.active');
+            const src = sEl ? sEl.dataset.src : 'gestion';
+            const sp = document.getElementById('src-' + src);
+            const subEl = sp ? sp.querySelector('.cont-subtab.active') : null;
+            const sub = subEl ? subEl.dataset.sub : (src === 'bancos' ? 'bingresos' : 'ingresos');
+            if (src === 'bancos') return (sub === 'bgastos') ? 'banco-gastos' : 'banco-ingresos';
+            return (sub === 'gastos') ? 'gastos' : 'ingresos';
         }
         function syncUrl() { try { const v = contCurrentUrlValue(); const u = new URL(window.location.href); u.searchParams.set('tab', v); history.replaceState(null, '', u); sessionStorage.setItem('adminTab', v); } catch (e) {} }
         function activateTab(name) { const b = document.querySelector('.admin-tab[data-tab="' + name + '"]'); if (b) b.click(); }
+        function activateSource(name) { const b = document.querySelector('.cont-source[data-src="' + name + '"]'); if (b) b.click(); }
         function activateSub(name) { const b = document.querySelector('.cont-subtab[data-sub="' + name + '"]'); if (b) b.click(); }
         function applyTabFromUrl() {
             let v = (new URLSearchParams(window.location.search).get('tab') || '').toLowerCase();
             if (!v) { try { v = (sessionStorage.getItem('adminTab') || '').toLowerCase(); } catch (e) {} }
-            const map = { socios: ['socios', null], jugadores: ['jugadores', null], contabilidad: ['contabilidad', 'ingresos'], administracion: ['contabilidad', 'ingresos'], ingresos: ['contabilidad', 'ingresos'], gastos: ['contabilidad', 'gastos'] };
+            const map = { socios: ['socios'], jugadores: ['jugadores'], contabilidad: ['contabilidad', 'gestion', 'ingresos'], administracion: ['contabilidad', 'gestion', 'ingresos'], ingresos: ['contabilidad', 'gestion', 'ingresos'], gastos: ['contabilidad', 'gestion', 'gastos'], facturas: ['contabilidad', 'gestion', 'gastos'], bancos: ['contabilidad', 'bancos', 'bingresos'], 'banco-ingresos': ['contabilidad', 'bancos', 'bingresos'], 'banco-gastos': ['contabilidad', 'bancos', 'bgastos'] };
             const t = map[v]; if (!t) return;
-            activateTab(t[0]); if (t[1]) activateSub(t[1]);
+            activateTab(t[0]); if (t[1]) activateSource(t[1]); if (t[2]) activateSub(t[2]);
         }
 
-        document.querySelectorAll('.cont-subtab').forEach(b => b.addEventListener('click', () => {
-            document.querySelectorAll('.cont-subtab').forEach(x => x.classList.remove('active'));
-            document.querySelectorAll('.cont-subpanel').forEach(x => x.classList.remove('active'));
+        document.querySelectorAll('.cont-source').forEach(b => b.addEventListener('click', () => {
+            document.querySelectorAll('.cont-source').forEach(x => x.classList.remove('active'));
+            document.querySelectorAll('.cont-srcpanel').forEach(x => x.classList.remove('active'));
             b.classList.add('active');
-            document.getElementById('sub-' + b.dataset.sub).classList.add('active');
-            if (b.dataset.sub === 'gastos') renderGastos(); else renderIngresos();
+            const p = document.getElementById('src-' + b.dataset.src); if (p) p.classList.add('active');
+            syncUrl();
+        }));
+        document.querySelectorAll('.cont-subtab').forEach(b => b.addEventListener('click', () => {
+            const scope = b.closest('.cont-srcpanel') || document;
+            scope.querySelectorAll('.cont-subtab').forEach(x => x.classList.remove('active'));
+            scope.querySelectorAll('.cont-subpanel').forEach(x => x.classList.remove('active'));
+            b.classList.add('active');
+            const p = document.getElementById('sub-' + b.dataset.sub); if (p) p.classList.add('active');
+            if (b.dataset.sub === 'gastos') renderGastos(); else if (b.dataset.sub === 'ingresos') renderIngresos();
             syncUrl();
         }));
         (function () { const b = document.querySelector('.admin-tab[data-tab="contabilidad"]'); if (b) b.addEventListener('click', () => { if (!contLoaded) { contLoaded = true; loadContabilidad(); } }); })();
