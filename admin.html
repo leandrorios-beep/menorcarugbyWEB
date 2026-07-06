@@ -1062,7 +1062,7 @@
                 <div class="cont-srcpanel" id="src-mapeos">
                     <p style="color:#9aa;font-size:.9rem;margin:0 0 1rem;line-height:1.5">Editá el <strong>tipo de gasto</strong> de cada proveedor (varios separados por <strong>coma</strong>). Los cambios impactan en <strong>Bancos &rsaquo; Gastos</strong> al instante (Enter o click afuera para guardar).</p>
                     <div class="cont-filters">
-                        <input type="text" id="mapBuscar" placeholder="Buscar proveedor..." style="min-width:260px">
+                        <input type="text" id="mapBuscar" placeholder="Buscar proveedor, tipo o subtipo..." style="min-width:280px">
                         <span id="mapInfo" style="color:#9aa;font-size:.85rem"></span>
                     </div>
                     <div id="mapeosTable"></div>
@@ -1535,7 +1535,7 @@
             const tot = {};
             gastosBancoBase().forEach(r => { tot[r.contraparte] = (tot[r.contraparte] || 0) + Math.abs(Number(r.importe) || 0); });
             let list = mapeosRaw.slice().sort((a, b) => (tot[b.proveedor] || 0) - (tot[a.proveedor] || 0));
-            if (q) list = list.filter(m => (m.proveedor || '').toLowerCase().includes(q));
+            if (q) list = list.filter(m => (((m.proveedor || '') + ' ' + (m.tipos || []).map(t => t.startsWith('sub:') ? t.slice(4) : t).join(' ')).toLowerCase().includes(q)));
             document.getElementById('mapInfo').textContent = list.length + ' proveedores';
             const canonT = mapCanon('tipos'), canonS = mapCanon('subtipos');
             const cell = (m, field, canon) => {
