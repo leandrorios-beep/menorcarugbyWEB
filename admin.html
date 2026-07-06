@@ -831,6 +831,9 @@
                 <button class="admin-tab" data-tab="contabilidad">
                     <i class="fas fa-euro-sign"></i> Administracion / Contabilidad
                 </button>
+                <button class="admin-tab" data-tab="analytics">
+                    <i class="fas fa-chart-line"></i> Analytics
+                </button>
             </div>
 
             <!-- Socios Panel -->
@@ -1078,6 +1081,44 @@
                     <div id="mapeosTable"></div>
                 </div>
             </div>
+
+            <!-- Analytics Panel -->
+            <div class="admin-tab-panel" id="panel-analytics">
+                <style>
+                  #panel-analytics .anl-kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:.85rem;margin-bottom:1.25rem}
+                  #panel-analytics .anl-kpi{background:#fff;border:1px solid #e5e8ec;border-radius:12px;padding:1rem 1.15rem;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+                  #panel-analytics .anl-kpi .v{font-size:1.35rem;font-weight:800;color:#182B49;line-height:1.15}
+                  #panel-analytics .anl-kpi .l{font-size:.7rem;color:#7a8290;text-transform:uppercase;letter-spacing:.5px;margin-top:.3rem}
+                  #panel-analytics .anl-filters{display:flex;gap:.6rem;flex-wrap:wrap;align-items:center;margin-bottom:1.25rem}
+                  #panel-analytics .anl-filters select,#panel-analytics .anl-filters input{background:#fff;color:#333;border:1px solid #cfd4da;border-radius:8px;padding:.5rem .7rem;font-family:inherit;font-size:.85rem}
+                  #panel-analytics .anl-btn{background:#fff;color:#556;border:1px solid #cfd4da;border-radius:8px;padding:.5rem .9rem;font-family:inherit;font-weight:600;font-size:.82rem;cursor:pointer}
+                  #panel-analytics .anl-charts{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:1rem;margin-bottom:1.5rem}
+                  #panel-analytics .anl-card{background:#fff;border:1px solid #e5e8ec;border-radius:12px;padding:1rem;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+                  #panel-analytics .anl-card h4{margin:0 0 .75rem;font-size:.85rem;color:#182B49;font-weight:700}
+                  #panel-analytics .anl-cw{position:relative;height:240px}
+                  #panel-analytics table{width:100%;border-collapse:collapse;font-size:.8rem}
+                  #panel-analytics th,#panel-analytics td{padding:.5rem .6rem;text-align:left;border-bottom:1px solid #eceef1;white-space:nowrap;color:#333}
+                  #panel-analytics th{color:#556;font-weight:700;position:sticky;top:0;background:#f4f6f8}
+                  #panel-analytics .cont-table-scroll{max-height:520px;overflow:auto;border-radius:10px;border:1px solid #e5e8ec}
+                </style>
+                <div class="anl-kpis" id="anlKpis"></div>
+                <div class="anl-filters">
+                    <label style="font-size:.78rem;color:#667">Desde <input type="date" id="anlDesde"></label>
+                    <label style="font-size:.78rem;color:#667">Hasta <input type="date" id="anlHasta"></label>
+                    <select id="anlUsuario"><option value="">Todos los usuarios</option></select>
+                    <select id="anlTipo"><option value="">Todos los tipos</option></select>
+                    <button class="anl-btn" id="anlClear"><i class="fas fa-eraser"></i> Limpiar</button>
+                    <button class="anl-btn" id="anlRefresh"><i class="fas fa-sync-alt"></i> Actualizar</button>
+                </div>
+                <div class="anl-charts">
+                    <div class="anl-card"><h4>Actividad por usuario</h4><div class="anl-cw"><canvas id="chAnlUser"></canvas></div></div>
+                    <div class="anl-card"><h4>Actividad por día</h4><div class="anl-cw"><canvas id="chAnlDay"></canvas></div></div>
+                </div>
+                <div class="admin-table-wrapper">
+                    <div class="admin-table-header"><h2>Registro de actividad</h2><span id="anlInfo" style="color:#9aa;font-size:.85rem"></span></div>
+                    <div id="anlTable"></div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -1251,7 +1292,7 @@
         sb.auth.onAuthStateChange(async (event, session) => {
             if (event === 'SIGNED_IN' && session) {
                 const ok = await checkAuthorized(session.user.email);
-                if (ok) showDashboard();
+                if (ok) { showDashboard(); logAction('login', 'Inicio de sesión', session.user.email); }
                 else {
                     loginError.textContent = 'Tu cuenta (' + session.user.email + ') no esta autorizada.';
                     loginError.classList.add('visible');
@@ -1263,6 +1304,14 @@
         async function checkAuthorized(email) {
             const { data, error } = await sb.from('admin_users').select('email').eq('email', email).single();
             return !error && data;
+        }
+
+        async function logAction(tipo, accion, detalle) {
+            try {
+                const { data: { session } } = await sb.auth.getSession();
+                if (!session) return;
+                await sb.from('admin_logs').insert({ email: session.user.email, tipo: tipo || null, accion: accion || null, detalle: detalle ? ('' + detalle).slice(0, 300) : null });
+            } catch (e) {}
         }
 
         googleLoginBtn.addEventListener('click', async () => {
@@ -1280,6 +1329,7 @@
         });
 
         logoutBtn.addEventListener('click', async () => {
+            await logAction('logout', 'Cierre de sesión');
             try {
                 await sb.auth.signOut();
             } catch (e) {
@@ -1310,6 +1360,7 @@
                 tab.classList.add('active');
                 document.getElementById('panel-' + tab.dataset.tab).classList.add('active');
                 syncUrl();
+                logAction('nav', 'Abrió ' + tab.dataset.tab);
             });
         });
 
@@ -1338,8 +1389,8 @@
             const labels = entries.map(e => e[0]), data = entries.map(e => Math.round(e[1])), circ = (type === 'doughnut' || type === 'pie'), horiz = !!opts.horizontal;
             let scales = {};
             if (!circ) {
-                const valAxis = { ticks: { color: '#9aa', font: { size: 9 }, callback: v => v + '€' }, grid: { color: 'rgba(255,255,255,.05)' } };
-                const catAxis = { ticks: { color: '#9aa', font: { size: 10 } }, grid: { display: false } };
+                const valAxis = { ticks: { color: '#667', font: { size: 9 }, callback: v => opts.count ? v : (v + '€') }, grid: { color: 'rgba(0,0,0,.06)' } };
+                const catAxis = { ticks: { color: '#667', font: { size: 10 } }, grid: { display: false } };
                 scales = horiz ? { x: valAxis, y: catAxis } : { x: catAxis, y: valAxis };
             }
             contCharts[id] = new Chart(el, {
@@ -1349,7 +1400,7 @@
                     responsive: true, maintainAspectRatio: false, indexAxis: horiz ? 'y' : 'x',
                     onHover: (e, els) => { if (e.native && e.native.target) e.native.target.style.cursor = els.length ? 'pointer' : 'default'; },
                     onClick: (e, els, chart) => { if (opts.onSlice && els && els.length) opts.onSlice(chart.data.labels[els[0].index]); },
-                    plugins: { legend: { display: circ, position: 'right', labels: { color: '#ccc', font: { size: 10 }, boxWidth: 12 } }, tooltip: { callbacks: { label: c => ' ' + (c.label ? c.label + ': ' : '') + contEUR(c.raw) } } },
+                    plugins: { legend: { display: circ, position: 'right', labels: { color: '#556', font: { size: 10 }, boxWidth: 12 } }, tooltip: { callbacks: { label: c => ' ' + (c.label ? c.label + ': ' : '') + (opts.count ? c.raw : contEUR(c.raw)) } } },
                     scales
                 }
             });
@@ -1359,6 +1410,7 @@
         function contFmtCell(v, fmt) {
             if (fmt === 'eur') return contEUR(Number(v) || 0);
             if (fmt === 'date') return contFmtDate(v);
+            if (fmt === 'datetime') { const s = '' + (v || ''), d = s.slice(0, 10).split('-'), tm = s.slice(11, 16); return (d.length === 3 && d[0].length === 4) ? (d[2] + '/' + d[1] + '/' + d[0].slice(2) + (tm ? (' ' + tm) : '')) : ((v == null || v === '') ? '—' : v); }
             if (fmt === 'arr') return (Array.isArray(v) && v.length) ? v.join(', ') : '—';
             if (fmt === 'estado') { const cls = ('' + (v || '')).toLowerCase().split(' ')[0]; return '<span class="cont-badge ' + cls + '">' + (v || '—') + '</span>'; }
             if (fmt === 'trunc') return v ? ('' + v).slice(0, 42) : '—';
@@ -1622,6 +1674,44 @@
             document.querySelectorAll('.map-ladobtn').forEach(b => b.addEventListener('click', () => { mapLadoSel = b.dataset.lado; renderMapeos(); }));
         })();
 
+        // ═══════════════ ANALYTICS ═══════════════
+        let logsData = [], analyticsLoaded = false;
+        const anlF = { usuario: '', tipo: '', desde: '', hasta: '' };
+        async function loadAnalytics() {
+            document.getElementById('anlTable').innerHTML = '<div class="admin-loading"><i class="fas fa-spinner fa-spin"></i> Cargando...</div>';
+            const { data, error } = await sb.from('admin_logs').select('*').order('created_at', { ascending: false }).limit(5000);
+            if (error) { document.getElementById('anlTable').innerHTML = '<div style="padding:1rem;color:#c0392b;font-size:.85rem">No se pudo cargar. ¿Creaste la tabla <code>admin_logs</code> en SQL Editor? (' + (error.message || '') + ')</div>'; return; }
+            logsData = data || [];
+            contFill('anlUsuario', [...new Set(logsData.map(l => l.email).filter(Boolean))].sort());
+            contFill('anlTipo', [...new Set(logsData.map(l => l.tipo).filter(Boolean))].sort());
+            renderAnalytics();
+        }
+        function renderAnalytics() {
+            setVal('anlUsuario', anlF.usuario); setVal('anlTipo', anlF.tipo); setVal('anlDesde', anlF.desde); setVal('anlHasta', anlF.hasta);
+            let rows = logsData.slice();
+            if (anlF.usuario) rows = rows.filter(r => r.email === anlF.usuario);
+            if (anlF.tipo) rows = rows.filter(r => r.tipo === anlF.tipo);
+            if (anlF.desde) rows = rows.filter(r => ('' + (r.created_at || '')) >= anlF.desde);
+            if (anlF.hasta) rows = rows.filter(r => ('' + (r.created_at || '')) <= anlF.hasta + 'T23:59:59');
+            const logins = rows.filter(r => r.tipo === 'login').length;
+            const usuarios = new Set(rows.map(r => r.email).filter(Boolean)).size;
+            const kpis = [['Registros', rows.length], ['Logins', logins], ['Usuarios', usuarios], ['Último', rows[0] ? contFmtCell(rows[0].created_at, 'datetime') : '—']];
+            document.getElementById('anlKpis').innerHTML = kpis.map(k => '<div class="anl-kpi"><div class="v">' + k[1] + '</div><div class="l">' + k[0] + '</div></div>').join('');
+            const byUser = {}; rows.forEach(r => byUser[r.email || '?'] = (byUser[r.email || '?'] || 0) + 1);
+            contChart('chAnlUser', 'bar', Object.entries(byUser).sort((a, b) => b[1] - a[1]).slice(0, 15), { color: '#2E86DE', count: true });
+            const byDay = {}; rows.forEach(r => { const d = ('' + (r.created_at || '')).slice(0, 10); if (d) byDay[d] = (byDay[d] || 0) + 1; });
+            contChart('chAnlDay', 'line', Object.entries(byDay).sort((a, b) => a[0] < b[0] ? -1 : 1), { color: 'rgba(46,134,222,.15)', borderColor: '#2E86DE', borderWidth: 2, fill: true, count: true });
+            document.getElementById('anlInfo').textContent = rows.length + ' registros';
+            contRenderTable('anlTable', rows, [['created_at', 'Fecha/hora', 'datetime'], ['email', 'Usuario'], ['tipo', 'Tipo'], ['accion', 'Acción'], ['detalle', 'Detalle', 'trunc']]);
+        }
+        (function wireAnalytics() {
+            const m = { anlUsuario: 'usuario', anlTipo: 'tipo', anlDesde: 'desde', anlHasta: 'hasta' };
+            Object.entries(m).forEach(([id, dim]) => { const e = document.getElementById(id); if (e) e.addEventListener('change', () => { anlF[dim] = e.value; renderAnalytics(); }); });
+            const c = document.getElementById('anlClear'); if (c) c.addEventListener('click', () => { Object.keys(anlF).forEach(k => anlF[k] = ''); renderAnalytics(); });
+            const rf = document.getElementById('anlRefresh'); if (rf) rf.addEventListener('click', loadAnalytics);
+            const b = document.querySelector('.admin-tab[data-tab="analytics"]'); if (b) b.addEventListener('click', () => { if (!analyticsLoaded) { analyticsLoaded = true; loadAnalytics(); } });
+        })();
+
         // ── Deep-linking de tabs por URL: /admin?tab=socios|jugadores|ingresos|gastos ──
         try { const _t = new URLSearchParams(window.location.search).get('tab'); if (_t) sessionStorage.setItem('adminTab', _t); } catch (e) {}
         function contCurrentUrlValue() {
@@ -1644,7 +1734,7 @@
         function applyTabFromUrl() {
             let v = (new URLSearchParams(window.location.search).get('tab') || '').toLowerCase();
             if (!v) { try { v = (sessionStorage.getItem('adminTab') || '').toLowerCase(); } catch (e) {} }
-            const map = { socios: ['socios'], jugadores: ['jugadores'], contabilidad: ['contabilidad', 'gestion', 'ingresos'], administracion: ['contabilidad', 'gestion', 'ingresos'], ingresos: ['contabilidad', 'gestion', 'ingresos'], gastos: ['contabilidad', 'gestion', 'gastos'], facturas: ['contabilidad', 'gestion', 'gastos'], bancos: ['contabilidad', 'bancos', 'bgastos'], 'banco-gastos': ['contabilidad', 'bancos', 'bgastos'], 'banco-ingresos': ['contabilidad', 'bancos', 'bingresos'], mapeos: ['contabilidad', 'mapeos'] };
+            const map = { socios: ['socios'], jugadores: ['jugadores'], contabilidad: ['contabilidad', 'gestion', 'ingresos'], administracion: ['contabilidad', 'gestion', 'ingresos'], ingresos: ['contabilidad', 'gestion', 'ingresos'], gastos: ['contabilidad', 'gestion', 'gastos'], facturas: ['contabilidad', 'gestion', 'gastos'], bancos: ['contabilidad', 'bancos', 'bgastos'], 'banco-gastos': ['contabilidad', 'bancos', 'bgastos'], 'banco-ingresos': ['contabilidad', 'bancos', 'bingresos'], mapeos: ['contabilidad', 'mapeos'], analytics: ['analytics'] };
             const t = map[v]; if (!t) return;
             if (t[1] === 'mapeos') { const mb = document.querySelector('.cont-source[data-src="mapeos"]'); if (!mb || mb.style.display === 'none') return; }
             activateTab(t[0]); if (t[1]) activateSource(t[1]); if (t[2]) activateSub(t[2]);
