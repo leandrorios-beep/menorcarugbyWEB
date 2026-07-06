@@ -901,13 +901,22 @@
                   #panel-contabilidad .cont-kpi .v{font-size:1.45rem;font-weight:800;color:var(--primary-yellow,#FFC72C);line-height:1.1}
                   #panel-contabilidad .cont-kpi .l{font-size:.7rem;color:#9aa;text-transform:uppercase;letter-spacing:.5px;margin-top:.3rem}
                   #panel-contabilidad .cont-kpi.err .v{color:#E74C3C}
-                  #panel-contabilidad .cont-filters{display:flex;gap:.6rem;flex-wrap:wrap;margin-bottom:1.25rem}
-                  #panel-contabilidad .cont-filters select{background:#0f1d33;color:#eee;border:1px solid rgba(255,255,255,.15);border-radius:8px;padding:.5rem .7rem;font-family:inherit;font-size:.85rem;cursor:pointer}
-                  #panel-contabilidad .cont-charts{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:1rem;margin-bottom:1.5rem}
-                  #panel-contabilidad .cont-card{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:1rem}
-                  #panel-contabilidad .cont-card.cont-wide{grid-column:1/-1}
-                  #panel-contabilidad .cont-card h4{margin:0 0 .75rem;font-size:.85rem;color:#cdd;font-weight:700}
+                  #panel-contabilidad .cont-filters{display:flex;gap:.6rem;flex-wrap:wrap;align-items:center;margin-bottom:.75rem}
+                  #panel-contabilidad .cont-filters select,#panel-contabilidad .cont-filters input[type=date]{background:#0f1d33;color:#eee;border:1px solid rgba(255,255,255,.15);border-radius:8px;padding:.5rem .7rem;font-family:inherit;font-size:.85rem;cursor:pointer}
+                  #panel-contabilidad .cont-datef{display:flex;align-items:center;gap:.35rem;font-size:.78rem;color:#9aa}
+                  #panel-contabilidad .cont-clear{background:rgba(231,76,60,.15);color:#E74C3C;border:1px solid rgba(231,76,60,.3);border-radius:8px;padding:.5rem .8rem;font-family:inherit;font-size:.82rem;font-weight:600;cursor:pointer}
+                  #panel-contabilidad .cont-chips{display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:1.25rem;min-height:.5rem}
+                  #panel-contabilidad .cont-chip{background:rgba(255,199,44,.15);color:var(--primary-yellow,#FFC72C);border:1px solid rgba(255,199,44,.35);border-radius:20px;padding:.25rem .7rem;font-size:.78rem;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:.4rem}
+                  #panel-contabilidad .cont-chip:hover{background:rgba(255,199,44,.3)}
+                  #panel-contabilidad .cont-hint{font-size:.6rem;color:#8bd;font-weight:600;text-transform:uppercase;letter-spacing:.3px;background:rgba(46,134,222,.15);padding:.1rem .4rem;border-radius:6px;margin-left:.4rem}
+                  #panel-contabilidad .cont-charts{display:grid;grid-template-columns:repeat(12,1fr);gap:1rem;margin-bottom:1.5rem}
+                  #panel-contabilidad .cont-card{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:1rem;grid-column:span 12}
+                  #panel-contabilidad .cont-card.c4{grid-column:span 4}
+                  #panel-contabilidad .cont-card.c6{grid-column:span 6}
+                  @media(max-width:820px){#panel-contabilidad .cont-card.c4,#panel-contabilidad .cont-card.c6{grid-column:span 12}}
+                  #panel-contabilidad .cont-card h4{margin:0 0 .75rem;font-size:.85rem;color:#cdd;font-weight:700;display:flex;align-items:center}
                   #panel-contabilidad .cont-canvas-wrap{position:relative;height:240px}
+                  #panel-contabilidad .cont-canvas-wrap.tall{height:340px}
                   #panel-contabilidad table{width:100%;border-collapse:collapse;font-size:.8rem}
                   #panel-contabilidad th,#panel-contabilidad td{padding:.5rem .6rem;text-align:left;border-bottom:1px solid rgba(255,255,255,.06);white-space:nowrap}
                   #panel-contabilidad th{color:#9aa;font-weight:600;position:sticky;top:0;background:#0d1a2e}
@@ -928,15 +937,20 @@
                 <div class="cont-subpanel active" id="sub-ingresos">
                     <div class="cont-kpis" id="ingKpis"></div>
                     <div class="cont-filters">
+                        <label class="cont-datef">Desde <input type="date" id="ingDesde"></label>
+                        <label class="cont-datef">Hasta <input type="date" id="ingHasta"></label>
+                        <select id="ingFiltroTemporada"><option value="">Todas las temporadas</option></select>
                         <select id="ingFiltroEstado"><option value="">Todos los estados</option></select>
                         <select id="ingFiltroCategoria"><option value="">Todas las categorias</option></select>
-                        <select id="ingFiltroTemporada"><option value="">Todas las temporadas</option></select>
+                        <select id="ingFiltroTipo"><option value="">Todos los tipos</option></select>
+                        <button id="ingClear" class="cont-clear"><i class="fas fa-eraser"></i> Limpiar</button>
                     </div>
+                    <div id="ingChips" class="cont-chips"></div>
                     <div class="cont-charts">
-                        <div class="cont-card"><h4>Ingresos por categoria</h4><div class="cont-canvas-wrap"><canvas id="chIngCat"></canvas></div></div>
-                        <div class="cont-card"><h4>Por tipo de movimiento</h4><div class="cont-canvas-wrap"><canvas id="chIngTipo"></canvas></div></div>
-                        <div class="cont-card"><h4>Por estado</h4><div class="cont-canvas-wrap"><canvas id="chIngEstado"></canvas></div></div>
-                        <div class="cont-card cont-wide"><h4>Evolucion mensual (cobros)</h4><div class="cont-canvas-wrap"><canvas id="chIngMes"></canvas></div></div>
+                        <div class="cont-card c4"><h4>Ingresos por categoria <span class="cont-hint">clic = filtrar</span></h4><div class="cont-canvas-wrap"><canvas id="chIngCat"></canvas></div></div>
+                        <div class="cont-card c4"><h4>Por tipo de movimiento</h4><div class="cont-canvas-wrap"><canvas id="chIngTipo"></canvas></div></div>
+                        <div class="cont-card c4"><h4>Por estado</h4><div class="cont-canvas-wrap"><canvas id="chIngEstado"></canvas></div></div>
+                        <div class="cont-card"><h4>Evolucion mensual (cobros)</h4><div class="cont-canvas-wrap"><canvas id="chIngMes"></canvas></div></div>
                     </div>
                     <div class="admin-table-wrapper">
                         <div class="admin-table-header"><h2>Movimientos</h2><span id="ingTableInfo" style="color:#9aa;font-size:.85rem"></span></div>
@@ -948,16 +962,22 @@
                 <div class="cont-subpanel" id="sub-gastos">
                     <div class="cont-kpis" id="gasKpis"></div>
                     <div class="cont-filters">
+                        <label class="cont-datef">Desde <input type="date" id="gasDesde"></label>
+                        <label class="cont-datef">Hasta <input type="date" id="gasHasta"></label>
+                        <select id="gasFiltroTemporada"><option value="">Todas las temporadas</option></select>
                         <select id="gasFiltroComp"><option value="">Todas las competiciones</option></select>
                         <select id="gasFiltroTipo"><option value="">Todos los tipos de gasto</option></select>
                         <select id="gasFiltroEquipo"><option value="">Todos los equipos</option></select>
+                        <select id="gasFiltroProveedor"><option value="">Todos los proveedores</option></select>
+                        <button id="gasClear" class="cont-clear"><i class="fas fa-eraser"></i> Limpiar</button>
                     </div>
+                    <div id="gasChips" class="cont-chips"></div>
                     <div class="cont-charts">
-                        <div class="cont-card"><h4>Por tipo de gasto</h4><div class="cont-canvas-wrap"><canvas id="chGasTipo"></canvas></div></div>
-                        <div class="cont-card"><h4>Por competicion</h4><div class="cont-canvas-wrap"><canvas id="chGasComp"></canvas></div></div>
-                        <div class="cont-card"><h4>Por tipo de proveedor</h4><div class="cont-canvas-wrap"><canvas id="chGasProv"></canvas></div></div>
-                        <div class="cont-card"><h4>Por equipo (prorrateado)</h4><div class="cont-canvas-wrap"><canvas id="chGasEquipo"></canvas></div></div>
-                        <div class="cont-card cont-wide"><h4>Evolucion mensual</h4><div class="cont-canvas-wrap"><canvas id="chGasMes"></canvas></div></div>
+                        <div class="cont-card c4"><h4>Por tipo de gasto <span class="cont-hint">clic = filtrar</span></h4><div class="cont-canvas-wrap"><canvas id="chGasTipo"></canvas></div></div>
+                        <div class="cont-card c4"><h4>Por competicion</h4><div class="cont-canvas-wrap"><canvas id="chGasComp"></canvas></div></div>
+                        <div class="cont-card c4"><h4>Por equipo (prorrateado)</h4><div class="cont-canvas-wrap"><canvas id="chGasEquipo"></canvas></div></div>
+                        <div class="cont-card"><h4>Por tipo de proveedor <span class="cont-hint">clic = filtrar</span></h4><div class="cont-canvas-wrap tall"><canvas id="chGasProv"></canvas></div></div>
+                        <div class="cont-card"><h4>Evolucion mensual</h4><div class="cont-canvas-wrap"><canvas id="chGasMes"></canvas></div></div>
                     </div>
                     <div class="admin-table-wrapper">
                         <div class="admin-table-header"><h2>Gastos</h2><span id="gasTableInfo" style="color:#9aa;font-size:.85rem"></span></div>
@@ -1199,6 +1219,10 @@
 
         // ═══════════════ ADMINISTRACION / CONTABILIDAD ═══════════════
         let gastosData = [], ingresosData = [], contCharts = {}, contLoaded = false;
+        const gasF = { competicion: '', tipo_gasto: '', tipo_proveedor: '', proveedor: '', equipo: '', mes: '', temporada: '', desde: '', hasta: '' };
+        const ingF = { estado: '', categoria_reporte: '', tipo_movimiento: '', temporada: '', mes: '', desde: '', hasta: '' };
+        function contTemporada(d) { const p = ('' + (d || '')).slice(0, 10).split('-'); if (p.length < 2 || !p[0]) return ''; const y = +p[0], m = +p[1]; return (m >= 8) ? (y + '/' + (y + 1)) : ((y - 1) + '/' + y); }
+        function setVal(id, v) { const e = document.getElementById(id); if (e) e.value = v || ''; }
         const contEUR = n => new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(n || 0);
         const CONT_PALETTE = ['#FFC72C','#2E86DE','#28B463','#E74C3C','#8E44AD','#F39C12','#16A085','#E67E22','#3498DB','#C0392B','#1ABC9C','#9B59B6','#34495E','#D35400','#7F8C8D'];
         const contUniq = (rows, k) => [...new Set(rows.map(r => r[k]).filter(v => v != null && v !== ''))].sort();
@@ -1212,13 +1236,23 @@
         function contChart(id, type, entries, opts) {
             opts = opts || {}; const el = document.getElementById(id); if (!el) return;
             if (contCharts[id]) contCharts[id].destroy();
-            const labels = entries.map(e => e[0]), data = entries.map(e => Math.round(e[1])), circ = (type === 'doughnut' || type === 'pie');
+            const labels = entries.map(e => e[0]), data = entries.map(e => Math.round(e[1])), circ = (type === 'doughnut' || type === 'pie'), horiz = !!opts.horizontal;
+            let scales = {};
+            if (!circ) {
+                const valAxis = { ticks: { color: '#9aa', font: { size: 9 }, callback: v => v + '€' }, grid: { color: 'rgba(255,255,255,.05)' } };
+                const catAxis = { ticks: { color: '#9aa', font: { size: 10 } }, grid: { display: false } };
+                scales = horiz ? { x: valAxis, y: catAxis } : { x: catAxis, y: valAxis };
+            }
             contCharts[id] = new Chart(el, {
                 type,
                 data: { labels, datasets: [{ data, backgroundColor: circ ? CONT_PALETTE : (opts.color || '#2E86DE'), borderColor: opts.borderColor || 'transparent', borderWidth: opts.borderWidth || 0, fill: opts.fill || false, tension: .3, pointRadius: type === 'line' ? 2 : 0 }] },
-                options: { responsive: true, maintainAspectRatio: false,
-                    plugins: { legend: { display: circ, position: 'right', labels: { color: '#ccc', font: { size: 10 }, boxWidth: 12 } }, tooltip: { callbacks: { label: c => ' ' + (c.label ? c.label + ': ' : '') + contEUR(c.parsed.y != null ? c.parsed.y : c.parsed) } } },
-                    scales: circ ? {} : { x: { ticks: { color: '#9aa', font: { size: 9 } }, grid: { display: false } }, y: { ticks: { color: '#9aa', font: { size: 9 }, callback: v => v + '€' }, grid: { color: 'rgba(255,255,255,.05)' } } } }
+                options: {
+                    responsive: true, maintainAspectRatio: false, indexAxis: horiz ? 'y' : 'x',
+                    onHover: (e, els) => { if (e.native && e.native.target) e.native.target.style.cursor = els.length ? 'pointer' : 'default'; },
+                    onClick: (e, els, chart) => { if (opts.onSlice && els && els.length) opts.onSlice(chart.data.labels[els[0].index]); },
+                    plugins: { legend: { display: circ, position: 'right', labels: { color: '#ccc', font: { size: 10 }, boxWidth: 12 } }, tooltip: { callbacks: { label: c => ' ' + (c.label ? c.label + ': ' : '') + contEUR(c.raw) } } },
+                    scales
+                }
             });
         }
         function contTable(rows, cols) {
@@ -1254,52 +1288,92 @@
             contFill('gasFiltroComp', contUniq(gastosData, 'competicion'));
             contFill('gasFiltroTipo', contUniq(gastosData, 'tipo_gasto'));
             contFill('gasFiltroEquipo', contUniqArr(gastosData, 'equipos'));
+            contFill('gasFiltroProveedor', contUniq(gastosData, 'proveedor'));
+            contFill('gasFiltroTemporada', [...new Set(gastosData.map(r => contTemporada(r.fecha)).filter(Boolean))].sort());
             contFill('ingFiltroEstado', contUniq(ingresosData, 'estado'));
             contFill('ingFiltroCategoria', contUniq(ingresosData, 'categoria_reporte'));
+            contFill('ingFiltroTipo', contUniq(ingresosData, 'tipo_movimiento'));
             contFill('ingFiltroTemporada', contUniq(ingresosData, 'temporada'));
             renderIngresos(); renderGastos();
         }
 
         function renderGastos() {
-            let rows = gastosData.slice();
-            const fc = val('gasFiltroComp'), ft = val('gasFiltroTipo'), fe = val('gasFiltroEquipo');
-            if (fc) rows = rows.filter(r => r.competicion === fc);
-            if (ft) rows = rows.filter(r => r.tipo_gasto === ft);
-            if (fe) rows = rows.filter(r => (r.equipos || []).includes(fe));
+            setVal('gasFiltroComp', gasF.competicion); setVal('gasFiltroTipo', gasF.tipo_gasto); setVal('gasFiltroEquipo', gasF.equipo); setVal('gasFiltroProveedor', gasF.proveedor); setVal('gasFiltroTemporada', gasF.temporada); setVal('gasDesde', gasF.desde); setVal('gasHasta', gasF.hasta);
+            contChips('gasChips', gasF, GAS_LABELS, renderGastos);
+            const rows = gasFiltered();
             const total = rows.reduce((s, r) => s + (Number(r.importe) || 0), 0);
             const cross = rows.filter(r => r.cross_categoria).reduce((s, r) => s + (Number(r.importe) || 0), 0);
             const provs = new Set(rows.map(r => r.proveedor)).size;
             document.getElementById('gasKpis').innerHTML = [['Total gastos', contEUR(total)], ['Facturas', rows.length], ['Gasto promedio', contEUR(rows.length ? total / rows.length : 0)], ['Proveedores', provs], ['Cross (prorratear)', contEUR(cross)]].map(k => '<div class="cont-kpi"><div class="v">' + k[1] + '</div><div class="l">' + k[0] + '</div></div>').join('');
-            contChart('chGasTipo', 'doughnut', contEntries(contSumBy(rows, 'tipo_gasto')));
-            contChart('chGasComp', 'bar', contEntries(contSumBy(rows, 'competicion')), { color: '#FFC72C' });
-            contChart('chGasProv', 'bar', contEntries(contSumBy(rows, 'tipo_proveedor')), { color: '#2E86DE' });
-            contChart('chGasEquipo', 'bar', contEntries(contSumArr(rows, 'equipos')), { color: '#28B463' });
-            contChart('chGasMes', 'line', contByMonth(rows), { color: 'rgba(255,199,44,.15)', borderColor: '#FFC72C', borderWidth: 2, fill: true });
+            contChart('chGasTipo', 'doughnut', contEntries(contSumBy(rows, 'tipo_gasto')), { onSlice: l => setGas('tipo_gasto', l) });
+            contChart('chGasComp', 'bar', contEntries(contSumBy(rows, 'competicion')), { color: '#FFC72C', onSlice: l => setGas('competicion', l) });
+            contChart('chGasEquipo', 'bar', contEntries(contSumArr(rows, 'equipos')), { color: '#28B463', onSlice: l => setGas('equipo', l) });
+            contChart('chGasProv', 'bar', contEntries(contSumBy(rows, 'tipo_proveedor')), { color: '#2E86DE', horizontal: true, onSlice: l => setGas('tipo_proveedor', l) });
+            contChart('chGasMes', 'line', contByMonth(rows), { color: 'rgba(255,199,44,.15)', borderColor: '#FFC72C', borderWidth: 2, fill: true, onSlice: l => setGas('mes', l) });
             document.getElementById('gasTableInfo').textContent = rows.length + ' gastos · ' + contEUR(total);
             const t = rows.slice().sort((a, b) => ('' + (b.fecha || '')).localeCompare('' + (a.fecha || '')));
             document.getElementById('gasTable').innerHTML = contTable(t, [['fecha', 'Fecha'], ['proveedor', 'Proveedor'], ['tipo_gasto', 'Tipo gasto'], ['competicion', 'Competicion'], ['equipos', 'Equipos', 'arr'], ['importe', 'Importe', 'eur']]);
         }
 
         function renderIngresos() {
-            let rows = ingresosData.slice();
-            const fe = val('ingFiltroEstado'), fca = val('ingFiltroCategoria'), ft = val('ingFiltroTemporada');
-            if (fe) rows = rows.filter(r => r.estado === fe);
-            if (fca) rows = rows.filter(r => r.categoria_reporte === fca);
-            if (ft) rows = rows.filter(r => r.temporada === ft);
+            setVal('ingFiltroEstado', ingF.estado); setVal('ingFiltroCategoria', ingF.categoria_reporte); setVal('ingFiltroTipo', ingF.tipo_movimiento); setVal('ingFiltroTemporada', ingF.temporada); setVal('ingDesde', ingF.desde); setVal('ingHasta', ingF.hasta);
+            contChips('ingChips', ingF, ING_LABELS, renderIngresos);
+            const rows = ingFiltered();
             const total = rows.reduce((s, r) => s + (Number(r.importe) || 0), 0);
             const be = contSumBy(rows, 'estado');
             document.getElementById('ingKpis').innerHTML = [['Total', contEUR(total), ''], ['Pagado', contEUR(be['Pagado'] || 0), ''], ['Pendiente', contEUR(be['Pendiente'] || 0), ''], ['Error', contEUR(be['Error en el pago'] || 0), 'err'], ['Anulado', contEUR(be['Anulado'] || 0), '']].map(k => '<div class="cont-kpi ' + k[2] + '"><div class="v">' + k[1] + '</div><div class="l">' + k[0] + '</div></div>').join('');
-            contChart('chIngCat', 'doughnut', contEntries(contSumBy(rows, 'categoria_reporte')));
-            contChart('chIngTipo', 'bar', contEntries(contSumBy(rows, 'tipo_movimiento')), { color: '#2E86DE' });
-            contChart('chIngEstado', 'bar', contEntries(contSumBy(rows, 'estado')), { color: '#28B463' });
-            contChart('chIngMes', 'line', contByMonth(rows), { color: 'rgba(46,134,222,.15)', borderColor: '#2E86DE', borderWidth: 2, fill: true });
+            contChart('chIngCat', 'doughnut', contEntries(contSumBy(rows, 'categoria_reporte')), { onSlice: l => setIng('categoria_reporte', l) });
+            contChart('chIngTipo', 'bar', contEntries(contSumBy(rows, 'tipo_movimiento')), { color: '#2E86DE', onSlice: l => setIng('tipo_movimiento', l) });
+            contChart('chIngEstado', 'bar', contEntries(contSumBy(rows, 'estado')), { color: '#28B463', onSlice: l => setIng('estado', l) });
+            contChart('chIngMes', 'line', contByMonth(rows), { color: 'rgba(46,134,222,.15)', borderColor: '#2E86DE', borderWidth: 2, fill: true, onSlice: l => setIng('mes', l) });
             document.getElementById('ingTableInfo').textContent = rows.length + ' movimientos · ' + contEUR(total);
             const t = rows.slice().sort((a, b) => ('' + (b.fecha_cobro || '')).localeCompare('' + (a.fecha_cobro || '')));
             document.getElementById('ingTable').innerHTML = contTable(t, [['fecha_cobro', 'Fecha'], ['cliente', 'Cliente'], ['concepto', 'Concepto', 'trunc'], ['categoria_reporte', 'Categoria'], ['tipo_movimiento', 'Tipo'], ['estado', 'Estado', 'estado'], ['importe', 'Importe', 'eur']]);
         }
 
-        ['gasFiltroComp', 'gasFiltroTipo', 'gasFiltroEquipo'].forEach(id => { const e = document.getElementById(id); if (e) e.addEventListener('change', renderGastos); });
-        ['ingFiltroEstado', 'ingFiltroCategoria', 'ingFiltroTemporada'].forEach(id => { const e = document.getElementById(id); if (e) e.addEventListener('change', renderIngresos); });
+        function gasFiltered() {
+            return gastosData.filter(r => {
+                if (gasF.competicion && r.competicion !== gasF.competicion) return false;
+                if (gasF.tipo_gasto && r.tipo_gasto !== gasF.tipo_gasto) return false;
+                if (gasF.tipo_proveedor && r.tipo_proveedor !== gasF.tipo_proveedor) return false;
+                if (gasF.proveedor && r.proveedor !== gasF.proveedor) return false;
+                if (gasF.equipo) { const es = r.equipos || []; if (gasF.equipo === '(sin equipo)') { if (es.length) return false; } else if (!es.includes(gasF.equipo)) return false; }
+                if (gasF.mes && r.mes !== gasF.mes) return false;
+                if (gasF.temporada && contTemporada(r.fecha) !== gasF.temporada) return false;
+                if (gasF.desde && ('' + (r.fecha || '')) < gasF.desde) return false;
+                if (gasF.hasta && ('' + (r.fecha || '')) > gasF.hasta) return false;
+                return true;
+            });
+        }
+        function ingFiltered() {
+            return ingresosData.filter(r => {
+                if (ingF.estado && r.estado !== ingF.estado) return false;
+                if (ingF.categoria_reporte && r.categoria_reporte !== ingF.categoria_reporte) return false;
+                if (ingF.tipo_movimiento && r.tipo_movimiento !== ingF.tipo_movimiento) return false;
+                if (ingF.temporada && r.temporada !== ingF.temporada) return false;
+                if (ingF.mes && r.mes !== ingF.mes) return false;
+                if (ingF.desde && ('' + (r.fecha_cobro || '')) < ingF.desde) return false;
+                if (ingF.hasta && ('' + (r.fecha_cobro || '')) > ingF.hasta) return false;
+                return true;
+            });
+        }
+        function setGas(dim, label) { if (label === '(sin dato)') return; gasF[dim] = (gasF[dim] === label) ? '' : label; renderGastos(); }
+        function setIng(dim, label) { if (label === '(sin dato)') return; ingF[dim] = (ingF[dim] === label) ? '' : label; renderIngresos(); }
+        const GAS_LABELS = { competicion: 'Competición', tipo_gasto: 'Tipo gasto', tipo_proveedor: 'Tipo prov.', proveedor: 'Proveedor', equipo: 'Equipo', mes: 'Mes', temporada: 'Temporada', desde: 'Desde', hasta: 'Hasta' };
+        const ING_LABELS = { estado: 'Estado', categoria_reporte: 'Categoría', tipo_movimiento: 'Tipo', temporada: 'Temporada', mes: 'Mes', desde: 'Desde', hasta: 'Hasta' };
+        function contChips(elId, state, labels, onchange) {
+            const el = document.getElementById(elId); if (!el) return;
+            el.innerHTML = Object.entries(state).filter(([k, v]) => v).map(([k, v]) => '<span class="cont-chip" data-k="' + k + '">' + (labels[k] || k) + ': ' + v + ' <i class="fas fa-times"></i></span>').join('');
+            el.querySelectorAll('.cont-chip').forEach(c => c.addEventListener('click', () => { state[c.dataset.k] = ''; onchange(); }));
+        }
+        (function wireCont() {
+            const gm = { gasFiltroComp: 'competicion', gasFiltroTipo: 'tipo_gasto', gasFiltroEquipo: 'equipo', gasFiltroProveedor: 'proveedor', gasFiltroTemporada: 'temporada', gasDesde: 'desde', gasHasta: 'hasta' };
+            Object.entries(gm).forEach(([id, dim]) => { const e = document.getElementById(id); if (e) e.addEventListener('change', () => { gasF[dim] = e.value; renderGastos(); }); });
+            const gc = document.getElementById('gasClear'); if (gc) gc.addEventListener('click', () => { Object.keys(gasF).forEach(k => gasF[k] = ''); renderGastos(); });
+            const im = { ingFiltroEstado: 'estado', ingFiltroCategoria: 'categoria_reporte', ingFiltroTipo: 'tipo_movimiento', ingFiltroTemporada: 'temporada', ingDesde: 'desde', ingHasta: 'hasta' };
+            Object.entries(im).forEach(([id, dim]) => { const e = document.getElementById(id); if (e) e.addEventListener('change', () => { ingF[dim] = e.value; renderIngresos(); }); });
+            const ic = document.getElementById('ingClear'); if (ic) ic.addEventListener('click', () => { Object.keys(ingF).forEach(k => ingF[k] = ''); renderIngresos(); });
+        })();
         // ── Deep-linking de tabs por URL: /admin?tab=socios|jugadores|ingresos|gastos ──
         try { const _t = new URLSearchParams(window.location.search).get('tab'); if (_t) sessionStorage.setItem('adminTab', _t); } catch (e) {}
         function contCurrentUrlValue() {
