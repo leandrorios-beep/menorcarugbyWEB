@@ -1559,7 +1559,8 @@
         const BGAS_LABELS = { banco: 'Banco', tipo: 'Tipo', subtipo: 'Subtipo', proveedor: 'Proveedor', desde: 'Desde', hasta: 'Hasta' };
         const BING_LABELS = { banco: 'Banco', tipo: 'Tipo', subtipo: 'Subtipo', proveedor: 'Origen', desde: 'Desde', hasta: 'Hasta' };
         const mapPlain = t => !String(t).startsWith('sub:');
-        const splitTipos = arr => ({ tipos: (arr || []).filter(mapPlain), subs: (arr || []).filter(t => !mapPlain(t)).map(t => t.slice(4)) });
+        const SIN_CLASIF = 'Otros / Sin clasificar';
+        const splitTipos = arr => ({ tipos: (arr || []).filter(t => mapPlain(t) && t !== SIN_CLASIF), subs: (arr || []).filter(t => !mapPlain(t)).map(t => t.slice(4)) });
         function tiposGasto(r) { if (r.banco === 'SumUp') return ['Gastos Bancarios']; const t = mapaGT[r.contraparte]; return (t && t.length) ? t : [r.categoria || '(sin tipo)']; }
         function subGasto(r) { if (r.banco === 'SumUp') return []; const t = mapaGS[r.contraparte]; return (t && t.length) ? t : []; }
         function tiposIng(r) { if (r.banco === 'SumUp') return ['Venta Datafono']; const t = mapaIT[r.contraparte]; return (t && t.length) ? t : [r.categoria || '(sin tipo)']; }
@@ -1569,7 +1570,7 @@
         function bancoByMonth(rows) { const m = {}; rows.forEach(r => { if (r.mes) m[r.mes] = (m[r.mes] || 0) + Math.abs(Number(r.importe) || 0); }); return Object.entries(m).sort((a, b) => a[0] < b[0] ? -1 : 1); }
         const gastosBancoBase = () => bancoData.filter(r => r.tipo === 'gasto' && !r.es_interno && !r.es_tarjeta_agregada);
         const ingresosBancoBase = () => bancoData.filter(r => r.tipo === 'ingreso' && !r.es_interno);
-        const canonSide = (pfx, sub) => { const s = new Set(); mapeosRaw.filter(m => (m.proveedor || '').startsWith(pfx)).forEach(m => (m.tipos || []).forEach(t => { const isSub = !mapPlain(t); if (sub && isSub) s.add(t.slice(4)); else if (!sub && !isSub) s.add(t); })); return [...s].sort(); };
+        const canonSide = (pfx, sub) => { const s = new Set(); mapeosRaw.filter(m => (m.proveedor || '').startsWith(pfx)).forEach(m => (m.tipos || []).forEach(t => { const isSub = !mapPlain(t); if (sub && isSub) s.add(t.slice(4)); else if (!sub && !isSub && t !== SIN_CLASIF) s.add(t); })); return [...s].sort(); };
         function rebuildMaps() {
             mapaGT = {}; mapaGS = {}; mapaIT = {}; mapaIS = {};
             mapeosRaw.forEach(m => { const key = m.proveedor || '', sp = splitTipos(m.tipos); if (key.startsWith('G:')) { mapaGT[key.slice(2)] = sp.tipos; mapaGS[key.slice(2)] = sp.subs; } else if (key.startsWith('I:')) { mapaIT[key.slice(2)] = sp.tipos; mapaIS[key.slice(2)] = sp.subs; } });
@@ -1645,7 +1646,7 @@
             const canonT = canonSide(prefix, false), canonS = canonSide(prefix, true);
             const cell = (m, field, canon) => {
                 const pv = encodeURIComponent(m.proveedor);
-                const cur = (m.tipos || []).filter(t => field === 'tipos' ? mapPlain(t) : !mapPlain(t)).map(t => field === 'tipos' ? t : t.slice(4));
+                const cur = (m.tipos || []).filter(t => field === 'tipos' ? mapPlain(t) : !mapPlain(t)).map(t => field === 'tipos' ? t : t.slice(4)).filter(v => v !== SIN_CLASIF);
                 const chips = cur.map(t => '<span class="map-chip">' + t + ' <i class="fas fa-times" data-prov="' + pv + '" data-f="' + field + '" data-t="' + encodeURIComponent(t) + '"></i></span>').join('');
                 const opts = canon.filter(c => !cur.includes(c)).map(c => '<option value="' + c.replace(/"/g, '&quot;') + '">' + c + '</option>').join('');
                 const sel = '<select class="map-add" data-prov="' + pv + '" data-f="' + field + '"><option value="">＋</option>' + opts + '<option value="__new__">＋ nuevo…</option></select>';
@@ -1670,6 +1671,7 @@
         function addField(prov, f, v) { const raw = rawTipos(prov); const e = encField(f, v); if (!raw.includes(e)) raw.push(e); saveCombined(prov, raw); }
         function removeField(prov, f, v) { saveCombined(prov, rawTipos(prov).filter(x => x !== encField(f, v))); }
         async function saveCombined(prov, raw) {
+            raw = raw.filter(x => x !== SIN_CLASIF && x !== 'sub:' + SIN_CLASIF);
             const st = document.querySelector('.map-status[data-prov="' + encodeURIComponent(prov) + '"]');
             if (st) st.innerHTML = '<i class="fas fa-spinner fa-spin" style="color:#999"></i>';
             const { error } = await sb.from('mapeos').update({ tipos: raw }).eq('proveedor', prov);
