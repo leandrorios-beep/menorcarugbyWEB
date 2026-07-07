@@ -936,6 +936,12 @@
                   #panel-contabilidad .map-chip i{cursor:pointer;opacity:.55}
                   #panel-contabilidad .map-chip i:hover{opacity:1}
                   #panel-contabilidad .map-add{background:#fff;color:#556;border:1px dashed #cfd4da;border-radius:16px;padding:.22rem .5rem;font-family:inherit;font-size:.75rem;cursor:pointer}
+                  #panel-contabilidad .mini-tabla{width:100%;border-collapse:collapse;font-size:.85rem}
+                  #panel-contabilidad .mini-tabla th{color:#556;font-weight:700;text-align:left;padding:.4rem .5rem;border-bottom:1px solid #e2e5ea}
+                  #panel-contabilidad .mini-tabla td{padding:.45rem .5rem;border-bottom:1px solid #f0f2f5;color:#333}
+                  #panel-contabilidad .mini-tabla tr.tot td{font-weight:800;border-top:2px solid #cfd4da;color:#182B49}
+                  #panel-contabilidad .cont-toggle{background:#f0f2f5;border:1px solid #dcdfe4;color:#556;border-radius:6px;padding:.12rem .45rem;cursor:pointer;font-size:.72rem;margin-left:auto}
+                  #panel-contabilidad .cont-toggle:hover{background:#e2e5ea;color:#182B49}
                   #panel-contabilidad .map-lado{font-size:.58rem;font-weight:700;padding:.06rem .35rem;border-radius:5px;vertical-align:middle;text-transform:uppercase}
                   #panel-contabilidad .map-lado.gas{background:#fdecea;color:#c0392b}
                   #panel-contabilidad .map-lado.ing{background:#e8f5e9;color:#2e7d32}
@@ -1034,8 +1040,8 @@
                         </div>
                         <div id="bgasChips" class="cont-chips"></div>
                         <div class="cont-charts">
-                            <div class="cont-card c4"><h4>Por banco</h4><div class="cont-canvas-wrap"><canvas id="chBgasBanco"></canvas></div></div>
-                            <div class="cont-card c4"><h4>Por tipo (mapeos)</h4><div class="cont-canvas-wrap"><canvas id="chBgasTipo"></canvas></div></div>
+                            <div class="cont-card c4"><h4>Por banco</h4><div id="tblBgasBanco"></div></div>
+                            <div class="cont-card c4"><h4>Por tipo (mapeos) <button class="cont-toggle" data-view="gas" title="Donut / Barras"><i class="fas fa-chart-simple"></i></button></h4><div class="cont-canvas-wrap"><canvas id="chBgasTipo"></canvas></div></div>
                             <div class="cont-card c4"><h4>Evolucion mensual</h4><div class="cont-canvas-wrap"><canvas id="chBgasMes"></canvas></div></div>
                             <div class="cont-card"><h4>Por proveedor <span class="cont-hint">clic = filtrar</span></h4><div class="cont-canvas-wrap tall"><canvas id="chBgasProv"></canvas></div></div>
                         </div>
@@ -1057,8 +1063,8 @@
                         </div>
                         <div id="bingChips" class="cont-chips"></div>
                         <div class="cont-charts">
-                            <div class="cont-card c4"><h4>Por tipo (mapeos) <span class="cont-hint">clic = filtrar</span></h4><div class="cont-canvas-wrap"><canvas id="chBingCat"></canvas></div></div>
-                            <div class="cont-card c4"><h4>Por banco</h4><div class="cont-canvas-wrap"><canvas id="chBingBanco"></canvas></div></div>
+                            <div class="cont-card c4"><h4>Por tipo (mapeos) <span class="cont-hint">clic = filtrar</span> <button class="cont-toggle" data-view="ing" title="Donut / Barras"><i class="fas fa-chart-simple"></i></button></h4><div class="cont-canvas-wrap"><canvas id="chBingCat"></canvas></div></div>
+                            <div class="cont-card c4"><h4>Por banco</h4><div id="tblBingBanco"></div></div>
                             <div class="cont-card c4"><h4>Evolucion mensual</h4><div class="cont-canvas-wrap"><canvas id="chBingMes"></canvas></div></div>
                         </div>
                         <div class="admin-table-wrapper">
@@ -1400,7 +1406,10 @@
                     responsive: true, maintainAspectRatio: false, indexAxis: horiz ? 'y' : 'x',
                     onHover: (e, els) => { if (e.native && e.native.target) e.native.target.style.cursor = els.length ? 'pointer' : 'default'; },
                     onClick: (e, els, chart) => { if (opts.onSlice && els && els.length) opts.onSlice(chart.data.labels[els[0].index]); },
-                    plugins: { legend: { display: circ, position: 'right', labels: { color: '#556', font: { size: 10 }, boxWidth: 12 } }, tooltip: { callbacks: { label: c => ' ' + (c.label ? c.label + ': ' : '') + (opts.count ? c.raw : contEUR(c.raw)) } } },
+                    plugins: {
+                        legend: { display: circ, position: 'right', labels: { color: '#556', font: { size: 10 }, boxWidth: 12, generateLabels: (opts.pct && circ) ? (ch => { const ds = ch.data.datasets[0], bg = ds.backgroundColor, tot = ds.data.reduce((s, v) => s + (+v || 0), 0); return ch.data.labels.map((l, i) => ({ text: l + ' (' + (tot ? Math.round(ds.data[i] / tot * 100) : 0) + '%)', fillStyle: bg[i % bg.length], strokeStyle: '#fff', lineWidth: 1, hidden: false, index: i })); }) : undefined } },
+                        tooltip: { callbacks: { label: c => { const base = opts.count ? c.raw : contEUR(c.raw); if (!opts.pct) return ' ' + (c.label ? c.label + ': ' : '') + base; const tot = c.dataset.data.reduce((s, v) => s + (+v || 0), 0), p = tot ? Math.round((+c.raw) / tot * 100) : 0; return ' ' + (c.label ? c.label + ': ' : '') + base + ' (' + p + '%)'; } } }
+                    },
                     scales
                 }
             });
@@ -1537,7 +1546,13 @@
             const ic = document.getElementById('ingClear'); if (ic) ic.addEventListener('click', () => { Object.keys(ingF).forEach(k => ingF[k] = ''); renderIngresos(); });
         })();
         // ═══════════════ BANCOS + MAPEOS ═══════════════
-        let bancoData = [], mapeosRaw = [], bancoLoaded = false, mapLadoSel = 'gastos', mapSort = { by: 'total', dir: -1 };
+        let bancoData = [], mapeosRaw = [], bancoLoaded = false, mapLadoSel = 'gastos', mapSort = { by: 'total', dir: -1 }, bgasTipoType = 'bar', bingTipoType = 'doughnut';
+        function bancoTablaSimple(id, entries) {
+            const el = document.getElementById(id); if (!el) return;
+            const total = entries.reduce((s, e) => s + e[1], 0);
+            const body = entries.map(e => '<tr><td>' + e[0] + '</td><td style="text-align:right;white-space:nowrap">' + contEUR(e[1]) + '</td></tr>').join('');
+            el.innerHTML = '<table class="mini-tabla"><thead><tr><th>Banco</th><th style="text-align:right">Monto</th></tr></thead><tbody>' + body + '<tr class="tot"><td>Total</td><td style="text-align:right;white-space:nowrap">' + contEUR(total) + '</td></tr></tbody></table>';
+        }
         let mapaGT = {}, mapaGS = {}, mapaIT = {}, mapaIS = {};
         const bgasF = { banco: '', tipo: '', subtipo: '', proveedor: '', desde: '', hasta: '' };
         const bingF = { banco: '', tipo: '', subtipo: '', proveedor: '', desde: '', hasta: '' };
@@ -1587,8 +1602,8 @@
             const total = rows.reduce((s, r) => s + Math.abs(Number(r.importe) || 0), 0);
             const provs = new Set(rows.map(r => r.contraparte)).size;
             document.getElementById('bgasKpis').innerHTML = [['Total gastos', contEUR(total)], ['Movimientos', rows.length], ['Proveedores', provs], ['Promedio', contEUR(rows.length ? total / rows.length : 0)]].map(k => '<div class="cont-kpi"><div class="v">' + k[1] + '</div><div class="l">' + k[0] + '</div></div>').join('');
-            contChart('chBgasBanco', 'doughnut', contEntries(bancoSumAbs(rows, 'banco')));
-            contChart('chBgasTipo', 'bar', contEntries(bancoSumFn(rows, tiposGasto)), { color: '#2E86DE', onSlice: l => { bgasF.tipo = (bgasF.tipo === l ? '' : l); renderBancoGastos(); } });
+            bancoTablaSimple('tblBgasBanco', contEntries(bancoSumAbs(rows, 'banco')));
+            contChart('chBgasTipo', bgasTipoType, contEntries(bancoSumFn(rows, tiposGasto)), { color: '#2E86DE', pct: true, onSlice: l => { bgasF.tipo = (bgasF.tipo === l ? '' : l); renderBancoGastos(); } });
             contChart('chBgasMes', 'line', bancoByMonth(rows), { color: 'rgba(231,76,60,.15)', borderColor: '#E74C3C', borderWidth: 2, fill: true });
             contChart('chBgasProv', 'bar', contEntries(bancoSumAbs(rows, 'contraparte')).slice(0, 25), { color: '#FFC72C', horizontal: true, onSlice: l => { bgasF.proveedor = (bgasF.proveedor === l ? '' : l); renderBancoGastos(); } });
             document.getElementById('bgasInfo').textContent = rows.length + ' mov · ' + contEUR(total);
@@ -1609,8 +1624,8 @@
             const total = rows.reduce((s, r) => s + (Number(r.importe) || 0), 0);
             const provs = new Set(rows.map(r => r.contraparte)).size;
             document.getElementById('bingKpis').innerHTML = [['Total ingresos', contEUR(total)], ['Movimientos', rows.length], ['Orígenes', provs]].map(k => '<div class="cont-kpi"><div class="v">' + k[1] + '</div><div class="l">' + k[0] + '</div></div>').join('');
-            contChart('chBingCat', 'doughnut', contEntries(bancoSumFn(rows, tiposIng)), { onSlice: l => { bingF.tipo = (bingF.tipo === l ? '' : l); renderBancoIngresos(); } });
-            contChart('chBingBanco', 'bar', contEntries(bancoSumAbs(rows, 'banco')), { color: '#28B463' });
+            contChart('chBingCat', bingTipoType, contEntries(bancoSumFn(rows, tiposIng)), { pct: true, onSlice: l => { bingF.tipo = (bingF.tipo === l ? '' : l); renderBancoIngresos(); } });
+            bancoTablaSimple('tblBingBanco', contEntries(bancoSumAbs(rows, 'banco')));
             contChart('chBingMes', 'line', bancoByMonth(rows), { color: 'rgba(40,180,99,.15)', borderColor: '#28B463', borderWidth: 2, fill: true });
             document.getElementById('bingInfo').textContent = rows.length + ' mov · ' + contEUR(total);
             const t = rows.map(r => ({ ...r, _tipo: tiposIng(r).join(', '), _sub: (subIng(r).join(', ') || '—') }));
@@ -1672,6 +1687,10 @@
             const ic = document.getElementById('bingClear'); if (ic) ic.addEventListener('click', () => { Object.keys(bingF).forEach(k => bingF[k] = ''); renderBancoIngresos(); });
             const mb = document.getElementById('mapBuscar'); if (mb) mb.addEventListener('input', renderMapeos);
             document.querySelectorAll('.map-ladobtn').forEach(b => b.addEventListener('click', () => { mapLadoSel = b.dataset.lado; renderMapeos(); }));
+            document.querySelectorAll('.cont-toggle').forEach(b => b.addEventListener('click', () => {
+                if (b.dataset.view === 'ing') { bingTipoType = bingTipoType === 'doughnut' ? 'bar' : 'doughnut'; renderBancoIngresos(); }
+                else { bgasTipoType = bgasTipoType === 'doughnut' ? 'bar' : 'doughnut'; renderBancoGastos(); }
+            }));
         })();
 
         // ═══════════════ ANALYTICS ═══════════════
