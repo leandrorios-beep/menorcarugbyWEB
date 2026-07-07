@@ -786,6 +786,9 @@
             .admin-tabs { overflow-x: auto; }
             .admin-tab { padding: 0.6rem 1rem; font-size: 0.85rem; }
             .admin-table-wrapper table { display: none; }
+            #panel-contabilidad .admin-table-wrapper table, #panel-analytics .admin-table-wrapper table { display: table; }
+            #panel-contabilidad .cont-charts { gap: 0.75rem; }
+            #panel-contabilidad .cont-canvas-wrap { height: 220px; }
             .mobile-cards { display: block; padding: 0.75rem; }
             .admin-table-header h2 { font-size: 0.95rem; }
             .admin-filter-clear { font-size: 0.75rem; margin-bottom: 0.75rem; }
@@ -1410,7 +1413,7 @@
                     onHover: (e, els) => { if (e.native && e.native.target) e.native.target.style.cursor = els.length ? 'pointer' : 'default'; },
                     onClick: (e, els, chart) => { if (opts.onSlice && els && els.length) opts.onSlice(chart.data.labels[els[0].index]); },
                     plugins: {
-                        legend: { display: circ, position: 'right', labels: { color: '#556', font: { size: 10 }, boxWidth: 12, generateLabels: (opts.pct && circ) ? (ch => { const ds = ch.data.datasets[0], bg = ds.backgroundColor, tot = ds.data.reduce((s, v) => s + (+v || 0), 0); return ch.data.labels.map((l, i) => ({ text: l + ' (' + (tot ? Math.round(ds.data[i] / tot * 100) : 0) + '%)', fillStyle: bg[i % bg.length], strokeStyle: '#fff', lineWidth: 1, hidden: false, index: i })); }) : undefined } },
+                        legend: { display: circ, position: (window.innerWidth < 700 ? 'bottom' : 'right'), labels: { color: '#556', font: { size: 10 }, boxWidth: 12, generateLabels: (opts.pct && circ) ? (ch => { const ds = ch.data.datasets[0], bg = ds.backgroundColor, tot = ds.data.reduce((s, v) => s + (+v || 0), 0); return ch.data.labels.map((l, i) => ({ text: l + ' (' + (tot ? Math.round(ds.data[i] / tot * 100) : 0) + '%)', fillStyle: bg[i % bg.length], strokeStyle: '#fff', lineWidth: 1, hidden: false, index: i })); }) : undefined } },
                         tooltip: { callbacks: { label: c => { const base = opts.count ? c.raw : contEUR(c.raw); if (!opts.pct) return ' ' + (c.label ? c.label + ': ' : '') + base; const tot = c.dataset.data.reduce((s, v) => s + (+v || 0), 0), p = tot ? Math.round((+c.raw) / tot * 100) : 0; return ' ' + (c.label ? c.label + ': ' : '') + base + ' (' + p + '%)'; } } },
                         datalabels: (opts.pct && circ) ? { display: true, color: '#fff', font: { weight: 'bold', size: 10 }, formatter: (v, ctx) => { const tot = ctx.dataset.data.reduce((s, x) => s + (+x || 0), 0), p = tot ? Math.round(v / tot * 100) : 0; return p >= 6 ? (p + '%') : ''; } } : (opts.barLabels ? { display: true, anchor: 'end', align: 'end', clamp: true, color: '#333', font: { size: 9, weight: '600' }, formatter: v => opts.count ? v : contEUR(v) } : { display: false })
                     },
