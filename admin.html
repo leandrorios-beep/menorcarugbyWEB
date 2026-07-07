@@ -1601,7 +1601,10 @@
         }
         async function loadBancos() {
             const [mv, mp, eq] = await Promise.all([contFetchAll('banco_movimientos'), contFetchAll('mapeos'), contFetchAll('equivalencias')]);
-            bancoData = mv; mapeosRaw = mp; equivData = eq || []; rebuildMaps();
+            equivData = eq || [];
+            const eqmap = {}; equivData.forEach(e => { if (e.alias) eqmap[('' + e.alias).toLowerCase().trim()] = e.canonico; });
+            bancoData = mv.map(r => { const c = eqmap[('' + (r.contraparte || '')).toLowerCase().trim()]; return c ? { ...r, contraparte: c } : r; });
+            mapeosRaw = mp; rebuildMaps();
             const bancos = [...new Set(bancoData.map(r => r.banco).filter(Boolean))].sort();
             contFill('bgasBanco', bancos); contFill('bingBanco', bancos);
             contFill('bgasProv', [...new Set(gastosBancoBase().map(r => r.contraparte).filter(Boolean))].sort());
@@ -1719,7 +1722,6 @@
             const alias = val('eqAlias'), canonico = (val('eqCanon') || '').trim();
             if (!alias || !canonico || alias === canonico) return;
             const btn = document.getElementById('eqAdd'); if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Unificando...'; }
-            await sb.from('banco_movimientos').update({ contraparte: canonico }).eq('contraparte', alias);
             for (const pfx of ['G:', 'I:']) {
                 const aliasM = mapeosRaw.find(m => m.proveedor === pfx + alias);
                 if (!aliasM) continue;
