@@ -1082,13 +1082,26 @@
                     <div class="cont-subtabs">
                         <button class="cont-subtab map-ladobtn active" data-lado="gastos"><i class="fas fa-arrow-trend-down"></i> Mapeo de Gastos</button>
                         <button class="cont-subtab map-ladobtn" data-lado="ingresos"><i class="fas fa-arrow-trend-up"></i> Mapeo de Ingresos</button>
+                        <button class="cont-subtab map-ladobtn" data-lado="equiv"><i class="fas fa-code-branch"></i> Equivalencias</button>
                     </div>
                     <p style="color:#667;font-size:.9rem;margin:0 0 1rem;line-height:1.5">Asigná el <strong>tipo</strong> y <strong>subtipo</strong> de cada proveedor/origen desde el dropdown (sin errores de tipeo). Los cambios impactan en <strong>Bancos</strong> al instante.</p>
-                    <div class="cont-filters">
+                    <div class="cont-filters" id="mapSearchWrap">
                         <input type="text" id="mapBuscar" placeholder="Buscar proveedor, tipo o subtipo..." style="min-width:280px">
                         <span id="mapInfo" style="color:#9aa;font-size:.85rem"></span>
                     </div>
                     <div id="mapeosTable"></div>
+                    <div id="equivPanel" style="display:none">
+                        <p style="color:#667;font-size:.9rem;margin:0 0 1rem;line-height:1.5">Unificá duplicados/typos: el <strong>alias</strong> (nombre viejo) pasa a ser el <strong>canónico</strong>. Se aplica a los movimientos y consolida su clasificación al instante.</p>
+                        <div class="cont-filters">
+                            <select id="eqAlias"><option value="">Nombre a reemplazar…</option></select>
+                            <span style="color:#667;font-weight:700">→</span>
+                            <input type="text" id="eqCanon" list="eqCanonList" placeholder="Nombre canónico" style="min-width:220px;background:#fff;color:#333;border:1px solid #cfd4da;border-radius:8px;padding:.5rem .7rem;font-family:inherit;font-size:.85rem">
+                            <datalist id="eqCanonList"></datalist>
+                            <button id="eqAdd" class="cont-clear" style="background:#e8f5e9;color:#2e7d32;border-color:#c8e6c9"><i class="fas fa-code-merge"></i> Unificar</button>
+                            <span id="eqInfo" style="color:#9aa;font-size:.85rem"></span>
+                        </div>
+                        <div id="equivTable"></div>
+                    </div>
                 </div>
             </div>
 
@@ -1553,7 +1566,7 @@
             const ic = document.getElementById('ingClear'); if (ic) ic.addEventListener('click', () => { Object.keys(ingF).forEach(k => ingF[k] = ''); renderIngresos(); });
         })();
         // ═══════════════ BANCOS + MAPEOS ═══════════════
-        let bancoData = [], mapeosRaw = [], bancoLoaded = false, mapLadoSel = 'gastos', mapSort = { by: 'total', dir: -1 }, bgasTipoType = 'bar', bingTipoType = 'doughnut';
+        let bancoData = [], mapeosRaw = [], equivData = [], bancoLoaded = false, mapLadoSel = 'gastos', mapSort = { by: 'total', dir: -1 }, bgasTipoType = 'bar', bingTipoType = 'doughnut';
         function bancoTablaSimple(id, entries) {
             const el = document.getElementById(id); if (!el) return;
             const total = entries.reduce((s, e) => s + e[1], 0);
@@ -1587,8 +1600,8 @@
             contFill('bingTipo', [...new Set(ingresosBancoBase().flatMap(tiposIng))].sort()); contFill('bingSub', canonSide('I:', true));
         }
         async function loadBancos() {
-            const [mv, mp] = await Promise.all([contFetchAll('banco_movimientos'), contFetchAll('mapeos')]);
-            bancoData = mv; mapeosRaw = mp; rebuildMaps();
+            const [mv, mp, eq] = await Promise.all([contFetchAll('banco_movimientos'), contFetchAll('mapeos'), contFetchAll('equivalencias')]);
+            bancoData = mv; mapeosRaw = mp; equivData = eq || []; rebuildMaps();
             const bancos = [...new Set(bancoData.map(r => r.banco).filter(Boolean))].sort();
             contFill('bgasBanco', bancos); contFill('bingBanco', bancos);
             contFill('bgasProv', [...new Set(gastosBancoBase().map(r => r.contraparte).filter(Boolean))].sort());
@@ -1641,8 +1654,13 @@
         }
 
         function renderMapeos() {
-            const gastoLado = mapLadoSel === 'gastos', prefix = gastoLado ? 'G:' : 'I:';
             document.querySelectorAll('.map-ladobtn').forEach(b => b.classList.toggle('active', b.dataset.lado === mapLadoSel));
+            const isEquiv = mapLadoSel === 'equiv';
+            document.getElementById('mapeosTable').style.display = isEquiv ? 'none' : '';
+            document.getElementById('mapSearchWrap').style.display = isEquiv ? 'none' : '';
+            document.getElementById('equivPanel').style.display = isEquiv ? 'block' : 'none';
+            if (isEquiv) { renderEquiv(); return; }
+            const gastoLado = mapLadoSel === 'gastos', prefix = gastoLado ? 'G:' : 'I:';
             const q = (val('mapBuscar') || '').toLowerCase();
             const tot = {};
             (gastoLado ? gastosBancoBase() : ingresosBancoBase()).forEach(r => { tot[r.contraparte] = (tot[r.contraparte] || 0) + Math.abs(Number(r.importe) || 0); });
@@ -1687,6 +1705,40 @@
             rebuildMaps(); fillBancoFilters();
             renderMapeos(); renderBancoGastos(); renderBancoIngresos();
         }
+        function renderEquiv() {
+            const cps = [...new Set([...gastosBancoBase(), ...ingresosBancoBase()].map(r => r.contraparte).filter(Boolean))].sort();
+            contFill('eqAlias', cps);
+            const dl = document.getElementById('eqCanonList'); if (dl) dl.innerHTML = cps.map(c => '<option value="' + (c || '').replace(/"/g, '&quot;') + '">').join('');
+            document.getElementById('eqInfo').textContent = equivData.length + ' equivalencias';
+            const body = equivData.slice().sort((a, b) => ('' + (a.canonico || '')).localeCompare('' + (b.canonico || ''))).map(e =>
+                '<tr><td>' + (e.alias || '') + '</td><td style="color:#2e7d32;font-weight:600">' + (e.canonico || '') + '</td><td><i class="fas fa-trash" style="color:#c0392b;cursor:pointer" data-id="' + e.id + '"></i></td></tr>').join('');
+            document.getElementById('equivTable').innerHTML = '<div class="cont-table-scroll"><table><thead><tr><th>Alias (nombre viejo)</th><th>Canónico</th><th></th></tr></thead><tbody>' + body + '</tbody></table></div>';
+            document.querySelectorAll('#equivTable .fa-trash').forEach(x => x.addEventListener('click', () => deleteEquiv(x.dataset.id)));
+        }
+        async function addEquiv() {
+            const alias = val('eqAlias'), canonico = (val('eqCanon') || '').trim();
+            if (!alias || !canonico || alias === canonico) return;
+            const btn = document.getElementById('eqAdd'); if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Unificando...'; }
+            await sb.from('banco_movimientos').update({ contraparte: canonico }).eq('contraparte', alias);
+            for (const pfx of ['G:', 'I:']) {
+                const aliasM = mapeosRaw.find(m => m.proveedor === pfx + alias);
+                if (!aliasM) continue;
+                const canonM = mapeosRaw.find(m => m.proveedor === pfx + canonico);
+                const merged = [...new Set([...((canonM && canonM.tipos) || []), ...(aliasM.tipos || [])])];
+                if (canonM) await sb.from('mapeos').update({ tipos: merged }).eq('proveedor', pfx + canonico);
+                else await sb.from('mapeos').insert({ proveedor: pfx + canonico, tipos: merged });
+                await sb.from('mapeos').delete().eq('proveedor', pfx + alias);
+            }
+            await sb.from('equivalencias').insert({ alias, canonico });
+            setVal('eqCanon', '');
+            if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-code-merge"></i> Unificar'; }
+            await loadBancos();
+        }
+        async function deleteEquiv(id) {
+            await sb.from('equivalencias').delete().eq('id', id);
+            equivData = equivData.filter(e => e.id !== id);
+            renderEquiv();
+        }
         (function wireBancos() {
             const gm = { bgasBanco: 'banco', bgasTipo: 'tipo', bgasSub: 'subtipo', bgasProv: 'proveedor', bgasDesde: 'desde', bgasHasta: 'hasta' };
             Object.entries(gm).forEach(([id, dim]) => { const e = document.getElementById(id); if (e) e.addEventListener('change', () => { bgasF[dim] = e.value; renderBancoGastos(); }); });
@@ -1696,6 +1748,7 @@
             const ic = document.getElementById('bingClear'); if (ic) ic.addEventListener('click', () => { Object.keys(bingF).forEach(k => bingF[k] = ''); renderBancoIngresos(); });
             const mb = document.getElementById('mapBuscar'); if (mb) mb.addEventListener('input', renderMapeos);
             document.querySelectorAll('.map-ladobtn').forEach(b => b.addEventListener('click', () => { mapLadoSel = b.dataset.lado; renderMapeos(); }));
+            const ea = document.getElementById('eqAdd'); if (ea) ea.addEventListener('click', addEquiv);
             document.querySelectorAll('.cont-toggle').forEach(b => b.addEventListener('click', () => {
                 if (b.dataset.view === 'ing') { bingTipoType = bingTipoType === 'doughnut' ? 'bar' : 'doughnut'; renderBancoIngresos(); }
                 else { bgasTipoType = bgasTipoType === 'doughnut' ? 'bar' : 'doughnut'; renderBancoGastos(); }
