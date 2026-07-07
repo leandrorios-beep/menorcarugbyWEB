@@ -21,6 +21,7 @@
     <!-- Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
 
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -1040,10 +1041,10 @@
                         </div>
                         <div id="bgasChips" class="cont-chips"></div>
                         <div class="cont-charts">
-                            <div class="cont-card c4"><h4>Por banco</h4><div id="tblBgasBanco"></div></div>
-                            <div class="cont-card c4"><h4>Por tipo (mapeos) <button class="cont-toggle" data-view="gas" title="Donut / Barras"><i class="fas fa-chart-simple"></i></button></h4><div class="cont-canvas-wrap"><canvas id="chBgasTipo"></canvas></div></div>
+                            <div class="cont-card c4"><h4>Por tipo (%)</h4><div class="cont-canvas-wrap"><canvas id="chBgasTipoDon"></canvas></div></div>
+                            <div class="cont-card c4"><h4>Por tipo (barras) <span class="cont-hint">clic = filtrar</span></h4><div class="cont-canvas-wrap"><canvas id="chBgasTipo"></canvas></div></div>
                             <div class="cont-card c4"><h4>Evolucion mensual</h4><div class="cont-canvas-wrap"><canvas id="chBgasMes"></canvas></div></div>
-                            <div class="cont-card"><h4>Por proveedor <span class="cont-hint">clic = filtrar</span></h4><div class="cont-canvas-wrap tall"><canvas id="chBgasProv"></canvas></div></div>
+                            <div class="cont-card"><h4>Por proveedor <span class="cont-hint">clic = filtrar</span></h4><div class="cont-canvas-wrap" style="height:520px"><canvas id="chBgasProv"></canvas></div></div>
                         </div>
                         <div class="admin-table-wrapper">
                             <div class="admin-table-header"><h2>Gastos banco</h2><span id="bgasInfo" style="color:#9aa;font-size:.85rem"></span></div>
@@ -1063,8 +1064,8 @@
                         </div>
                         <div id="bingChips" class="cont-chips"></div>
                         <div class="cont-charts">
-                            <div class="cont-card c4"><h4>Por tipo (mapeos) <span class="cont-hint">clic = filtrar</span> <button class="cont-toggle" data-view="ing" title="Donut / Barras"><i class="fas fa-chart-simple"></i></button></h4><div class="cont-canvas-wrap"><canvas id="chBingCat"></canvas></div></div>
-                            <div class="cont-card c4"><h4>Por banco</h4><div id="tblBingBanco"></div></div>
+                            <div class="cont-card c4"><h4>Por tipo (%) <span class="cont-hint">clic = filtrar</span></h4><div class="cont-canvas-wrap"><canvas id="chBingCat"></canvas></div></div>
+                            <div class="cont-card c4"><h4>Por tipo (barras)</h4><div class="cont-canvas-wrap"><canvas id="chBingTipoBar"></canvas></div></div>
                             <div class="cont-card c4"><h4>Evolucion mensual</h4><div class="cont-canvas-wrap"><canvas id="chBingMes"></canvas></div></div>
                         </div>
                         <div class="admin-table-wrapper">
@@ -1267,6 +1268,7 @@
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh2c2t3dWdweHRzdW1lc2VkeXZrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjAyMTk2MDgsImV4cCI6MjA3NTc5NTYwOH0.m2jCUOuzwYOhcghabkTQtj-pyBbcoQeSnxZHhRDqjSs';
 
         const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        try { if (window.ChartDataLabels) { Chart.register(window.ChartDataLabels); Chart.defaults.plugins.datalabels = { display: false }; } } catch (e) {}
 
         const loginScreen = document.getElementById('loginScreen');
         const dashboard = document.getElementById('dashboard');
@@ -1395,8 +1397,9 @@
             const labels = entries.map(e => e[0]), data = entries.map(e => Math.round(e[1])), circ = (type === 'doughnut' || type === 'pie'), horiz = !!opts.horizontal;
             let scales = {};
             if (!circ) {
-                const valAxis = { ticks: { color: '#667', font: { size: 9 }, callback: v => opts.count ? v : (v + '€') }, grid: { color: 'rgba(0,0,0,.06)' } };
-                const catAxis = { ticks: { color: '#667', font: { size: 10 } }, grid: { display: false } };
+                const fmtAxis = v => { if (opts.count) return v; const a = Math.abs(v); return (a >= 1000 ? (v / 1000).toLocaleString('es-ES', { maximumFractionDigits: 1 }) + 'k' : v) + '€'; };
+                const valAxis = { ticks: { color: '#667', font: { size: 9 }, callback: fmtAxis }, grid: { color: 'rgba(0,0,0,.06)' } };
+                const catAxis = { ticks: { color: '#556', font: { size: opts.catFontSize || 10 } }, grid: { display: false } };
                 scales = horiz ? { x: valAxis, y: catAxis } : { x: catAxis, y: valAxis };
             }
             contCharts[id] = new Chart(el, {
@@ -1408,7 +1411,8 @@
                     onClick: (e, els, chart) => { if (opts.onSlice && els && els.length) opts.onSlice(chart.data.labels[els[0].index]); },
                     plugins: {
                         legend: { display: circ, position: 'right', labels: { color: '#556', font: { size: 10 }, boxWidth: 12, generateLabels: (opts.pct && circ) ? (ch => { const ds = ch.data.datasets[0], bg = ds.backgroundColor, tot = ds.data.reduce((s, v) => s + (+v || 0), 0); return ch.data.labels.map((l, i) => ({ text: l + ' (' + (tot ? Math.round(ds.data[i] / tot * 100) : 0) + '%)', fillStyle: bg[i % bg.length], strokeStyle: '#fff', lineWidth: 1, hidden: false, index: i })); }) : undefined } },
-                        tooltip: { callbacks: { label: c => { const base = opts.count ? c.raw : contEUR(c.raw); if (!opts.pct) return ' ' + (c.label ? c.label + ': ' : '') + base; const tot = c.dataset.data.reduce((s, v) => s + (+v || 0), 0), p = tot ? Math.round((+c.raw) / tot * 100) : 0; return ' ' + (c.label ? c.label + ': ' : '') + base + ' (' + p + '%)'; } } }
+                        tooltip: { callbacks: { label: c => { const base = opts.count ? c.raw : contEUR(c.raw); if (!opts.pct) return ' ' + (c.label ? c.label + ': ' : '') + base; const tot = c.dataset.data.reduce((s, v) => s + (+v || 0), 0), p = tot ? Math.round((+c.raw) / tot * 100) : 0; return ' ' + (c.label ? c.label + ': ' : '') + base + ' (' + p + '%)'; } } },
+                        datalabels: (opts.pct && circ) ? { display: true, color: '#fff', font: { weight: 'bold', size: 10 }, formatter: (v, ctx) => { const tot = ctx.dataset.data.reduce((s, x) => s + (+x || 0), 0), p = tot ? Math.round(v / tot * 100) : 0; return p >= 6 ? (p + '%') : ''; } } : (opts.barLabels ? { display: true, anchor: 'end', align: 'end', clamp: true, color: '#333', font: { size: 9, weight: '600' }, formatter: v => opts.count ? v : contEUR(v) } : { display: false })
                     },
                     scales
                 }
@@ -1603,10 +1607,10 @@
             const total = rows.reduce((s, r) => s + Math.abs(Number(r.importe) || 0), 0);
             const provs = new Set(rows.map(r => r.contraparte)).size;
             document.getElementById('bgasKpis').innerHTML = [['Total gastos', contEUR(total)], ['Movimientos', rows.length], ['Proveedores', provs], ['Promedio', contEUR(rows.length ? total / rows.length : 0)]].map(k => '<div class="cont-kpi"><div class="v">' + k[1] + '</div><div class="l">' + k[0] + '</div></div>').join('');
-            bancoTablaSimple('tblBgasBanco', contEntries(bancoSumAbs(rows, 'banco')));
-            contChart('chBgasTipo', bgasTipoType, contEntries(bancoSumFn(rows, tiposGasto)), { color: '#2E86DE', pct: true, onSlice: l => { bgasF.tipo = (bgasF.tipo === l ? '' : l); renderBancoGastos(); } });
+            contChart('chBgasTipoDon', 'doughnut', contEntries(bancoSumFn(rows, tiposGasto)), { pct: true, onSlice: l => { bgasF.tipo = (bgasF.tipo === l ? '' : l); renderBancoGastos(); } });
+            contChart('chBgasTipo', 'bar', contEntries(bancoSumFn(rows, tiposGasto)), { color: '#2E86DE', pct: true, onSlice: l => { bgasF.tipo = (bgasF.tipo === l ? '' : l); renderBancoGastos(); } });
             contChart('chBgasMes', 'line', bancoByMonth(rows), { color: 'rgba(231,76,60,.15)', borderColor: '#E74C3C', borderWidth: 2, fill: true });
-            contChart('chBgasProv', 'bar', contEntries(bancoSumAbs(rows, 'contraparte')).slice(0, 25), { color: '#FFC72C', horizontal: true, onSlice: l => { bgasF.proveedor = (bgasF.proveedor === l ? '' : l); renderBancoGastos(); } });
+            contChart('chBgasProv', 'bar', contEntries(bancoSumAbs(rows, 'contraparte')).slice(0, 25), { color: '#FFC72C', horizontal: true, barLabels: true, catFontSize: 11, onSlice: l => { bgasF.proveedor = (bgasF.proveedor === l ? '' : l); renderBancoGastos(); } });
             document.getElementById('bgasInfo').textContent = rows.length + ' mov · ' + contEUR(total);
             const t = rows.map(r => ({ ...r, _imp: Math.abs(Number(r.importe) || 0), _tipo: tiposGasto(r).join(', '), _sub: (subGasto(r).join(', ') || '—') }));
             contRenderTable('bgasTable', t, [['fecha', 'Fecha', 'date'], ['banco', 'Banco'], ['contraparte', 'Proveedor', 'trunc'], ['_tipo', 'Tipo'], ['_sub', 'Subtipo'], ['_imp', 'Importe', 'eur']]);
@@ -1625,8 +1629,8 @@
             const total = rows.reduce((s, r) => s + (Number(r.importe) || 0), 0);
             const provs = new Set(rows.map(r => r.contraparte)).size;
             document.getElementById('bingKpis').innerHTML = [['Total ingresos', contEUR(total)], ['Movimientos', rows.length], ['Orígenes', provs]].map(k => '<div class="cont-kpi"><div class="v">' + k[1] + '</div><div class="l">' + k[0] + '</div></div>').join('');
-            contChart('chBingCat', bingTipoType, contEntries(bancoSumFn(rows, tiposIng)), { pct: true, onSlice: l => { bingF.tipo = (bingF.tipo === l ? '' : l); renderBancoIngresos(); } });
-            bancoTablaSimple('tblBingBanco', contEntries(bancoSumAbs(rows, 'banco')));
+            contChart('chBingCat', 'doughnut', contEntries(bancoSumFn(rows, tiposIng)), { pct: true, onSlice: l => { bingF.tipo = (bingF.tipo === l ? '' : l); renderBancoIngresos(); } });
+            contChart('chBingTipoBar', 'bar', contEntries(bancoSumFn(rows, tiposIng)), { color: '#28B463', onSlice: l => { bingF.tipo = (bingF.tipo === l ? '' : l); renderBancoIngresos(); } });
             contChart('chBingMes', 'line', bancoByMonth(rows), { color: 'rgba(40,180,99,.15)', borderColor: '#28B463', borderWidth: 2, fill: true });
             document.getElementById('bingInfo').textContent = rows.length + ' mov · ' + contEUR(total);
             const t = rows.map(r => ({ ...r, _tipo: tiposIng(r).join(', '), _sub: (subIng(r).join(', ') || '—') }));
