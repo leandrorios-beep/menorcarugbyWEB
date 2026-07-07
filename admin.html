@@ -1709,7 +1709,7 @@
             document.getElementById('anlTable').innerHTML = '<div class="admin-loading"><i class="fas fa-spinner fa-spin"></i> Cargando...</div>';
             const { data, error } = await sb.from('admin_logs').select('*').order('created_at', { ascending: false }).limit(5000);
             if (error) { document.getElementById('anlTable').innerHTML = '<div style="padding:1rem;color:#c0392b;font-size:.85rem">No se pudo cargar. ¿Creaste la tabla <code>admin_logs</code> en SQL Editor? (' + (error.message || '') + ')</div>'; return; }
-            logsData = data || [];
+            logsData = (data || []).filter(l => ((l.email || '').toLowerCase() !== 'leandro.rios@menorcarugbyclub.com'));
             contFill('anlUsuario', [...new Set(logsData.map(l => l.email).filter(Boolean))].sort());
             contFill('anlTipo', [...new Set(logsData.map(l => l.tipo).filter(Boolean))].sort());
             renderAnalytics();
@@ -1775,6 +1775,7 @@
             const p = document.getElementById('src-' + b.dataset.src); if (p) p.classList.add('active');
             if ((b.dataset.src === 'bancos' || b.dataset.src === 'mapeos') && !bancoLoaded) { bancoLoaded = true; loadBancos(); }
             syncUrl();
+            logAction('nav', 'Sección: ' + contCurrentUrlValue());
         }));
         document.querySelectorAll('.cont-subtab').forEach(b => b.addEventListener('click', () => {
             const scope = b.closest('.cont-srcpanel') || document;
@@ -1787,6 +1788,7 @@
             else if (b.dataset.sub === 'bgastos') renderBancoGastos();
             else if (b.dataset.sub === 'bingresos') renderBancoIngresos();
             syncUrl();
+            logAction('nav', 'Sección: ' + contCurrentUrlValue());
         }));
         (function () { const b = document.querySelector('.admin-tab[data-tab="contabilidad"]'); if (b) b.addEventListener('click', () => { if (!contLoaded) { contLoaded = true; loadContabilidad(); } }); })();
 
