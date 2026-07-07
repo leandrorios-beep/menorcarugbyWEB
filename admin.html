@@ -769,7 +769,15 @@
             gap: 0.3rem;
         }
 
+        .user-menu { position: relative; }
+        .user-menu-btn { background: rgba(255,255,255,.12); color: #fff; border: 1px solid rgba(255,255,255,.22); border-radius: 8px; padding: .5rem .9rem; cursor: pointer; font-family: inherit; font-size: .85rem; display: flex; align-items: center; gap: .5rem; }
+        .user-menu-btn:hover { background: rgba(255,255,255,.2); }
+        .user-menu-drop { position: absolute; right: 0; top: calc(100% + 6px); background: #fff; border: 1px solid #e2e5ea; border-radius: 10px; box-shadow: 0 8px 24px rgba(0,0,0,.16); min-width: 210px; overflow: hidden; display: none; z-index: 200; }
+        .user-menu-drop.open { display: block; }
+        .user-menu-item { width: 100%; background: none; border: none; text-align: left; padding: .75rem 1rem; cursor: pointer; font-family: inherit; font-size: .85rem; color: #333; display: flex; align-items: center; gap: .6rem; }
+        .user-menu-item:hover { background: #f0f2f5; color: #182B49; }
         @media (max-width: 768px) {
+            .user-menu-btn span { max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
             .admin-header { padding: 0.75rem 1rem; }
             .admin-header h1 { font-size: 0.95rem; }
             .admin-content { padding: 0.75rem; }
@@ -819,9 +827,13 @@
                 <img src="assets/images/static/logo.png" alt="MRC">
                 <h1>Panel Admin</h1>
             </div>
-            <button class="admin-logout" id="logoutBtn">
-                <i class="fas fa-sign-out-alt"></i> Cerrar sesion
-            </button>
+            <div class="user-menu">
+                <button class="user-menu-btn" id="userMenuBtn"><i class="fas fa-user-circle"></i> <span id="userMenuEmail">Cuenta</span> <i class="fas fa-caret-down"></i></button>
+                <div class="user-menu-drop" id="userMenuDrop">
+                    <button class="user-menu-item" id="menuMapeos" style="display:none"><i class="fas fa-tags"></i> Mapeos</button>
+                    <button class="user-menu-item" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Cerrar sesion</button>
+                </div>
+            </div>
         </header>
 
         <div class="admin-content">
@@ -962,12 +974,12 @@
                 </style>
 
                 <div class="cont-sources">
-                    <button class="cont-source active" data-src="gestion"><i class="fas fa-diagram-project"></i> Sistema de gestion</button>
-                    <button class="cont-source" data-src="bancos"><i class="fas fa-building-columns"></i> Bancos</button>
-                    <button class="cont-source" data-src="mapeos"><i class="fas fa-tags"></i> Mapeos</button>
+                    <button class="cont-source active" data-src="bancos"><i class="fas fa-building-columns"></i> Bancos</button>
+                    <button class="cont-source" data-src="gestion"><i class="fas fa-diagram-project"></i> Sistema de gestion</button>
+                    <button class="cont-source" data-src="mapeos" style="display:none"><i class="fas fa-tags"></i> Mapeos</button>
                 </div>
 
-                <div class="cont-srcpanel active" id="src-gestion">
+                <div class="cont-srcpanel" id="src-gestion">
                 <div class="cont-subtabs">
                     <button class="cont-subtab active" data-sub="ingresos"><i class="fas fa-arrow-trend-up"></i> Ingresos</button>
                     <button class="cont-subtab" data-sub="gastos"><i class="fas fa-arrow-trend-down"></i> Gastos (facturas)</button>
@@ -1026,7 +1038,7 @@
                 </div>
                 </div>
 
-                <div class="cont-srcpanel" id="src-bancos">
+                <div class="cont-srcpanel active" id="src-bancos">
                     <div class="cont-subtabs">
                         <button class="cont-subtab active" data-sub="bgastos"><i class="fas fa-arrow-trend-down"></i> Gastos</button>
                         <button class="cont-subtab" data-sub="bingresos"><i class="fas fa-arrow-trend-up"></i> Ingresos</button>
@@ -1034,6 +1046,7 @@
                     <div class="cont-subpanel active" id="sub-bgastos">
                         <div class="cont-kpis" id="bgasKpis"></div>
                         <div class="cont-filters">
+                            <select id="bgasTemp"><option value="">Todas las temporadas</option></select>
                             <label class="cont-datef">Desde <input type="date" id="bgasDesde"></label>
                             <label class="cont-datef">Hasta <input type="date" id="bgasHasta"></label>
                             <select id="bgasBanco"><option value="">Todos los bancos</option></select>
@@ -1045,7 +1058,7 @@
                         <div id="bgasChips" class="cont-chips"></div>
                         <div class="cont-charts">
                             <div class="cont-card c4"><h4>Por tipo (%)</h4><div class="cont-canvas-wrap"><canvas id="chBgasTipoDon"></canvas></div></div>
-                            <div class="cont-card c4"><h4>Por tipo (barras) <span class="cont-hint">clic = filtrar</span></h4><div class="cont-canvas-wrap"><canvas id="chBgasTipo"></canvas></div></div>
+                            <div class="cont-card c4"><h4>Por tipo <span class="cont-hint">clic = filtrar</span></h4><div class="cont-canvas-wrap"><canvas id="chBgasTipo"></canvas></div></div>
                             <div class="cont-card c4"><h4>Evolucion mensual</h4><div class="cont-canvas-wrap"><canvas id="chBgasMes"></canvas></div></div>
                             <div class="cont-card"><h4>Por proveedor <span class="cont-hint">clic = filtrar</span></h4><div class="cont-canvas-wrap" style="height:520px"><canvas id="chBgasProv"></canvas></div></div>
                         </div>
@@ -1057,6 +1070,7 @@
                     <div class="cont-subpanel" id="sub-bingresos">
                         <div class="cont-kpis" id="bingKpis"></div>
                         <div class="cont-filters">
+                            <select id="bingTemp"><option value="">Todas las temporadas</option></select>
                             <label class="cont-datef">Desde <input type="date" id="bingDesde"></label>
                             <label class="cont-datef">Hasta <input type="date" id="bingHasta"></label>
                             <select id="bingBanco"><option value="">Todos los bancos</option></select>
@@ -1068,7 +1082,7 @@
                         <div id="bingChips" class="cont-chips"></div>
                         <div class="cont-charts">
                             <div class="cont-card c4"><h4>Por tipo (%) <span class="cont-hint">clic = filtrar</span></h4><div class="cont-canvas-wrap"><canvas id="chBingCat"></canvas></div></div>
-                            <div class="cont-card c4"><h4>Por tipo (barras)</h4><div class="cont-canvas-wrap"><canvas id="chBingTipoBar"></canvas></div></div>
+                            <div class="cont-card c4"><h4>Por tipo</h4><div class="cont-canvas-wrap"><canvas id="chBingTipoBar"></canvas></div></div>
                             <div class="cont-card c4"><h4>Evolucion mensual</h4><div class="cont-canvas-wrap"><canvas id="chBingMes"></canvas></div></div>
                         </div>
                         <div class="admin-table-wrapper">
@@ -1369,8 +1383,9 @@
             try {
                 const { data: { session } } = await sb.auth.getSession();
                 const email = ((session && session.user && session.user.email) || '').toLowerCase();
-                const mb = document.querySelector('.cont-source[data-src="mapeos"]');
-                if (mb) mb.style.display = (email === 'leandro.rios@menorcarugbyclub.com') ? '' : 'none';
+                adminEmail = email;
+                const ue = document.getElementById('userMenuEmail'); if (ue) ue.textContent = email || 'Cuenta';
+                const mm = document.getElementById('menuMapeos'); if (mm) mm.style.display = (email === 'leandro.rios@menorcarugbyclub.com') ? '' : 'none';
             } catch (e) {}
             await Promise.all([loadSocios(), loadPlayers()]);
             applyTabFromUrl();
@@ -1566,7 +1581,11 @@
             const ic = document.getElementById('ingClear'); if (ic) ic.addEventListener('click', () => { Object.keys(ingF).forEach(k => ingF[k] = ''); renderIngresos(); });
         })();
         // ═══════════════ BANCOS + MAPEOS ═══════════════
-        let bancoData = [], mapeosRaw = [], equivData = [], bancoLoaded = false, mapLadoSel = 'gastos', mapSort = { by: 'total', dir: -1 }, bgasTipoType = 'bar', bingTipoType = 'doughnut';
+        let bancoData = [], mapeosRaw = [], equivData = [], bancoLoaded = false, mapLadoSel = 'gastos', mapSort = { by: 'total', dir: -1 }, bgasTipoType = 'bar', bingTipoType = 'doughnut', bancoTemporada = '', adminEmail = '';
+        try { bancoTemporada = localStorage.getItem('bancoTemp') || ''; } catch (e) {}
+        function tempOf(f) { const s = '' + (f || ''); if (s.length < 7) return ''; const y = +s.slice(0, 4), m = +s.slice(5, 7); return m >= 9 ? (y + '/' + (y + 1)) : ((y - 1) + '/' + y); }
+        function bancoUltimaFecha() { let mx = ''; bancoData.forEach(r => { const f = '' + (r.fecha || ''); if (f > mx) mx = f; }); return mx ? contFmtDate(mx) : '—'; }
+        function contGroupSmall(entries, frac) { const tot = entries.reduce((s, e) => s + e[1], 0); if (!tot) return entries; const big = entries.filter(e => e[1] / tot >= frac), otros = entries.filter(e => e[1] / tot < frac).reduce((s, e) => s + e[1], 0); return otros > 0 ? [...big, ['Otros', otros]] : big; }
         function bancoTablaSimple(id, entries) {
             const el = document.getElementById(id); if (!el) return;
             const total = entries.reduce((s, e) => s + e[1], 0);
@@ -1607,6 +1626,8 @@
             mapeosRaw = mp; rebuildMaps();
             const bancos = [...new Set(bancoData.map(r => r.banco).filter(Boolean))].sort();
             contFill('bgasBanco', bancos); contFill('bingBanco', bancos);
+            const temps = [...new Set(bancoData.map(r => tempOf(r.fecha)).filter(Boolean))].sort().reverse();
+            contFill('bgasTemp', temps); contFill('bingTemp', temps);
             contFill('bgasProv', [...new Set(gastosBancoBase().map(r => r.contraparte).filter(Boolean))].sort());
             contFill('bingProv', [...new Set(ingresosBancoBase().map(r => r.contraparte).filter(Boolean))].sort());
             fillBancoFilters();
@@ -1614,9 +1635,10 @@
         }
 
         function renderBancoGastos() {
-            setVal('bgasBanco', bgasF.banco); setVal('bgasTipo', bgasF.tipo); setVal('bgasSub', bgasF.subtipo); setVal('bgasProv', bgasF.proveedor); setVal('bgasDesde', bgasF.desde); setVal('bgasHasta', bgasF.hasta);
+            setVal('bgasBanco', bgasF.banco); setVal('bgasTipo', bgasF.tipo); setVal('bgasSub', bgasF.subtipo); setVal('bgasProv', bgasF.proveedor); setVal('bgasDesde', bgasF.desde); setVal('bgasHasta', bgasF.hasta); setVal('bgasTemp', bancoTemporada);
             contChips('bgasChips', bgasF, BGAS_LABELS, renderBancoGastos);
             let rows = gastosBancoBase();
+            if (bancoTemporada) rows = rows.filter(r => tempOf(r.fecha) === bancoTemporada);
             if (bgasF.banco) rows = rows.filter(r => r.banco === bgasF.banco);
             if (bgasF.proveedor) rows = rows.filter(r => r.contraparte === bgasF.proveedor);
             if (bgasF.tipo) rows = rows.filter(r => tiposGasto(r).includes(bgasF.tipo));
@@ -1625,9 +1647,9 @@
             if (bgasF.hasta) rows = rows.filter(r => ('' + (r.fecha || '')) <= bgasF.hasta);
             const total = rows.reduce((s, r) => s + Math.abs(Number(r.importe) || 0), 0);
             const provs = new Set(rows.map(r => r.contraparte)).size;
-            document.getElementById('bgasKpis').innerHTML = [['Total gastos', contEUR(total)], ['Movimientos', rows.length], ['Proveedores', provs], ['Promedio', contEUR(rows.length ? total / rows.length : 0)]].map(k => '<div class="cont-kpi"><div class="v">' + k[1] + '</div><div class="l">' + k[0] + '</div></div>').join('');
-            contChart('chBgasTipoDon', 'doughnut', contEntries(bancoSumFn(rows, tiposGasto)), { pct: true, onSlice: l => { bgasF.tipo = (bgasF.tipo === l ? '' : l); renderBancoGastos(); } });
-            contChart('chBgasTipo', 'bar', contEntries(bancoSumFn(rows, tiposGasto)), { color: '#2E86DE', pct: true, onSlice: l => { bgasF.tipo = (bgasF.tipo === l ? '' : l); renderBancoGastos(); } });
+            document.getElementById('bgasKpis').innerHTML = [['Total gastos', contEUR(total)], ['Movimientos', rows.length], ['Proveedores', provs], ['Última actualización', bancoUltimaFecha()]].map(k => '<div class="cont-kpi"><div class="v">' + k[1] + '</div><div class="l">' + k[0] + '</div></div>').join('');
+            contChart('chBgasTipoDon', 'doughnut', contGroupSmall(contEntries(bancoSumFn(rows, tiposGasto)), 0.02), { pct: true, onSlice: l => { if (l === 'Otros') return; bgasF.tipo = (bgasF.tipo === l ? '' : l); renderBancoGastos(); } });
+            contChart('chBgasTipo', 'bar', contEntries(bancoSumFn(rows, tiposGasto)), { color: '#2E86DE', pct: true, barLabels: true, onSlice: l => { bgasF.tipo = (bgasF.tipo === l ? '' : l); renderBancoGastos(); } });
             contChart('chBgasMes', 'line', bancoByMonth(rows), { color: 'rgba(231,76,60,.15)', borderColor: '#E74C3C', borderWidth: 2, fill: true });
             contChart('chBgasProv', 'bar', contEntries(bancoSumAbs(rows, 'contraparte')).slice(0, 25), { color: '#FFC72C', horizontal: true, barLabels: true, catFontSize: 11, onSlice: l => { bgasF.proveedor = (bgasF.proveedor === l ? '' : l); renderBancoGastos(); } });
             document.getElementById('bgasInfo').textContent = rows.length + ' mov · ' + contEUR(total);
@@ -1636,9 +1658,10 @@
         }
 
         function renderBancoIngresos() {
-            setVal('bingBanco', bingF.banco); setVal('bingTipo', bingF.tipo); setVal('bingSub', bingF.subtipo); setVal('bingProv', bingF.proveedor); setVal('bingDesde', bingF.desde); setVal('bingHasta', bingF.hasta);
+            setVal('bingBanco', bingF.banco); setVal('bingTipo', bingF.tipo); setVal('bingSub', bingF.subtipo); setVal('bingProv', bingF.proveedor); setVal('bingDesde', bingF.desde); setVal('bingHasta', bingF.hasta); setVal('bingTemp', bancoTemporada);
             contChips('bingChips', bingF, BING_LABELS, renderBancoIngresos);
             let rows = ingresosBancoBase();
+            if (bancoTemporada) rows = rows.filter(r => tempOf(r.fecha) === bancoTemporada);
             if (bingF.banco) rows = rows.filter(r => r.banco === bingF.banco);
             if (bingF.proveedor) rows = rows.filter(r => r.contraparte === bingF.proveedor);
             if (bingF.tipo) rows = rows.filter(r => tiposIng(r).includes(bingF.tipo));
@@ -1647,9 +1670,9 @@
             if (bingF.hasta) rows = rows.filter(r => ('' + (r.fecha || '')) <= bingF.hasta);
             const total = rows.reduce((s, r) => s + (Number(r.importe) || 0), 0);
             const provs = new Set(rows.map(r => r.contraparte)).size;
-            document.getElementById('bingKpis').innerHTML = [['Total ingresos', contEUR(total)], ['Movimientos', rows.length], ['Orígenes', provs]].map(k => '<div class="cont-kpi"><div class="v">' + k[1] + '</div><div class="l">' + k[0] + '</div></div>').join('');
-            contChart('chBingCat', 'doughnut', contEntries(bancoSumFn(rows, tiposIng)), { pct: true, onSlice: l => { bingF.tipo = (bingF.tipo === l ? '' : l); renderBancoIngresos(); } });
-            contChart('chBingTipoBar', 'bar', contEntries(bancoSumFn(rows, tiposIng)), { color: '#28B463', onSlice: l => { bingF.tipo = (bingF.tipo === l ? '' : l); renderBancoIngresos(); } });
+            document.getElementById('bingKpis').innerHTML = [['Total ingresos', contEUR(total)], ['Movimientos', rows.length], ['Última actualización', bancoUltimaFecha()]].map(k => '<div class="cont-kpi"><div class="v">' + k[1] + '</div><div class="l">' + k[0] + '</div></div>').join('');
+            contChart('chBingCat', 'doughnut', contGroupSmall(contEntries(bancoSumFn(rows, tiposIng)), 0.02), { pct: true, onSlice: l => { if (l === 'Otros') return; bingF.tipo = (bingF.tipo === l ? '' : l); renderBancoIngresos(); } });
+            contChart('chBingTipoBar', 'bar', contEntries(bancoSumFn(rows, tiposIng)), { color: '#28B463', barLabels: true, onSlice: l => { bingF.tipo = (bingF.tipo === l ? '' : l); renderBancoIngresos(); } });
             contChart('chBingMes', 'line', bancoByMonth(rows), { color: 'rgba(40,180,99,.15)', borderColor: '#28B463', borderWidth: 2, fill: true });
             document.getElementById('bingInfo').textContent = rows.length + ' mov · ' + contEUR(total);
             const t = rows.map(r => ({ ...r, _tipo: tiposIng(r).join(', '), _sub: (subIng(r).join(', ') || '—') }));
@@ -1748,6 +1771,7 @@
             const im = { bingBanco: 'banco', bingTipo: 'tipo', bingSub: 'subtipo', bingProv: 'proveedor', bingDesde: 'desde', bingHasta: 'hasta' };
             Object.entries(im).forEach(([id, dim]) => { const e = document.getElementById(id); if (e) e.addEventListener('change', () => { bingF[dim] = e.value; renderBancoIngresos(); }); });
             const ic = document.getElementById('bingClear'); if (ic) ic.addEventListener('click', () => { Object.keys(bingF).forEach(k => bingF[k] = ''); renderBancoIngresos(); });
+            ['bgasTemp', 'bingTemp'].forEach(id => { const e = document.getElementById(id); if (e) e.addEventListener('change', () => { bancoTemporada = e.value; try { localStorage.setItem('bancoTemp', bancoTemporada); } catch (x) {} renderBancoGastos(); renderBancoIngresos(); }); });
             const mb = document.getElementById('mapBuscar'); if (mb) mb.addEventListener('input', renderMapeos);
             document.querySelectorAll('.map-ladobtn').forEach(b => b.addEventListener('click', () => { mapLadoSel = b.dataset.lado; renderMapeos(); }));
             const ea = document.getElementById('eqAdd'); if (ea) ea.addEventListener('click', addEquiv);
@@ -1817,9 +1841,10 @@
         function applyTabFromUrl() {
             let v = (new URLSearchParams(window.location.search).get('tab') || '').toLowerCase();
             if (!v) { try { v = (sessionStorage.getItem('adminTab') || '').toLowerCase(); } catch (e) {} }
+            if (!v) v = 'banco-gastos';
             const map = { socios: ['socios'], jugadores: ['jugadores'], contabilidad: ['contabilidad', 'gestion', 'ingresos'], administracion: ['contabilidad', 'gestion', 'ingresos'], ingresos: ['contabilidad', 'gestion', 'ingresos'], gastos: ['contabilidad', 'gestion', 'gastos'], facturas: ['contabilidad', 'gestion', 'gastos'], bancos: ['contabilidad', 'bancos', 'bgastos'], 'banco-gastos': ['contabilidad', 'bancos', 'bgastos'], 'banco-ingresos': ['contabilidad', 'bancos', 'bingresos'], mapeos: ['contabilidad', 'mapeos'], analytics: ['analytics'] };
             const t = map[v]; if (!t) return;
-            if (t[1] === 'mapeos') { const mb = document.querySelector('.cont-source[data-src="mapeos"]'); if (!mb || mb.style.display === 'none') return; }
+            if (t[1] === 'mapeos' && adminEmail !== 'leandro.rios@menorcarugbyclub.com') return;
             activateTab(t[0]); if (t[1]) activateSource(t[1]); if (t[2]) activateSub(t[2]);
         }
 
@@ -1846,6 +1871,15 @@
             logAction('nav', 'Sección: ' + contCurrentUrlValue());
         }));
         (function () { const b = document.querySelector('.admin-tab[data-tab="contabilidad"]'); if (b) b.addEventListener('click', () => { if (!contLoaded) { contLoaded = true; loadContabilidad(); } }); })();
+        (function wireUserMenu() {
+            const btn = document.getElementById('userMenuBtn'), drop = document.getElementById('userMenuDrop');
+            if (btn && drop) {
+                btn.addEventListener('click', e => { e.stopPropagation(); drop.classList.toggle('open'); });
+                document.addEventListener('click', () => drop.classList.remove('open'));
+            }
+            const mm = document.getElementById('menuMapeos');
+            if (mm) mm.addEventListener('click', () => { if (drop) drop.classList.remove('open'); activateTab('contabilidad'); activateSource('mapeos'); });
+        })();
 
         // ── Generate passwords & send access emails ──
         document.getElementById('btnGeneratePasswords').addEventListener('click', async () => {
