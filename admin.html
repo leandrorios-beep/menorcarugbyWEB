@@ -383,6 +383,51 @@
         .subs-cell .admin-badge--protector { background: #fff3e0; color: #e65100; }
         .subs-cell .admin-badge--familiar { background: #fce4ec; color: #c62828; }
 
+        /* ── Tabla de socios: 15 columnas ──
+           table-layout:fixed + anchos en % => la tabla NUNCA excede el ancho
+           del contenedor, asi que no hay scroll horizontal. Todo se compacta y
+           el texto que no entra se recorta con ellipsis (valor completo en title=). */
+        #panel-socios .admin-table-wrapper table {
+            table-layout: fixed;
+            width: 100%;
+            font-size: 0.68rem;
+        }
+        #panel-socios thead th {
+            padding: 0.45rem 0.28rem;
+            font-size: 0.56rem;
+            letter-spacing: 0;
+            overflow: hidden;
+        }
+        #panel-socios thead th .sort-icon { margin-left: 0.1rem; font-size: 0.52rem; }
+        #panel-socios tbody td { padding: 0.3rem 0.28rem; }
+        #panel-socios .admin-badge { padding: 0.1rem 0.35rem; font-size: 0.6rem; }
+        #panel-socios .admin-foto-thumb,
+        #panel-socios .admin-foto-none { width: 22px; height: 22px; border-width: 1px; font-size: 0.6rem; }
+        #panel-socios .admin-actions { gap: 0.1rem; flex-wrap: wrap; }
+        #panel-socios .admin-action-btn { padding: 0.15rem 0.25rem; font-size: 0.62rem; border-radius: 4px; }
+
+        #panel-socios .trunc-cell {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        /* Marca de "familiar de": el nombre del titular va en el title= */
+        #panel-socios .fam-icon {
+            color: #c62828;
+            opacity: 0.55;
+            font-size: 0.55rem;
+            margin-right: 3px;
+        }
+
+        /* Los badges de Stripe envuelven texto para no desbordar su columna */
+        #panel-socios .subs-cell { max-width: none; line-height: 1.45; }
+        #panel-socios .subs-cell .admin-badge {
+            font-size: 0.57rem;
+            padding: 0.06rem 0.28rem;
+            white-space: normal;
+        }
+
         .admin-foto-thumb {
             width: 32px;
             height: 32px;
@@ -2052,6 +2097,19 @@
             return String(d.getDate()).padStart(2, '0') + '/' + String(d.getMonth() + 1).padStart(2, '0') + '/' + d.getFullYear();
         }
 
+        // Año a 2 digitos: la tabla de socios tiene 4 columnas de fecha y
+        // necesita el ancho (la fecha completa va en el title=)
+        function formatDateShort(dateStr) {
+            if (!dateStr) return '-';
+            const d = new Date(dateStr);
+            return String(d.getDate()).padStart(2, '0') + '/' + String(d.getMonth() + 1).padStart(2, '0') + '/' + String(d.getFullYear()).slice(-2);
+        }
+
+        function dateCell(dateStr) {
+            if (!dateStr) return '<td>-</td>';
+            return '<td title="' + escapeAttr(formatDate(dateStr)) + '">' + formatDateShort(dateStr) + '</td>';
+        }
+
         function isValidImageUrl(url) {
             if (!url) return false;
             if (url.startsWith('http://') || url.startsWith('https://')) return true;
@@ -2202,6 +2260,7 @@
         }
 
         const SUB_VIGENTE = ['active', 'trialing', 'past_due', 'unpaid'];
+        const SUB_LABEL = { socio: 'Socio', gym: 'Gym', protector: 'Protector', familiar: 'Familiar' };
 
         // "trimestral" en Stripe es interval=month + interval_count=3: sin el
         // count un precio de 100€/trimestre se leeria como 100€/mes.
@@ -2250,8 +2309,11 @@
                 html = vigentes.map(x => {
                     const per = periodoLabel(x.intervalo, x.intervalo_n);
                     const cls = x.key ? 'admin-badge--' + x.key : '';
+                    // Etiqueta corta si se reconoce el concepto; el nombre real
+                    // del producto siempre va en el tooltip.
+                    const label = SUB_LABEL[x.key] || x.nombre;
                     return '<span class="admin-badge ' + cls + '" title="' + escapeAttr(x.nombre + ' · ' + x.estado) + '">'
-                        + escapeHtml(x.nombre) + ' ' + eurCuota(x.importe) + per + '</span>';
+                        + escapeHtml(label) + ' ' + eurCuota(x.importe) + per + '</span>';
                 }).join(' ');
             } else if (s._pagos_n) {
                 html = '<span style="color:#999;font-size:0.78rem;">sin suscripcion activa</span>';
@@ -2387,32 +2449,35 @@
                 return;
             }
 
+            // Los anchos suman 100%: con table-layout:fixed la tabla no puede
+            // desbordar el contenedor, asi que no aparece scroll horizontal.
             const cols = [
-                { key: 'numero_socio', label: 'N.°' },
-                { key: null, label: 'Foto', noSort: true },
-                { key: 'nombre_full', label: 'Nombre' },
-                { key: 'documento', label: 'DNI/NIE/Pas.' },
-                { key: 'email', label: 'Email' },
-                { key: 'tipo_socio', label: 'Tipo' },
-                { key: null, label: 'Paga en Stripe', noSort: true },
-                { key: 'estado_pago', label: 'Pago' },
-                { key: 'fecha_pago', label: 'Fecha pago' },
-                { key: '_ultima_cuota', label: 'Última cuota', num: true },
-                { key: '_total_cobrado', label: 'Total cobrado', num: true },
-                { key: 'fecha_proximo_pago', label: 'Próximo pago' },
-                { key: 'familiar_de', label: 'Familiar de' },
-                { key: 'created_at', label: 'Alta' },
-                { key: null, label: 'Acc.', noSort: true }
+                { key: 'numero_socio', label: 'N.º', w: '3%', t: 'Número de socio' },
+                { key: null, label: '', noSort: true, w: '3%' },
+                { key: 'nombre_full', label: 'Nombre', w: '13%' },
+                { key: 'documento', label: 'Doc.', w: '6%', t: 'DNI / NIE / Pasaporte' },
+                { key: 'email', label: 'Email', w: '14%' },
+                { key: 'tipo_socio', label: 'Tipo', w: '6%' },
+                { key: null, label: 'Stripe', noSort: true, w: '12%', t: 'Suscripciones vigentes en Stripe' },
+                { key: 'estado_pago', label: 'Pago', w: '6%', t: 'Estado de pago' },
+                { key: 'fecha_pago', label: 'Pagó', w: '5%', t: 'Fecha del último pago' },
+                { key: '_ultima_cuota', label: 'Cuota', num: true, w: '6%', t: 'Importe de la última cuota cobrada' },
+                { key: '_total_cobrado', label: 'Total', num: true, w: '7%', t: 'Total cobrado histórico en Stripe' },
+                { key: 'fecha_proximo_pago', label: 'Próx.', w: '5%', t: 'Próximo pago' },
+                { key: 'created_at', label: 'Alta', w: '5%', t: 'Fecha de alta' },
+                { key: null, label: '', noSort: true, w: '9%' }
             ];
 
             let html = '<table><thead><tr>';
             cols.forEach(c => {
                 const extra = c.num ? ' num-cell' : '';
+                const w = ` style="width:${c.w}"`;
+                const tt = c.t ? ` title="${escapeAttr(c.t)}"` : '';
                 if (c.noSort) {
-                    html += `<th class="no-sort${extra}">${c.label}</th>`;
+                    html += `<th class="no-sort${extra}"${w}${tt}>${c.label}</th>`;
                 } else {
                     const cls = (sociosSort.col === c.key ? 'sorted' : '') + extra;
-                    html += `<th class="${cls}" onclick="sociosSortClick('${c.key}')">${c.label} ${sortIcon(sociosSort, c.key)}</th>`;
+                    html += `<th class="${cls}"${w}${tt} onclick="sociosSortClick('${c.key}')">${c.label} ${sortIcon(sociosSort, c.key)}</th>`;
                 }
             });
             html += '</tr></thead><tbody>';
@@ -2424,23 +2489,23 @@
                 const onclick = `onclick="openFotoModal('socio','${s.id}')"`;
                 const foto = renderFotoThumb(s.foto_url, onclick);
                 const tipo = s.tipo_socio || '-';
+                const nombreRaw = `${s.apellido || ''} ${s.nombre || ''}`.trim();
                 const nombre = `${escapeHtml(s.apellido || '')} ${escapeHtml(s.nombre || '')}`.trim();
 
                 html += `<tr>
                     <td><strong>${s.numero_socio != null ? s.numero_socio : '-'}</strong></td>
                     <td>${foto}</td>
-                    <td>${nombre}</td>
-                    <td>${escapeHtml(s.documento || '')}</td>
-                    <td>${escapeHtml(s.email || '')}</td>
-                    <td><span class="admin-badge admin-badge--${tipo}">${escapeHtml(tipo)}</span></td>
+                    <td class="trunc-cell" title="${escapeAttr(nombreRaw + (s.familiar_de ? ' — Familiar de: ' + s.familiar_de : ''))}">${s.familiar_de ? '<i class="fas fa-link fam-icon"></i>' : ''}${nombre}</td>
+                    <td class="trunc-cell" title="${escapeAttr(s.documento || '')}">${escapeHtml(s.documento || '')}</td>
+                    <td class="trunc-cell" title="${escapeAttr(s.email || '')}">${escapeHtml(s.email || '')}</td>
+                    <td class="trunc-cell"><span class="admin-badge admin-badge--${tipo}">${escapeHtml(tipo)}</span></td>
                     <td class="subs-cell">${renderSubsCell(s)}</td>
-                    <td><span class="admin-badge admin-badge--${s.estado_pago || 'pendiente'}">${escapeHtml(s.estado_pago || 'pendiente')}</span></td>
-                    <td>${formatDate(s.fecha_pago)}</td>
+                    <td class="trunc-cell"><span class="admin-badge admin-badge--${s.estado_pago || 'pendiente'}">${escapeHtml(s.estado_pago || 'pendiente')}</span></td>
+                    ${dateCell(s.fecha_pago)}
                     <td class="num-cell">${renderUltimaCuotaCell(s)}</td>
                     <td class="num-cell">${renderTotalCobradoCell(s)}</td>
-                    <td>${formatDate(s.fecha_proximo_pago)}</td>
-                    <td class="familiar-de-cell">${escapeHtml(s.familiar_de || '')}</td>
-                    <td>${formatDate(s.created_at)}</td>
+                    ${dateCell(s.fecha_proximo_pago)}
+                    ${dateCell(s.created_at)}
                     <td><div class="admin-actions">
                         <button class="admin-action-btn" onclick="openEditModal('${s.id}')" title="Editar"><i class="fas fa-pen"></i></button>
                         <button class="admin-action-btn" onclick="openFotoModal('socio','${s.id}')" title="Foto"><i class="fas fa-camera"></i></button>
