@@ -1340,7 +1340,7 @@
         let playersFilter = null;
         let sociosSort = { col: 'created_at', dir: 'desc' };
         let playersSort = { col: 'last_name', dir: 'asc' };
-        // Importes y suscripciones de Stripe por email (via /api/socios-payments)
+        // Importes y suscripciones de Stripe por email (GET /api/sync-stripe-payments)
         let sociosPagos = null;
         let sociosPagosState = 'idle'; // idle | loading | ok | error
         let sociosPagosError = '';
@@ -2105,7 +2105,9 @@
                 const { data: { session } } = await sb.auth.getSession();
                 if (!session) throw new Error('No hay sesion activa');
 
-                const resp = await fetch('/api/socios-payments' + (force ? '?refresh=1' : ''), {
+                // GET sobre el mismo endpoint que hace el sync por POST (el
+                // plan Hobby de Vercel solo admite 12 funciones serverless)
+                const resp = await fetch('/api/sync-stripe-payments' + (force ? '?refresh=1' : ''), {
                     headers: { 'Authorization': 'Bearer ' + session.access_token }
                 });
                 const data = await resp.json();
