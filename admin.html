@@ -232,6 +232,11 @@
             background: #fffbf0;
         }
 
+        /* Chip de avisos ficha<->Stripe: naranja en reposo, amarillo al filtrar */
+        .admin-stat--warn { border-color: #e65100; }
+        .admin-stat--warn .admin-stat-number { color: #e65100; }
+        .admin-stat--warn.active { border-color: #FFC72C; }
+
         .admin-stat-number {
             font-size: 1.75rem;
             font-weight: 700;
@@ -367,6 +372,16 @@
         .admin-badge--completado { background: #e8f5e9; color: #2e7d32; }
         .admin-badge--impago { background: #ffebee; color: #c62828; }
         .admin-badge--cancelado { background: #f3e5f5; color: #6a1b9a; }
+        .admin-badge--socio { background: #e3f2fd; color: #1565c0; }
+
+        /* Importes y suscripciones de Stripe */
+        .num-cell { text-align: right; white-space: nowrap; }
+        .subs-cell { white-space: normal; max-width: 280px; line-height: 1.8; }
+        .subs-cell .admin-badge { background: #eef1f5; color: #4a5568; text-transform: none; font-size: 0.7rem; }
+        .subs-cell .admin-badge--socio { background: #e3f2fd; color: #1565c0; }
+        .subs-cell .admin-badge--gym { background: #e8f5e9; color: #2e7d32; }
+        .subs-cell .admin-badge--protector { background: #fff3e0; color: #e65100; }
+        .subs-cell .admin-badge--familiar { background: #fce4ec; color: #c62828; }
 
         .admin-foto-thumb {
             width: 32px;
@@ -762,6 +777,19 @@
             font-weight: 600;
         }
 
+        /* Las lineas de Stripe llevan varios badges / texto largo: no se
+           pueden recortar con el ellipsis generico de .mobile-card-detail
+           (en movil no hay title= que leer). Va despues para ganar el orden. */
+        .mobile-card-detail.subs-cell,
+        .mobile-card-detail.desajuste-cell {
+            white-space: normal;
+            overflow: visible;
+            text-overflow: clip;
+            max-width: none;
+            line-height: 1.6;
+            margin: 0.25rem 0;
+        }
+
         .mobile-card-actions {
             flex-shrink: 0;
             display: flex;
@@ -872,7 +900,7 @@
                 <div style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap;padding:1rem 1.25rem;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:10px;margin-bottom:1.5rem;">
                     <div style="flex:1;min-width:200px;">
                         <strong style="color:var(--primary-yellow,#FFC72C);"><i class="fas fa-sync-alt"></i> Sincronizar Stripe</strong>
-                        <p style="font-size:0.8rem;color:#999;margin:0.25rem 0 0;">Sincroniza fechas de pago y proximo pago de todas las suscripciones activas en Stripe</p>
+                        <p style="font-size:0.8rem;color:#999;margin:0.25rem 0 0;">Sincroniza fechas de pago y proximo pago de todas las suscripciones activas en Stripe, y refresca importes y suscripciones de la tabla</p>
                     </div>
                     <button id="btnSyncStripe" style="background:var(--primary-yellow,#FFC72C);color:var(--primary-navy,#182B49);border:none;border-radius:8px;padding:0.65rem 1.25rem;font-weight:700;font-family:inherit;cursor:pointer;font-size:0.85rem;white-space:nowrap;">
                         <i class="fas fa-sync-alt"></i> Sincronizar pagos
@@ -1312,6 +1340,12 @@
         let playersFilter = null;
         let sociosSort = { col: 'created_at', dir: 'desc' };
         let playersSort = { col: 'last_name', dir: 'asc' };
+        // Importes y suscripciones de Stripe por email (via /api/socios-payments)
+        let sociosPagos = null;
+        let sociosPagosState = 'idle'; // idle | loading | ok | error
+        let sociosPagosError = '';
+        let sociosPagosPendingForce = false;
+        let sociosPagosDetectaGym = false;
 
         // ── Auth ──
         (async () => {
@@ -1403,7 +1437,7 @@
             });
         });
 
-        document.getElementById('refreshSocios').addEventListener('click', loadSocios);
+        document.getElementById('refreshSocios').addEventListener('click', () => loadSocios(true));
         document.getElementById('refreshJugadores').addEventListener('click', loadPlayers);
 
         // ═══════════════ ADMINISTRACION / CONTABILIDAD ═══════════════
@@ -1978,7 +2012,7 @@
                     + data.socios_updated + ' socios actualizados de '
                     + data.total_stripe_records + ' registros en Stripe.</span>';
                 resultDiv.style.display = '';
-                loadSocios();
+                loadSocios(true);
             } catch (err) {
                 resultDiv.innerHTML = '<span style="color:#ff6b7a;"><i class="fas fa-times"></i> ' + err.message + '</span>';
                 resultDiv.style.display = '';
@@ -2007,6 +2041,11 @@
             return div.innerHTML;
         }
 
+        // escapeHtml no escapa comillas: para atributos (title="...") hace falta esto
+        function escapeAttr(str) {
+            return escapeHtml(str).replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+        }
+
         function formatDate(dateStr) {
             if (!dateStr) return '-';
             const d = new Date(dateStr);
@@ -2027,7 +2066,7 @@
         }
 
         // ── Socios ──
-        async function loadSocios() {
+        async function loadSocios(force) {
             const container = document.getElementById('sociosTable');
             container.innerHTML = '<div class="admin-loading"><i class="fas fa-spinner fa-spin"></i> Cargando socios...</div>';
 
@@ -2041,8 +2080,186 @@
             sociosData = data || [];
             sociosFilter = null;
             document.getElementById('sociosCount').textContent = sociosData.length;
+            applySociosPagos();
             renderSociosStats();
             renderSociosTable();
+
+            // Importes de Stripe: se cargan aparte para no demorar la tabla
+            if (force || sociosPagos === null || sociosPagosState === 'error') loadSociosPagos(!!force);
+        }
+
+        // ── Importes / suscripciones de Stripe ──
+        const eurCuota = n => new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(n || 0);
+
+        async function loadSociosPagos(force) {
+            if (sociosPagosState === 'loading') {
+                // No se pisa la peticion en vuelo, pero un refresco forzado no
+                // se pierde: se relanza al terminar (si no, "Sincronizar pagos"
+                // podria dejar la tabla con la cache de hasta 5 min).
+                if (force) sociosPagosPendingForce = true;
+                return;
+            }
+            sociosPagosState = 'loading';
+            renderSociosTable();
+            try {
+                const { data: { session } } = await sb.auth.getSession();
+                if (!session) throw new Error('No hay sesion activa');
+
+                const resp = await fetch('/api/socios-payments' + (force ? '?refresh=1' : ''), {
+                    headers: { 'Authorization': 'Bearer ' + session.access_token }
+                });
+                const data = await resp.json();
+                if (!resp.ok) throw new Error(data.error || 'Error');
+
+                sociosPagos = data.pagos || {};
+                // ¿El catalogo de Stripe permite reconocer el gym por nombre?
+                // Si ningun producto matchea, no se puede afirmar que a alguien
+                // "le falta la suscripcion de gym" (ver desajusteStripe).
+                sociosPagosDetectaGym = Object.keys(sociosPagos).some(k =>
+                    (sociosPagos[k].subs || []).some(x => x.key === 'gym'));
+                sociosPagosState = 'ok';
+                sociosPagosError = '';
+            } catch (err) {
+                sociosPagos = sociosPagos || {};
+                sociosPagosState = 'error';
+                sociosPagosError = err.message;
+            }
+            applySociosPagos();
+            renderSociosStats();
+            renderSociosTable();
+
+            if (sociosPagosPendingForce) {
+                sociosPagosPendingForce = false;
+                loadSociosPagos(true);
+            }
+        }
+
+        const GYM_STRIPE_LINK = 'https://buy.stripe.com/28EfZg7qY9sI9wih2C3VC02';
+        const normEmail = e => (e || '').trim().toLowerCase();
+
+        // El gym es un complemento a cualquier tipo de socio: la DB lo registra
+        // en stripe_link (igual que mi-carnet.html), NO en tipo_socio. Un
+        // "familiar + gym" es un estado correcto y no debe dar aviso.
+        function gymEnFicha(s) {
+            const link = (s.stripe_link || '').trim().toLowerCase();
+            return (s.tipo_socio || '').toLowerCase() === 'gym'
+                || link === 'gym'
+                || link === GYM_STRIPE_LINK.toLowerCase();
+        }
+
+        // Vuelca los datos de Stripe sobre sociosData (campos _*) para que la
+        // tabla pueda mostrarlos y ordenarlos como una columna mas.
+        function applySociosPagos() {
+            // Varios socios pueden compartir email (pareja, familia): el bucket
+            // de Stripe es del email, no de la persona. Se marca para no leer
+            // el importe como individual, y el gym se considera registrado si
+            // CUALQUIER ficha de ese email lo tiene.
+            const nPorEmail = {}, gymPorEmail = {};
+            sociosData.forEach(s => {
+                const em = normEmail(s.email);
+                if (!em) return;
+                nPorEmail[em] = (nPorEmail[em] || 0) + 1;
+                if (gymEnFicha(s)) gymPorEmail[em] = true;
+            });
+
+            sociosData.forEach(s => {
+                const em = normEmail(s.email);
+                const p = sociosPagos ? sociosPagos[em] : null;
+                s._ultima_cuota = p && p.ultima != null ? p.ultima : null;
+                s._ultima_cuota_fecha = p ? p.ultima_fecha : null;
+                s._ultima_desc = p ? p.ultima_desc : null;
+                s._total_cobrado = p && p.n ? p.total : null;
+                s._pagos_n = p ? p.n : 0;
+                s._subs = p ? (p.subs || []) : [];
+                s._stripe_keys = p ? (p.keys || []) : [];
+                s._email_compartido = nPorEmail[em] > 1 ? nPorEmail[em] : 0;
+                s._desajuste = desajusteStripe(s, gymPorEmail[em]);
+            });
+        }
+
+        // Detecta que lo que se cobra en Stripe no coincide con la ficha.
+        // Caso tipico: el socio contrata el gym despues del alta y nadie
+        // actualiza su ficha (queda invisible en el panel).
+        function desajusteStripe(s, gymRegistrado) {
+            if (!sociosPagos || sociosPagosState !== 'ok') return null;
+            const keys = s._stripe_keys || [];
+            if (!keys.length && !s._pagos_n) return null; // sin rastro en Stripe: nada que comparar
+            const avisos = [];
+            if (keys.includes('gym') && !gymRegistrado) {
+                avisos.push('Paga gym en Stripe pero la ficha no lo registra'
+                    + (s._email_compartido ? ' (ni la de ningun socio con este email)' : '')
+                    + ': tipo "' + (s.tipo_socio || 'sin tipo') + '", stripe_link ' + (s.stripe_link ? 'de otro producto' : 'vacio'));
+            }
+            // Solo si Stripe permite reconocer el gym por nombre de producto:
+            // si no, este aviso marcaria en naranja a TODOS los que lo tienen
+            // bien registrado (ver sociosPagosDetectaGym).
+            if (sociosPagosDetectaGym && gymEnFicha(s) && !keys.includes('gym')) {
+                avisos.push('Su ficha dice gym pero no tiene ninguna suscripcion de gym vigente en Stripe');
+            }
+            return avisos.length ? avisos.join('. ') : null;
+        }
+
+        const SUB_VIGENTE = ['active', 'trialing', 'past_due', 'unpaid'];
+
+        // "trimestral" en Stripe es interval=month + interval_count=3: sin el
+        // count un precio de 100€/trimestre se leeria como 100€/mes.
+        function periodoLabel(intervalo, n) {
+            n = n || 1;
+            const uni = { day: ['día', 'días'], week: ['semana', 'semanas'], month: ['mes', 'meses'], year: ['año', 'años'] }[intervalo];
+            if (!uni) return '';
+            return n === 1 ? '/' + uni[0] : '/' + n + ' ' + uni[1];
+        }
+
+        function renderPagoCell(v, bold, tip) {
+            if (sociosPagosState === 'loading') return '<span style="color:#ccc;"><i class="fas fa-spinner fa-spin"></i></span>';
+            if (sociosPagosState === 'error') return '<span style="color:#c62828;" title="' + escapeAttr(sociosPagosError) + '"><i class="fas fa-triangle-exclamation"></i></span>';
+            if (v == null) return '<span style="color:#bbb;">—</span>';
+            const t = tip ? ' title="' + escapeAttr(tip) + '" style="cursor:help;"' : '';
+            const txt = bold ? '<strong>' + eurCuota(v) + '</strong>' : eurCuota(v);
+            return '<span' + t + '>' + txt + '</span>';
+        }
+
+        function renderUltimaCuotaCell(s) {
+            const tips = [];
+            if (s._ultima_cuota_fecha) tips.push(formatDate(s._ultima_cuota_fecha));
+            if (s._ultima_desc) tips.push(s._ultima_desc);
+            return renderPagoCell(s._ultima_cuota, false, tips.join(' · '));
+        }
+
+        function renderTotalCobradoCell(s) {
+            const tips = [];
+            if (s._pagos_n) tips.push(s._pagos_n + ' cobros en Stripe');
+            if (s._email_compartido) tips.push('Email compartido por ' + s._email_compartido + ' socios: el total es del conjunto, no individual');
+            let html = renderPagoCell(s._total_cobrado, true, tips.join(' · '));
+            if (sociosPagosState === 'ok' && s._email_compartido && s._total_cobrado != null) {
+                html += ' <i class="fas fa-user-group" style="color:#e6a000;cursor:help;" title="'
+                    + escapeAttr('Email compartido por ' + s._email_compartido + ' socios: el total es del conjunto') + '"></i>';
+            }
+            return html;
+        }
+
+        // Badges con lo que la persona paga realmente en Stripe.
+        function renderSubsCell(s) {
+            if (sociosPagosState === 'loading') return '<span style="color:#ccc;"><i class="fas fa-spinner fa-spin"></i></span>';
+            if (sociosPagosState === 'error') return '<span style="color:#bbb;">—</span>';
+            const vigentes = (s._subs || []).filter(x => SUB_VIGENTE.includes(x.estado));
+            let html = '';
+            if (vigentes.length) {
+                html = vigentes.map(x => {
+                    const per = periodoLabel(x.intervalo, x.intervalo_n);
+                    const cls = x.key ? 'admin-badge--' + x.key : '';
+                    return '<span class="admin-badge ' + cls + '" title="' + escapeAttr(x.nombre + ' · ' + x.estado) + '">'
+                        + escapeHtml(x.nombre) + ' ' + eurCuota(x.importe) + per + '</span>';
+                }).join(' ');
+            } else if (s._pagos_n) {
+                html = '<span style="color:#999;font-size:0.78rem;">sin suscripcion activa</span>';
+            } else {
+                html = '<span style="color:#bbb;">—</span>';
+            }
+            if (s._desajuste) {
+                html += ' <i class="fas fa-triangle-exclamation" style="color:#e65100;cursor:help;" title="' + escapeAttr(s._desajuste) + '"></i>';
+            }
+            return html;
         }
 
         function renderSociosStats() {
@@ -2059,6 +2276,15 @@
                 html += `<div class="admin-stat ${isActive ? 'active' : ''}" onclick="filterSocios('${escapeHtml(tipo)}')">
                     <div class="admin-stat-number">${count}</div><div class="admin-stat-label">${escapeHtml(tipo)}</div></div>`;
             });
+
+            // Desajustes ficha <-> Stripe (ej. contrato el gym y nadie lo anoto)
+            const nRevisar = sociosData.filter(s => s._desajuste).length;
+            if (nRevisar) {
+                const isActive = sociosFilter && sociosFilter.key === 'desajuste';
+                html += `<div class="admin-stat admin-stat--warn ${isActive ? 'active' : ''}" onclick="filterSociosDesajuste()">
+                    <div class="admin-stat-number">${nRevisar}</div>
+                    <div class="admin-stat-label"><i class="fas fa-triangle-exclamation"></i> Revisar</div></div>`;
+            }
             document.getElementById('sociosStats').innerHTML = html;
 
             const clearBtn = document.getElementById('sociosFilterClear');
@@ -2066,11 +2292,19 @@
         }
 
         function filterSocios(tipo) {
-            if (!tipo || (sociosFilter && sociosFilter.value === tipo)) {
+            if (!tipo || (sociosFilter && sociosFilter.key === 'tipo_socio' && sociosFilter.value === tipo)) {
                 sociosFilter = null;
             } else {
                 sociosFilter = { key: 'tipo_socio', value: tipo };
             }
+            renderSociosStats();
+            renderSociosTable();
+        }
+
+        function filterSociosDesajuste() {
+            sociosFilter = (sociosFilter && sociosFilter.key === 'desajuste')
+                ? null
+                : { key: 'desajuste', value: 'Revisar (ficha vs Stripe)' };
             renderSociosStats();
             renderSociosTable();
         }
@@ -2112,9 +2346,11 @@
 
         function renderSociosTable() {
             const container = document.getElementById('sociosTable');
-            let filtered = sociosFilter
-                ? sociosData.filter(s => (s.tipo_socio || 'sin tipo') === sociosFilter.value)
-                : sociosData;
+            let filtered = !sociosFilter
+                ? sociosData
+                : sociosFilter.key === 'desajuste'
+                    ? sociosData.filter(s => s._desajuste)
+                    : sociosData.filter(s => (s.tipo_socio || 'sin tipo') === sociosFilter.value);
 
             // Sort - handle combined name column
             if (sociosSort.col === 'nombre_full') {
@@ -2124,6 +2360,16 @@
                     if (va < vb) return sociosSort.dir === 'asc' ? -1 : 1;
                     if (va > vb) return sociosSort.dir === 'asc' ? 1 : -1;
                     return 0;
+                });
+            } else if (sociosSort.col === '_ultima_cuota' || sociosSort.col === '_total_cobrado') {
+                // Orden numerico; los que no tienen importe quedan siempre al final
+                const col = sociosSort.col;
+                filtered = [...filtered].sort((a, b) => {
+                    const va = a[col], vb = b[col];
+                    if (va == null && vb == null) return 0;
+                    if (va == null) return 1;
+                    if (vb == null) return -1;
+                    return sociosSort.dir === 'asc' ? va - vb : vb - va;
                 });
             } else {
                 filtered = sortData(filtered, sociosSort.col, sociosSort.dir);
@@ -2146,8 +2392,11 @@
                 { key: 'documento', label: 'DNI/NIE/Pas.' },
                 { key: 'email', label: 'Email' },
                 { key: 'tipo_socio', label: 'Tipo' },
+                { key: null, label: 'Paga en Stripe', noSort: true },
                 { key: 'estado_pago', label: 'Pago' },
                 { key: 'fecha_pago', label: 'Fecha pago' },
+                { key: '_ultima_cuota', label: 'Última cuota', num: true },
+                { key: '_total_cobrado', label: 'Total cobrado', num: true },
                 { key: 'fecha_proximo_pago', label: 'Próximo pago' },
                 { key: 'familiar_de', label: 'Familiar de' },
                 { key: 'created_at', label: 'Alta' },
@@ -2156,10 +2405,11 @@
 
             let html = '<table><thead><tr>';
             cols.forEach(c => {
+                const extra = c.num ? ' num-cell' : '';
                 if (c.noSort) {
-                    html += `<th class="no-sort">${c.label}</th>`;
+                    html += `<th class="no-sort${extra}">${c.label}</th>`;
                 } else {
-                    const cls = sociosSort.col === c.key ? 'sorted' : '';
+                    const cls = (sociosSort.col === c.key ? 'sorted' : '') + extra;
                     html += `<th class="${cls}" onclick="sociosSortClick('${c.key}')">${c.label} ${sortIcon(sociosSort, c.key)}</th>`;
                 }
             });
@@ -2181,8 +2431,11 @@
                     <td>${escapeHtml(s.documento || '')}</td>
                     <td>${escapeHtml(s.email || '')}</td>
                     <td><span class="admin-badge admin-badge--${tipo}">${escapeHtml(tipo)}</span></td>
+                    <td class="subs-cell">${renderSubsCell(s)}</td>
                     <td><span class="admin-badge admin-badge--${s.estado_pago || 'pendiente'}">${escapeHtml(s.estado_pago || 'pendiente')}</span></td>
                     <td>${formatDate(s.fecha_pago)}</td>
+                    <td class="num-cell">${renderUltimaCuotaCell(s)}</td>
+                    <td class="num-cell">${renderTotalCobradoCell(s)}</td>
                     <td>${formatDate(s.fecha_proximo_pago)}</td>
                     <td class="familiar-de-cell">${escapeHtml(s.familiar_de || '')}</td>
                     <td>${formatDate(s.created_at)}</td>
@@ -2202,6 +2455,10 @@
                         <div class="mobile-card-detail"><span class="admin-badge admin-badge--${tipo}">${escapeHtml(tipo)}</span> ${formatDate(s.created_at)}</div>
                         <div class="mobile-card-detail">${escapeHtml(s.email || '')}</div>
                         ${s.documento ? `<div class="mobile-card-detail"><strong>Doc:</strong> ${escapeHtml(s.documento)}</div>` : ''}
+                        <div class="mobile-card-detail subs-cell">${renderSubsCell(s)}</div>
+                        ${s._ultima_cuota != null ? `<div class="mobile-card-detail"><strong>Última cuota:</strong> ${eurCuota(s._ultima_cuota)}</div>` : ''}
+                        ${s._total_cobrado != null ? `<div class="mobile-card-detail"><strong>Total cobrado:</strong> ${eurCuota(s._total_cobrado)} <span style="color:#999;">(${s._pagos_n} pagos${s._email_compartido ? ', email compartido' : ''})</span></div>` : ''}
+                        ${s._desajuste ? `<div class="mobile-card-detail desajuste-cell" style="color:#e65100;"><i class="fas fa-triangle-exclamation"></i> ${escapeHtml(s._desajuste)}</div>` : ''}
                         ${s.fecha_pago ? `<div class="mobile-card-detail"><strong>Pagó:</strong> ${formatDate(s.fecha_pago)}</div>` : ''}
                         ${s.fecha_proximo_pago ? `<div class="mobile-card-detail"><strong>Próx. pago:</strong> ${formatDate(s.fecha_proximo_pago)}</div>` : ''}
                         ${s.familiar_de ? `<div class="mobile-card-detail"><strong>Familiar de:</strong> ${escapeHtml(s.familiar_de)}</div>` : ''}

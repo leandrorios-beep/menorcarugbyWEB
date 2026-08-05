@@ -5,6 +5,9 @@
     },
     "api/stripe-webhook.js": {
       "maxDuration": 15
+    },
+    "api/socios-payments.js": {
+      "maxDuration": 30
     }
   },
   "redirects": [
