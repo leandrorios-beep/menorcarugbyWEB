@@ -42,6 +42,25 @@ module.exports = async function handler(req, res) {
         return customer.email;
     }
 
+    // --- Helper: buscar socios por email, exacto e insensible a mayusculas ---
+    // No sirve .eq: register-socio.js guarda el email tal cual lo escribe el
+    // socio, asi que un .eq contra la version en minusculas no matchea a nadie
+    // con mayusculas y el pago se pierde en silencio (devuelve 200 y Stripe no
+    // reintenta). Tampoco vale pasar el email directo a .ilike: % y _ son
+    // comodines de LIKE y estos son UPDATE, con lo que un email con % podria
+    // barrer fichas ajenas. Se pide un SUPERCONJUNTO seguro y se filtra en JS.
+    async function findSocioIds(email) {
+        const target = (email || '').trim().toLowerCase();
+        if (!target) return [];
+        const pattern = target.replace(/[%_*\\]/g, '_'); // comodin de 1 caracter
+        const { data, error } = await supabase
+            .from('socios')
+            .select('id, email, estado_pago')
+            .ilike('email', pattern);
+        if (error) throw error;
+        return (data || []).filter(r => (r.email || '').trim().toLowerCase() === target);
+    }
+
     // ============================================================
     // 1) First checkout completed — socio just paid for first time
     // ============================================================
@@ -74,10 +93,16 @@ module.exports = async function handler(req, res) {
 
         // Try matching any estado_pago (not just 'pendiente') so gym add-ons
         // and re-subscriptions also get their dates updated
+        const ids = (await findSocioIds(customerEmail)).map(r => r.id);
+        if (!ids.length) {
+            console.warn(`Checkout completed for ${customerEmail} but NO socio matches that email`);
+            return res.status(200).json({ received: true, updated: 0, warning: 'no socio matched' });
+        }
+
         const { data, error } = await supabase
             .from('socios')
             .update(updateData)
-            .eq('email', customerEmail.toLowerCase())
+            .in('id', ids)
             .select('id, nombre, apellido, email');
 
         if (error) {
@@ -114,10 +139,16 @@ module.exports = async function handler(req, res) {
             updateData.fecha_proximo_pago = fechaProximoPago;
         }
 
+        const ids = (await findSocioIds(customerEmail)).map(r => r.id);
+        if (!ids.length) {
+            console.warn(`Invoice paid for ${customerEmail} but NO socio matches that email`);
+            return res.status(200).json({ received: true, updated: 0, warning: 'no socio matched' });
+        }
+
         const { data, error } = await supabase
             .from('socios')
             .update(updateData)
-            .eq('email', customerEmail.toLowerCase())
+            .in('id', ids)
             .select('id, nombre, apellido, email');
 
         if (error) {
@@ -140,11 +171,18 @@ module.exports = async function handler(req, res) {
             return res.status(200).json({ received: true });
         }
 
+        // Solo degrada a impago a quien estaba en completado
+        const ids = (await findSocioIds(customerEmail))
+            .filter(r => r.estado_pago === 'completado')
+            .map(r => r.id);
+        if (!ids.length) {
+            return res.status(200).json({ received: true, updated: 0 });
+        }
+
         const { data, error } = await supabase
             .from('socios')
             .update({ estado_pago: 'impago' })
-            .eq('email', customerEmail.toLowerCase())
-            .eq('estado_pago', 'completado')
+            .in('id', ids)
             .select('id, nombre, apellido, email');
 
         if (error) {
@@ -167,13 +205,18 @@ module.exports = async function handler(req, res) {
             return res.status(200).json({ received: true });
         }
 
+        const ids = (await findSocioIds(customerEmail)).map(r => r.id);
+        if (!ids.length) {
+            return res.status(200).json({ received: true, updated: 0 });
+        }
+
         const { data, error } = await supabase
             .from('socios')
             .update({
                 estado_pago: 'cancelado',
                 fecha_proximo_pago: null
             })
-            .eq('email', customerEmail.toLowerCase())
+            .in('id', ids)
             .select('id, nombre, apellido, email');
 
         if (error) {
