@@ -90,7 +90,7 @@ function buildResetEmail(nombre, password) {
 
     <!-- Header -->
     <tr><td style="background-color:#182B49;padding:25px 40px;text-align:center;">
-        <img src="https://www.menorcarugbyclub.com/assets/images/static/logo.png" alt="MRC" width="60" style="background-color:#ffffff;border-radius:50%;padding:6px;">
+        <table cellpadding="0" cellspacing="0" role="presentation" align="center" style="margin:0 auto 10px;"><tr><td style="background-color:#ffffff;border-radius:10px;padding:10px 16px;"><img src="https://www.menorcarugbyclub.com/assets/images/static/logo.png" alt="Menorca Rugby Club" width="150" height="84" style="display:block;border:0;outline:none;text-decoration:none;"></td></tr></table>
         <h1 style="color:#FFC72C;font-size:20px;margin:10px 0 0;">MENORCA RUGBY CLUB</h1>
     </td></tr>
 
@@ -102,7 +102,7 @@ function buildResetEmail(nombre, password) {
         </p>
         <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#182B49;border-radius:12px;">
             <tr><td style="padding:25px 30px;">
-                <p style="color:rgba(255,255,255,0.5);font-size:11px;margin:0 0 6px;text-transform:uppercase;letter-spacing:1px;">Tu nueva contraseña</p>
+                <p style="color:#AAB4C2;font-size:11px;margin:0 0 6px;text-transform:uppercase;letter-spacing:1px;">Tu nueva contraseña</p>
                 <p style="color:#FFC72C;font-size:28px;font-weight:700;margin:0;font-family:'Courier New',monospace;letter-spacing:3px;">${escapeHtml(password)}</p>
             </td></tr>
         </table>
@@ -116,7 +116,7 @@ function buildResetEmail(nombre, password) {
 
     <!-- Footer -->
     <tr><td style="background-color:#182B49;padding:20px 40px;text-align:center;">
-        <p style="color:rgba(255,255,255,0.6);font-size:12px;margin:0;">
+        <p style="color:#C3CBD6;font-size:12px;margin:0;">
             Si no solicitaste este cambio, contacta con nosotros en info@menorcarugbyclub.com
         </p>
     </td></tr>

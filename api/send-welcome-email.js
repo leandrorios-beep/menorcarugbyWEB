@@ -10,7 +10,7 @@ const { createClient } = require('@supabase/supabase-js');
 
 const REPLY_TO_DEFAULT = 'comision.directiva@menorcarugbyclub.com';
 const MAX_LOTE = 25; // el cliente trocea; mantiene cada invocacion bajo maxDuration
-const EMAIL_RE = /^[^s@]+@[^s@]+.[^s@]+$/;
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 const remitente = () => process.env.GMAIL_USER || '';
 
@@ -95,10 +95,10 @@ function buildWelcomeEmail(nombre, tipo_socio, numero_socio, mensaje_extra, logi
                                         <p style="color:#FFC72C;font-size:16px;font-weight:700;margin:0 0 18px;text-transform:uppercase;letter-spacing:1px;">Tu acceso a la Zona de Socios</p>
                                         <table cellpadding="0" cellspacing="0" width="100%">
                                             <tr>
-                                                <td style="padding:10px 15px;background:rgba(255,255,255,0.08);border-radius:8px;margin-bottom:8px;">
+                                                <td style="padding:10px 15px;background-color:#22395C;border-radius:8px;margin-bottom:8px;">
                                                     <table cellpadding="0" cellspacing="0" width="100%">
                                                         <tr>
-                                                            <td style="color:rgba(255,255,255,0.5);font-size:11px;text-transform:uppercase;letter-spacing:1px;padding-bottom:4px;">Email</td>
+                                                            <td style="color:#AAB4C2;font-size:11px;text-transform:uppercase;letter-spacing:1px;padding-bottom:4px;">Email</td>
                                                         </tr>
                                                         <tr>
                                                             <td style="color:#ffffff;font-size:18px;font-weight:700;font-family:'Courier New',monospace;">${escapeHtml(login_email)}</td>
@@ -108,10 +108,10 @@ function buildWelcomeEmail(nombre, tipo_socio, numero_socio, mensaje_extra, logi
                                             </tr>
                                             <tr><td style="height:10px;"></td></tr>
                                             <tr>
-                                                <td style="padding:10px 15px;background:rgba(255,255,255,0.08);border-radius:8px;">
+                                                <td style="padding:10px 15px;background-color:#22395C;border-radius:8px;">
                                                     <table cellpadding="0" cellspacing="0" width="100%">
                                                         <tr>
-                                                            <td style="color:rgba(255,255,255,0.5);font-size:11px;text-transform:uppercase;letter-spacing:1px;padding-bottom:4px;">Contraseña</td>
+                                                            <td style="color:#AAB4C2;font-size:11px;text-transform:uppercase;letter-spacing:1px;padding-bottom:4px;">Contraseña</td>
                                                         </tr>
                                                         <tr>
                                                             <td style="color:#FFC72C;font-size:24px;font-weight:700;font-family:'Courier New',monospace;letter-spacing:3px;">${escapeHtml(login_password)}</td>
@@ -123,7 +123,7 @@ function buildWelcomeEmail(nombre, tipo_socio, numero_socio, mensaje_extra, logi
                                         <div style="text-align:center;margin-top:20px;">
                                             <a href="https://www.menorcarugbyclub.com/mi-carnet" style="display:inline-block;background:#FFC72C;color:#182B49;padding:12px 30px;border-radius:8px;font-weight:700;text-decoration:none;font-size:15px;">Acceder a Mi Carnet</a>
                                         </div>
-                                        <p style="color:rgba(255,255,255,0.4);font-size:12px;margin:15px 0 0;text-align:center;">Puedes cambiar tu contraseña desde la seccion Seguridad.</p>
+                                        <p style="color:#9BA6B5;font-size:12px;margin:15px 0 0;text-align:center;">Puedes cambiar tu contraseña desde la seccion Seguridad.</p>
                                     </td>
                                 </tr>
                             </table>
@@ -140,9 +140,6 @@ function buildWelcomeEmail(nombre, tipo_socio, numero_socio, mensaje_extra, logi
     <meta name="supported-color-schemes" content="light only">
     <style>
         :root { color-scheme: light only; }
-        @media (prefers-color-scheme: dark) {
-            body, table, td, div, p, a, span { color: inherit !important; }
-        }
     </style>
 </head>
 <body style="margin:0;padding:0;background-color:#f0f2f5;font-family:Arial,Helvetica,sans-serif;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;">
@@ -154,7 +151,7 @@ function buildWelcomeEmail(nombre, tipo_socio, numero_socio, mensaje_extra, logi
                     <!-- Header -->
                     <tr>
                         <td style="background-color:#182B49;padding:30px 40px;text-align:center;">
-                            <img src="https://www.menorcarugbyclub.com/assets/images/static/logo.png" alt="Menorca Rugby Club" width="80" style="margin-bottom:12px;background-color:#ffffff;border-radius:50%;padding:8px;">
+                            <table cellpadding="0" cellspacing="0" role="presentation" align="center" style="margin:0 auto 14px;"><tr><td style="background-color:#ffffff;border-radius:10px;padding:10px 16px;"><img src="https://www.menorcarugbyclub.com/assets/images/static/logo.png" alt="Menorca Rugby Club" width="180" height="101" style="display:block;border:0;outline:none;text-decoration:none;"></td></tr></table>
                             <h1 style="color:#FFC72C;font-size:22px;margin:0;font-weight:700;">MENORCA RUGBY CLUB</h1>
                         </td>
                     </tr>
@@ -208,10 +205,10 @@ function buildWelcomeEmail(nombre, tipo_socio, numero_socio, mensaje_extra, logi
                     <tr>
                         <td style="background-color:#182B49;padding:25px 40px;text-align:center;">
                             <p style="color:#FFC72C;font-size:14px;font-weight:600;margin:0 0 8px;">Nos vemos en el campo!</p>
-                            <p style="color:rgba(255,255,255,0.6);font-size:12px;margin:0;">
+                            <p style="color:#C3CBD6;font-size:12px;margin:0;">
                                 Menorca Rugby Club &bull; Sa Terranova 8, Mao, Illes Balears
                             </p>
-                            <p style="color:rgba(255,255,255,0.5);font-size:12px;margin:15px 0 8px;text-transform:uppercase;letter-spacing:1px;">Siguenos en redes</p>
+                            <p style="color:#AAB4C2;font-size:12px;margin:15px 0 8px;text-transform:uppercase;letter-spacing:1px;">Siguenos en redes</p>
                             <div>
                                 <a href="https://www.instagram.com/menorcarugby/" style="color:#FFC72C;text-decoration:none;margin:0 8px;font-size:13px;">Instagram</a>
                                 <a href="https://www.facebook.com/menorcarugby" style="color:#FFC72C;text-decoration:none;margin:0 8px;font-size:13px;">Facebook</a>
@@ -416,9 +413,6 @@ function buildComunicado(opts) {
     <meta name="supported-color-schemes" content="light only">
     <style>
         :root { color-scheme: light only; }
-        @media (prefers-color-scheme: dark) {
-            body, table, td, div, p, a, span { color: inherit !important; }
-        }
     </style>
 </head>
 <body style="margin:0;padding:0;background-color:#f0f2f5;font-family:Arial,Helvetica,sans-serif;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;">
@@ -430,7 +424,7 @@ function buildComunicado(opts) {
                     <!-- Header -->
                     <tr>
                         <td style="background-color:#182B49;padding:30px 40px;text-align:center;">
-                            <img src="https://www.menorcarugbyclub.com/assets/images/static/logo.png" alt="Menorca Rugby Club" width="80" style="margin-bottom:12px;background-color:#ffffff;border-radius:50%;padding:8px;">
+                            <table cellpadding="0" cellspacing="0" role="presentation" align="center" style="margin:0 auto 14px;"><tr><td style="background-color:#ffffff;border-radius:10px;padding:10px 16px;"><img src="https://www.menorcarugbyclub.com/assets/images/static/logo.png" alt="Menorca Rugby Club" width="180" height="101" style="display:block;border:0;outline:none;text-decoration:none;"></td></tr></table>
                             <h1 style="color:#FFC72C;font-size:22px;margin:0;font-weight:700;letter-spacing:1px;">MENORCA RUGBY CLUB</h1>
                         </td>
                     </tr>
@@ -463,12 +457,12 @@ function buildComunicado(opts) {
                     <tr>
                         <td style="background-color:#182B49;padding:25px 40px;text-align:center;">
                             <p style="color:#FFC72C;font-size:14px;font-weight:600;margin:0 0 8px;">Nos vemos en el campo!</p>
-                            <p style="color:rgba(255,255,255,0.6);font-size:12px;margin:0;">
+                            <p style="color:#C3CBD6;font-size:12px;margin:0;">
                                 Menorca Rugby Club &bull; Sa Terranova 8, Mao, Illes Balears<br>
-                                <a href="https://www.menorcarugbyclub.com" style="color:rgba(255,255,255,0.6);text-decoration:none;">www.menorcarugbyclub.com</a> &bull;
-                                <a href="mailto:info@menorcarugbyclub.com" style="color:rgba(255,255,255,0.6);text-decoration:none;">info@menorcarugbyclub.com</a>
+                                <a href="https://www.menorcarugbyclub.com" style="color:#C3CBD6;text-decoration:none;">www.menorcarugbyclub.com</a> &bull;
+                                <a href="mailto:info@menorcarugbyclub.com" style="color:#C3CBD6;text-decoration:none;">info@menorcarugbyclub.com</a>
                             </p>
-                            <p style="color:rgba(255,255,255,0.5);font-size:12px;margin:15px 0 8px;text-transform:uppercase;letter-spacing:1px;">Siguenos en redes</p>
+                            <p style="color:#AAB4C2;font-size:12px;margin:15px 0 8px;text-transform:uppercase;letter-spacing:1px;">Siguenos en redes</p>
                             <div>
                                 <a href="https://www.instagram.com/menorcarugby/" style="color:#FFC72C;text-decoration:none;margin:0 8px;font-size:13px;">Instagram</a>
                                 <a href="https://www.facebook.com/menorcarugby" style="color:#FFC72C;text-decoration:none;margin:0 8px;font-size:13px;">Facebook</a>
