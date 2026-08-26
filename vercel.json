@@ -1,7 +1,7 @@
 {
   "functions": {
     "api/send-welcome-email.js": {
-      "maxDuration": 15
+      "maxDuration": 60
     },
     "api/stripe-webhook.js": {
       "maxDuration": 15

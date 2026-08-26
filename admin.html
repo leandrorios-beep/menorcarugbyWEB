@@ -917,6 +917,9 @@
                 <button class="admin-tab" data-tab="jugadores">
                     <i class="fas fa-football-ball"></i> Jugadores <span class="tab-count" id="jugadoresCount">0</span>
                 </button>
+                <button class="admin-tab" data-tab="comunicaciones">
+                    <i class="fas fa-bullhorn"></i> Comunicaciones
+                </button>
                 <button class="admin-tab" data-tab="contabilidad">
                     <i class="fas fa-euro-sign"></i> Administracion / Contabilidad
                 </button>
@@ -976,6 +979,184 @@
                         <button class="admin-refresh" id="refreshJugadores"><i class="fas fa-sync-alt"></i> Actualizar</button>
                     </div>
                     <div id="jugadoresTable"><div class="admin-loading"><i class="fas fa-spinner fa-spin"></i> Cargando...</div></div>
+                </div>
+            </div>
+
+            <!-- Comunicaciones Panel -->
+            <div class="admin-tab-panel" id="panel-comunicaciones">
+                <style>
+                  #panel-comunicaciones .com-rem{display:flex;align-items:center;gap:1rem;flex-wrap:wrap;background:#182B49;border-radius:12px;padding:1rem 1.25rem;margin-bottom:1.25rem}
+                  #panel-comunicaciones .com-rem i.fa-paper-plane{color:#FFC72C;font-size:1.35rem}
+                  #panel-comunicaciones .com-rem .l{font-size:.68rem;color:rgba(255,255,255,.55);text-transform:uppercase;letter-spacing:.6px}
+                  #panel-comunicaciones .com-rem .v{font-size:.95rem;color:#FFC72C;font-weight:700;font-family:'Courier New',monospace}
+                  #panel-comunicaciones .com-rem .reply{margin-left:auto;display:flex;align-items:center;gap:.5rem}
+                  #panel-comunicaciones .com-rem .reply label{font-size:.7rem;color:rgba(255,255,255,.55);text-transform:uppercase;letter-spacing:.6px}
+                  #panel-comunicaciones .com-rem .reply input{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);border-radius:8px;color:#fff;padding:.45rem .7rem;font-family:inherit;font-size:.82rem;min-width:230px}
+                  #panel-comunicaciones .com-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:1.25rem;align-items:start}
+                  #panel-comunicaciones .com-card{background:#fff;border:1px solid #e5e8ec;border-radius:12px;padding:1.25rem;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+                  #panel-comunicaciones .com-card h3{margin:0 0 1rem;font-size:.95rem;color:#182B49;font-weight:700;display:flex;align-items:center;gap:.5rem;flex-wrap:wrap}
+                  #panel-comunicaciones .com-card h3 i{color:#FFC72C}
+                  #panel-comunicaciones .com-badge{background:#182B49;color:#FFC72C;border-radius:20px;padding:.1rem .6rem;font-size:.75rem}
+                  #panel-comunicaciones .com-toggle{display:flex;gap:.4rem;background:#f0f2f5;border-radius:10px;padding:.3rem;margin-bottom:1rem;flex-wrap:wrap}
+                  #panel-comunicaciones .com-tgl{flex:1;min-width:120px;background:none;border:none;border-radius:8px;padding:.55rem .6rem;font-family:inherit;font-size:.82rem;font-weight:600;color:#667;cursor:pointer;transition:all .15s}
+                  #panel-comunicaciones .com-tgl:hover{color:#182B49}
+                  #panel-comunicaciones .com-tgl.active{background:#182B49;color:#FFC72C}
+                  #panel-comunicaciones .com-filters{display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:.75rem}
+                  #panel-comunicaciones .com-filters select,#panel-comunicaciones .com-filters input{background:#fff;color:#333;border:1px solid #cfd4da;border-radius:8px;padding:.5rem .7rem;font-family:inherit;font-size:.82rem}
+                  #panel-comunicaciones .com-filters input{flex:1;min-width:140px}
+                  #panel-comunicaciones .com-btn{background:#fff;color:#556;border:1px solid #cfd4da;border-radius:8px;padding:.5rem .8rem;font-family:inherit;font-weight:600;font-size:.78rem;cursor:pointer;white-space:nowrap}
+                  #panel-comunicaciones .com-btn:hover{border-color:#182B49;color:#182B49}
+                  #panel-comunicaciones .com-list-scroll{max-height:340px;overflow:auto;border:1px solid #e5e8ec;border-radius:10px}
+                  #panel-comunicaciones table.com-list{width:100%;border-collapse:collapse;font-size:.8rem;table-layout:fixed}
+                  #panel-comunicaciones table.com-list td.com-mail{width:44%}
+                  #panel-comunicaciones table.com-list th{position:sticky;top:0;background:#f4f6f8;color:#556;font-weight:700;text-align:left;padding:.5rem .6rem;border-bottom:1px solid #e5e8ec;font-size:.72rem;text-transform:uppercase;letter-spacing:.4px}
+                  #panel-comunicaciones table.com-list td{padding:.45rem .6rem;border-bottom:1px solid #f0f2f5;color:#333;vertical-align:middle}
+                  #panel-comunicaciones table.com-list tr:hover td{background:#fafbfc}
+                  #panel-comunicaciones table.com-list tr.sel td{background:#fff8e1}
+                  #panel-comunicaciones table.com-list td.com-nom{font-weight:700;color:#182B49;line-height:1.35}
+                  #panel-comunicaciones .com-sinnombre{color:#8a929e;font-weight:400;font-style:italic}
+                  #panel-comunicaciones .com-orig{margin-top:.2rem;display:flex;align-items:center;gap:.35rem;flex-wrap:wrap}
+                  #panel-comunicaciones .com-det{color:#8a929e;font-size:.68rem;font-weight:400}
+                  #panel-comunicaciones table.com-list td.com-mail{font-family:'Courier New',monospace;font-size:.78rem;color:#556;word-break:break-all}
+                  #panel-comunicaciones .com-tag{display:inline-block;border-radius:20px;padding:.1rem .5rem;font-size:.66rem;font-weight:700;text-transform:uppercase;letter-spacing:.3px;white-space:nowrap}
+                  #panel-comunicaciones .com-tag.socio{background:#fff3cd;color:#8a6d00}
+                  #panel-comunicaciones .com-tag.jugador{background:#e3f2fd;color:#1565c0}
+                  #panel-comunicaciones .com-empty{padding:1.5rem;text-align:center;color:#8a929e;font-size:.85rem}
+                  #panel-comunicaciones .com-lbl{display:block;font-size:.72rem;color:#7a8290;text-transform:uppercase;letter-spacing:.5px;font-weight:700;margin:.9rem 0 .35rem}
+                  #panel-comunicaciones .com-lbl:first-child{margin-top:0}
+                  #panel-comunicaciones input[type=text],#panel-comunicaciones input[type=url],#panel-comunicaciones textarea{width:100%;background:#fff;color:#333;border:1px solid #cfd4da;border-radius:8px;padding:.6rem .75rem;font-family:inherit;font-size:.88rem;box-sizing:border-box}
+                  #panel-comunicaciones textarea{resize:vertical;line-height:1.5}
+                  #panel-comunicaciones input:focus,#panel-comunicaciones textarea:focus,#panel-comunicaciones select:focus{outline:none;border-color:#182B49}
+                  #panel-comunicaciones .com-hint{font-size:.73rem;color:#8a929e;margin-top:.35rem;line-height:1.5}
+                  #panel-comunicaciones .com-check{display:flex;align-items:center;gap:.5rem;font-size:.82rem;color:#445;margin:.85rem 0 .35rem;cursor:pointer}
+                  #panel-comunicaciones .com-check input{width:16px;height:16px;accent-color:#182B49;flex:none}
+                  #panel-comunicaciones .com-row{display:grid;grid-template-columns:1fr 1fr;gap:.75rem}
+                  #panel-comunicaciones .com-dest-foot{display:flex;align-items:center;justify-content:space-between;gap:.6rem;flex-wrap:wrap;margin-top:.9rem;padding-top:.9rem;border-top:1px solid #eceef1}
+                  #panel-comunicaciones .com-dest-foot .res{font-size:.82rem;color:#182B49;font-weight:700}
+                  #panel-comunicaciones .com-send{width:100%;margin-top:1.25rem;background:#FFC72C;color:#182B49;border:none;border-radius:10px;padding:.85rem;font-family:inherit;font-weight:800;font-size:.95rem;cursor:pointer}
+                  #panel-comunicaciones .com-send:hover{filter:brightness(.96)}
+                  #panel-comunicaciones .com-send:disabled{opacity:.5;cursor:not-allowed}
+                  #panel-comunicaciones .com-prev-meta{background:#f4f6f8;border:1px solid #e5e8ec;border-radius:10px;padding:.75rem .9rem;font-size:.8rem;color:#445;margin-bottom:.85rem;line-height:1.7}
+                  #panel-comunicaciones .com-prev-meta b{color:#182B49}
+                  #panel-comunicaciones .com-prev-frame{width:100%;height:620px;border:1px solid #e5e8ec;border-radius:10px;background:#f0f2f5}
+                  #panel-comunicaciones .com-prev-card{margin-top:1.25rem}
+                  #panel-comunicaciones .com-prev-card h3 .com-btn{margin-left:auto}
+                  @media (max-width: 900px){
+                    #panel-comunicaciones .com-grid{grid-template-columns:1fr}
+                    #panel-comunicaciones .com-rem .reply{margin-left:0;width:100%}
+                    #panel-comunicaciones .com-rem .reply input{width:100%;min-width:0}
+                    #panel-comunicaciones .com-row{grid-template-columns:1fr}
+                    #panel-comunicaciones .com-prev-frame{height:460px}
+                  }
+                </style>
+
+                <div class="com-rem">
+                    <i class="fas fa-paper-plane"></i>
+                    <div>
+                        <div class="l">Los correos salen desde</div>
+                        <div class="v" id="comFrom">comprobando...</div>
+                    </div>
+                    <div class="reply">
+                        <label for="comReplyTo">Responder a</label>
+                        <input type="email" id="comReplyTo" value="info@menorcarugbyclub.com">
+                    </div>
+                </div>
+
+                <div class="com-grid">
+                    <!-- Destinatarios -->
+                    <div class="com-card">
+                        <h3><i class="fas fa-users"></i> Destinatarios <span class="com-badge" id="comBadge">0</span></h3>
+
+                        <div class="com-toggle">
+                            <button type="button" class="com-tgl active" data-modo="todos"><i class="fas fa-globe"></i> Enviar a todos</button>
+                            <button type="button" class="com-tgl" data-modo="lista"><i class="fas fa-list-check"></i> Elegir de la lista</button>
+                            <button type="button" class="com-tgl" data-modo="manual"><i class="fas fa-keyboard"></i> Escribir a mano</button>
+                        </div>
+
+                        <div id="comListaWrap">
+                            <div class="com-filters">
+                                <select id="comOrigen">
+                                    <option value="">Socios y jugadores</option>
+                                    <option value="socio">Solo socios</option>
+                                    <option value="jugador">Solo jugadores</option>
+                                </select>
+                                <input type="text" id="comBuscar" placeholder="Buscar por nombre o email...">
+                            </div>
+                            <div class="com-filters" id="comSelBtns">
+                                <button type="button" class="com-btn" id="comSelAll"><i class="fas fa-check-double"></i> Seleccionar todos</button>
+                                <button type="button" class="com-btn" id="comSelNone"><i class="far fa-square"></i> Ninguno</button>
+                            </div>
+                            <div class="com-list-scroll">
+                                <table class="com-list">
+                                    <thead>
+                                        <tr>
+                                            <th style="width:30px"></th>
+                                            <th>Nombre y origen</th>
+                                            <th>Email</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="comListaBody"></tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div id="comManualWrap" style="display:none">
+                            <label class="com-lbl" for="comManual">Emails</label>
+                            <textarea id="comManual" rows="9" placeholder="uno@ejemplo.com&#10;Nombre Apellido &lt;otro@ejemplo.com&gt;&#10;tercero@ejemplo.com"></textarea>
+                            <div class="com-hint">Uno por linea, o separados por coma o punto y coma. Si pegas <code>Nombre &lt;email&gt;</code> se guarda el nombre; si el email ya esta en la base, el nombre se rellena solo.</div>
+                        </div>
+
+                        <div class="com-dest-foot">
+                            <span class="res" id="comResumen">0 destinatarios</span>
+                            <div style="display:flex;gap:.4rem;flex-wrap:wrap">
+                                <button type="button" class="com-btn" id="comCopiar"><i class="fas fa-copy"></i> Copiar emails</button>
+                                <button type="button" class="com-btn" id="comCsv"><i class="fas fa-file-csv"></i> Descargar CSV</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Redaccion -->
+                    <div class="com-card">
+                        <h3><i class="fas fa-pen-nib"></i> Mensaje</h3>
+
+                        <label class="com-lbl" for="comAsunto">Asunto</label>
+                        <input type="text" id="comAsunto" placeholder="Asunto del correo">
+
+                        <label class="com-lbl" for="comTitulo">Titular (opcional)</label>
+                        <input type="text" id="comTitulo" placeholder="Titulo grande al abrir el correo">
+
+                        <label class="com-lbl" for="comMensaje">Mensaje</label>
+                        <textarea id="comMensaje" rows="11" placeholder="Escribe aqui el comunicado..."></textarea>
+                        <div class="com-hint">Deja una linea en blanco entre parrafos. <b>**texto**</b> pone negrita, las URLs se enlazan solas y <b>{{nombre}}</b> se sustituye por el nombre de cada destinatario.</div>
+
+                        <label class="com-check"><input type="checkbox" id="comSaludo" checked> Empezar con un "Hola [nombre]," personalizado</label>
+
+                        <div class="com-row">
+                            <div>
+                                <label class="com-lbl" for="comCtaTexto">Boton (opcional)</label>
+                                <input type="text" id="comCtaTexto" placeholder="Ver calendario">
+                            </div>
+                            <div>
+                                <label class="com-lbl" for="comCtaUrl">Enlace del boton</label>
+                                <input type="url" id="comCtaUrl" placeholder="https://...">
+                            </div>
+                        </div>
+
+                        <label class="com-lbl" for="comFirma">Firma</label>
+                        <textarea id="comFirma" rows="4"></textarea>
+                        <div class="com-hint">La primera linea va destacada en azul del club; el resto, en gris pequeno.</div>
+
+                        <button type="button" class="com-send" id="comEnviarBtn"><i class="fas fa-paper-plane"></i> Revisar y enviar</button>
+                    </div>
+                </div>
+
+                <!-- Vista previa -->
+                <div class="com-card com-prev-card">
+                    <h3><i class="fas fa-eye"></i> Vista previa <span class="com-hint" id="comPrevEstado" style="margin:0"></span>
+                        <button type="button" class="com-btn" id="comPrevRefresh"><i class="fas fa-sync-alt"></i> Actualizar</button>
+                    </h3>
+                    <div class="com-prev-meta" id="comPrevMeta"></div>
+                    <iframe id="comPrevFrame" class="com-prev-frame" title="Vista previa del correo"></iframe>
                 </div>
             </div>
 
@@ -1229,6 +1410,39 @@
                     <div id="anlTable"></div>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- Comunicaciones: confirmar envio -->
+    <div class="admin-modal-overlay" id="comModal">
+        <div class="admin-modal" style="max-width:600px">
+            <style>
+              #comModal .cm-sum{background:#f4f6f8;border:1px solid #e5e8ec;border-radius:10px;padding:.85rem 1rem;font-size:.85rem;color:#445;line-height:1.8;margin-bottom:1rem}
+              #comModal .cm-sum b{color:#182B49}
+              #comModal .cm-warn{background:#fff8e1;border:1px solid #ffe082;border-radius:10px;padding:.7rem .9rem;font-size:.8rem;color:#8a6d00;margin-bottom:1rem;line-height:1.6}
+              #comModal .cm-dest{max-height:170px;overflow:auto;border:1px solid #e5e8ec;border-radius:10px;font-size:.78rem;margin-bottom:1rem}
+              #comModal .cm-dest div{padding:.35rem .7rem;border-bottom:1px solid #f0f2f5;color:#445}
+              #comModal .cm-dest div:last-child{border-bottom:none}
+              #comModal .cm-dest span{color:#8a929e}
+              #comModal .cm-bar{height:8px;background:#eceef1;border-radius:20px;overflow:hidden;margin:.9rem 0 .5rem}
+              #comModal .cm-bar i{display:block;height:100%;width:0;background:#FFC72C;transition:width .25s}
+              #comModal .cm-prog{font-size:.8rem;color:#556;text-align:center}
+              #comModal .cm-res{margin-top:.9rem;font-size:.8rem;max-height:180px;overflow:auto}
+              #comModal .cm-res .ok{color:#2e7d32}
+              #comModal .cm-res .ko{color:#b71c1c}
+            </style>
+            <button class="admin-modal-close" id="comModalClose">&times;</button>
+            <h3><i class="fas fa-paper-plane" style="color:#FFC72C"></i> Confirmar envio</h3>
+            <div class="cm-sum" id="comModalSum"></div>
+            <div class="cm-warn" id="comModalWarn" style="display:none"></div>
+            <div class="cm-dest" id="comModalDest"></div>
+            <div id="comModalProgWrap" style="display:none">
+                <div class="cm-bar"><i id="comModalBar"></i></div>
+                <div class="cm-prog" id="comModalProg"></div>
+            </div>
+            <div class="cm-res" id="comModalRes"></div>
+            <button class="admin-modal-save" id="comModalSend"><i class="fas fa-paper-plane"></i> Enviar ahora</button>
+            <div class="admin-modal-msg" id="comModalMsg"></div>
         </div>
     </div>
 
@@ -1898,6 +2112,412 @@
             const b = document.querySelector('.admin-tab[data-tab="analytics"]'); if (b) b.addEventListener('click', () => { if (!analyticsLoaded) { analyticsLoaded = true; loadAnalytics(); } });
         })();
 
+        // ═══════════════ COMUNICACIONES (envio masivo de emails) ═══════════════
+        // La lista de destinatarios se arma en el navegador cruzando socios +
+        // players (ambos ya cargados y con RLS de authenticated). El HTML del
+        // correo NO se construye aqui: lo devuelve /api/send-welcome-email en
+        // modo preview, para que la vista previa sea exactamente lo que sale.
+        const COM_FIRMA_DEFAULT = 'Un saludo,\nMenorca Rugby Club\ninfo@menorcarugbyclub.com | www.menorcarugbyclub.com';
+        const COM_EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        const COM_LOTE = 20; // el endpoint acepta hasta 25 por peticion
+
+        let comLista = [];               // universo completo [{email,nombre,origen[],detalle}]
+        let comSeleccion = new Set();    // emails marcados en modo "lista"
+        let comModo = 'todos';
+        let comFrom = '';
+        let comPrevTimer = null;
+        let comPrevSeq = 0;
+        let comEnviando = false;
+        let comCargado = false;
+
+        function comBuildLista() {
+            const map = new Map();
+            const push = (email, nombre, origen, detalle) => {
+                const em = (email || '').trim().toLowerCase();
+                if (!COM_EMAIL_RE.test(em)) return;
+                let r = map.get(em);
+                if (!r) { r = { email: em, nombres: [], origen: [], detalles: [] }; map.set(em, r); }
+                const n = (nombre || '').trim();
+                if (n && r.nombres.indexOf(n) === -1) r.nombres.push(n);
+                if (r.origen.indexOf(origen) === -1) r.origen.push(origen);
+                if (detalle && r.detalles.indexOf(detalle) === -1) r.detalles.push(detalle);
+            };
+
+            (sociosData || []).forEach(s => push(
+                s.email,
+                ((s.nombre || '') + ' ' + (s.apellido || '')).trim(),
+                'socio',
+                s.numero_socio ? ('Socio #' + s.numero_socio) : 'Socio'
+            ));
+            (playersData || []).forEach(p => push(
+                p.email,
+                ((p.first_name || '') + ' ' + (p.last_name || '')).trim(),
+                'jugador',
+                p.category_primary ? ('Jugador ' + p.category_primary) : 'Jugador'
+            ));
+
+            // Un email puede ser de varias personas (familia): se guardan todos
+            // los nombres para que en la lista se sepa de quien es la direccion
+            comLista = Array.from(map.values()).map(r => ({
+                email: r.email,
+                nombre: r.nombres.join(' / '),
+                origen: r.origen,
+                detalle: r.detalles.join(' · ')
+            })).sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'));
+        }
+
+        // El filtro de origen acota el universo (tambien en modo "todos"),
+        // la busqueda solo filtra lo que se ve
+        function comUniverso() {
+            const o = document.getElementById('comOrigen').value;
+            if (!o) return comLista;
+            return comLista.filter(r => r.origen.indexOf(o) !== -1);
+        }
+
+        function comParseManual() {
+            const txt = document.getElementById('comManual').value || '';
+            const out = [], vistos = new Set();
+            txt.split(/[\n,;]+/).forEach(tok => {
+                let t = tok.trim();
+                if (!t) return;
+                let nombre = '';
+                const m = t.match(/^(.*?)<([^>]+)>\s*$/);
+                if (m) { nombre = m[1].trim().replace(/^["']|["']$/g, ''); t = m[2].trim(); }
+                const em = t.toLowerCase();
+                if (!COM_EMAIL_RE.test(em) || vistos.has(em)) return;
+                vistos.add(em);
+                const conocido = comLista.find(x => x.email === em);
+                out.push({ email: em, nombre: nombre || (conocido ? conocido.nombre : '') });
+            });
+            return out;
+        }
+
+        function comDestinatarios() {
+            if (comModo === 'manual') return comParseManual();
+            if (comModo === 'lista') return comUniverso().filter(r => comSeleccion.has(r.email));
+            return comUniverso().slice();
+        }
+
+        function comRenderLista() {
+            const body = document.getElementById('comListaBody');
+            const q = (document.getElementById('comBuscar').value || '').trim().toLowerCase();
+            const filas = comUniverso().filter(r => !q || r.nombre.toLowerCase().indexOf(q) !== -1 || r.email.indexOf(q) !== -1);
+
+            if (!filas.length) {
+                body.innerHTML = '<tr><td colspan="3"><div class="com-empty">No hay contactos con email para este filtro.</div></td></tr>';
+                comRenderResumen();
+                return;
+            }
+
+            const soloVer = comModo === 'todos';
+            body.innerHTML = filas.map(r => {
+                const sel = comSeleccion.has(r.email);
+                const check = soloVer
+                    ? '<i class="fas fa-check" style="color:#FFC72C"></i>'
+                    : '<input type="checkbox" class="com-chk" data-email="' + escapeAttr(r.email) + '"' + (sel ? ' checked' : '') + '>';
+                const tags = r.origen.map(o => '<span class="com-tag ' + o + '">' + o + '</span>').join(' ');
+                return '<tr class="' + (!soloVer && sel ? 'sel' : '') + '">'
+                    + '<td>' + check + '</td>'
+                    + '<td class="com-nom">' + (r.nombre ? escapeHtml(r.nombre) : '<span class="com-sinnombre">(sin nombre)</span>')
+                    + '<div class="com-orig">' + tags + (r.detalle ? '<span class="com-det">' + escapeHtml(r.detalle) + '</span>' : '') + '</div></td>'
+                    + '<td class="com-mail">' + escapeHtml(r.email) + '</td>'
+                    + '</tr>';
+            }).join('');
+
+            body.querySelectorAll('.com-chk').forEach(chk => chk.addEventListener('change', () => {
+                if (chk.checked) comSeleccion.add(chk.dataset.email);
+                else comSeleccion.delete(chk.dataset.email);
+                chk.closest('tr').classList.toggle('sel', chk.checked);
+                comRenderResumen();
+            }));
+
+            comRenderResumen();
+        }
+
+        function comRenderResumen() {
+            const d = comDestinatarios();
+            document.getElementById('comBadge').textContent = d.length;
+            const origen = document.getElementById('comOrigen').value;
+            const etiqueta = origen === 'socio' ? 'socios' : (origen === 'jugador' ? 'jugadores' : 'socios y jugadores');
+            let txt = d.length + (d.length === 1 ? ' destinatario' : ' destinatarios');
+            if (comModo === 'todos') txt += ' (todos los ' + etiqueta + ')';
+            if (comModo === 'lista') txt += ' seleccionados';
+            document.getElementById('comResumen').textContent = txt;
+            const btn = document.getElementById('comEnviarBtn');
+            btn.disabled = comEnviando || d.length === 0;
+            btn.innerHTML = '<i class="fas fa-paper-plane"></i> Revisar y enviar' + (d.length ? ' (' + d.length + ')' : '');
+        }
+
+        function comSetModo(modo) {
+            comModo = modo;
+            document.querySelectorAll('#panel-comunicaciones .com-tgl').forEach(b => b.classList.toggle('active', b.dataset.modo === modo));
+            document.getElementById('comListaWrap').style.display = (modo === 'manual') ? 'none' : '';
+            document.getElementById('comManualWrap').style.display = (modo === 'manual') ? '' : 'none';
+            document.getElementById('comSelBtns').style.display = (modo === 'lista') ? '' : 'none';
+            if (modo !== 'manual') comRenderLista();
+            comRenderResumen();
+            comPreviewDebounce();
+        }
+
+        // ── Vista previa (la genera el servidor con la plantilla real) ──
+        function comPayload() {
+            return {
+                asunto: document.getElementById('comAsunto').value.trim(),
+                titulo: document.getElementById('comTitulo').value.trim(),
+                mensaje: document.getElementById('comMensaje').value,
+                cta_texto: document.getElementById('comCtaTexto').value.trim(),
+                cta_url: document.getElementById('comCtaUrl').value.trim(),
+                firma: document.getElementById('comFirma').value,
+                saludo: document.getElementById('comSaludo').checked,
+                reply_to: document.getElementById('comReplyTo').value.trim()
+            };
+        }
+
+        function comPreviewDebounce() {
+            clearTimeout(comPrevTimer);
+            comPrevTimer = setTimeout(comPreview, 800);
+        }
+
+        async function comPreview() {
+            const seq = ++comPrevSeq;
+            const estado = document.getElementById('comPrevEstado');
+            const dest = comDestinatarios();
+            const ejemplo = dest.find(d => d.nombre) || dest[0];
+            const p = comPayload();
+
+            const meta = document.getElementById('comPrevMeta');
+            meta.innerHTML = '<b>De:</b> Menorca Rugby Club &lt;' + escapeHtml(comFrom || '...') + '&gt;<br>'
+                + '<b>Responder a:</b> ' + escapeHtml(p.reply_to || 'info@menorcarugbyclub.com') + '<br>'
+                + '<b>Para:</b> ' + (ejemplo
+                    ? escapeHtml(ejemplo.nombre || ejemplo.email) + ' &lt;' + escapeHtml(ejemplo.email) + '&gt;'
+                        + (dest.length > 1 ? ' <span style="color:#8a929e">y ' + (dest.length - 1) + ' mas (un correo individual a cada uno, nadie ve el resto)</span>' : '')
+                    : '<span style="color:#b71c1c">sin destinatarios</span>') + '<br>'
+                + '<b>Asunto:</b> ' + (p.asunto ? escapeHtml(p.asunto) : '<span style="color:#b71c1c">sin asunto</span>');
+
+            if (!p.mensaje.trim()) {
+                document.getElementById('comPrevFrame').srcdoc = '<body style="font-family:Arial;color:#8a929e;padding:40px;text-align:center">Escribe el mensaje para ver la vista previa</body>';
+                estado.textContent = '';
+                return;
+            }
+
+            estado.textContent = 'generando...';
+            try {
+                const { data: { session } } = await sb.auth.getSession();
+                if (!session) throw new Error('sesion expirada');
+                const resp = await fetch('/api/send-welcome-email', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + session.access_token },
+                    body: JSON.stringify(Object.assign({ action: 'comunicado_preview', nombre_ejemplo: ejemplo ? ejemplo.nombre : '' }, p))
+                });
+                const data = await resp.json();
+                if (seq !== comPrevSeq) return; // llego una respuesta vieja
+                if (!resp.ok) throw new Error(data.error || 'error');
+                comFrom = data.from || comFrom;
+                document.getElementById('comFrom').textContent = comFrom || '(GMAIL_USER sin configurar)';
+                document.getElementById('comPrevFrame').srcdoc = data.html;
+                estado.textContent = '';
+            } catch (err) {
+                if (seq !== comPrevSeq) return;
+                estado.textContent = 'no se pudo generar (' + err.message + ')';
+            }
+        }
+
+        // ── Copiar / exportar ──
+        function comCopiarTexto(texto) {
+            if (navigator.clipboard && window.isSecureContext) return navigator.clipboard.writeText(texto);
+            return new Promise(resolve => {
+                const ta = document.createElement('textarea');
+                ta.value = texto; ta.style.position = 'fixed'; ta.style.opacity = '0';
+                document.body.appendChild(ta); ta.select();
+                try { document.execCommand('copy'); } catch (e) {}
+                document.body.removeChild(ta); resolve();
+            });
+        }
+
+        // ── Envio por lotes ──
+        function comAbrirConfirmacion() {
+            const dest = comDestinatarios();
+            const p = comPayload();
+            const msg = document.getElementById('comModalMsg');
+            msg.className = 'admin-modal-msg';
+
+            msg.textContent = '';
+            document.getElementById('comModalRes').innerHTML = '';
+            document.getElementById('comModalProgWrap').style.display = 'none';
+            document.getElementById('comModalBar').style.width = '0';
+
+            const sinNombre = dest.filter(x => !x.nombre).length;
+            document.getElementById('comModalSum').innerHTML =
+                '<b>De:</b> Menorca Rugby Club &lt;' + escapeHtml(comFrom || '?') + '&gt;<br>'
+                + '<b>Responder a:</b> ' + escapeHtml(p.reply_to || 'info@menorcarugbyclub.com') + '<br>'
+                + '<b>Asunto:</b> ' + escapeHtml(p.asunto || '(sin asunto)') + '<br>'
+                + '<b>Destinatarios:</b> ' + dest.length + ' (un correo individual a cada uno)';
+
+            const warn = document.getElementById('comModalWarn');
+            const avisos = [];
+            if (dest.length > 100) avisos.push('Gmail limita los envios diarios (unos 500 con cuenta Workspace, 100-150 con cuenta gratuita). Con ' + dest.length + ' destinatarios puedes acercarte al limite.');
+            if (sinNombre) avisos.push(sinNombre + ' direccion(es) sin nombre asociado: ese correo ira sin el saludo personalizado.');
+            warn.innerHTML = avisos.map(a => '<div>' + escapeHtml(a) + '</div>').join('');
+            warn.style.display = avisos.length ? '' : 'none';
+
+            document.getElementById('comModalDest').innerHTML = dest.length
+                ? dest.slice(0, 200).map(d => '<div>' + escapeHtml(d.nombre || '(sin nombre)') + ' <span>' + escapeHtml(d.email) + '</span></div>').join('')
+                    + (dest.length > 200 ? '<div><span>... y ' + (dest.length - 200) + ' mas</span></div>' : '')
+                : '<div><span>sin destinatarios</span></div>';
+
+            const send = document.getElementById('comModalSend');
+            send.disabled = false;
+            send.innerHTML = '<i class="fas fa-paper-plane"></i> Enviar ahora a ' + dest.length;
+            document.getElementById('comModal').classList.add('is-active');
+        }
+
+        async function comEnviar() {
+            const dest = comDestinatarios();
+            const p = comPayload();
+            const msg = document.getElementById('comModalMsg');
+            const send = document.getElementById('comModalSend');
+
+            msg.className = 'admin-modal-msg';
+            if (!p.asunto) { msg.textContent = 'Falta el asunto.'; msg.className = 'admin-modal-msg error'; return; }
+            if (!p.mensaje.trim()) { msg.textContent = 'Falta el mensaje.'; msg.className = 'admin-modal-msg error'; return; }
+            if (!dest.length) { msg.textContent = 'No hay destinatarios.'; msg.className = 'admin-modal-msg error'; return; }
+
+            comEnviando = true;
+            send.disabled = true;
+            send.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
+            document.getElementById('comModalProgWrap').style.display = '';
+
+            const enviados = [], fallidos = [];
+            let hecho = 0;
+
+            // Se trocea en el cliente: cada peticion cabe de sobra en el
+            // maxDuration de Vercel y ademas da progreso real
+            for (let i = 0; i < dest.length; i += COM_LOTE) {
+                const lote = dest.slice(i, i + COM_LOTE);
+                try {
+                    const { data: { session } } = await sb.auth.getSession();
+                    if (!session) throw new Error('Sesion expirada, recarga la pagina');
+                    const resp = await fetch('/api/send-welcome-email', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + session.access_token },
+                        body: JSON.stringify(Object.assign({ action: 'comunicado', destinatarios: lote }, p))
+                    });
+                    const data = await resp.json();
+                    if (!resp.ok) throw new Error(data.error || ('HTTP ' + resp.status));
+                    (data.enviados || []).forEach(e => enviados.push(e));
+                    (data.fallidos || []).forEach(f => fallidos.push(f));
+                } catch (err) {
+                    lote.forEach(d => fallidos.push({ email: d.email, error: err.message }));
+                }
+                hecho += lote.length;
+                document.getElementById('comModalBar').style.width = Math.round(hecho / dest.length * 100) + '%';
+                document.getElementById('comModalProg').textContent = hecho + ' de ' + dest.length + ' procesados';
+            }
+
+            comEnviando = false;
+            const res = document.getElementById('comModalRes');
+            res.innerHTML = '<div class="ok"><i class="fas fa-check-circle"></i> Enviados: ' + enviados.length + '</div>'
+                + (fallidos.length
+                    ? '<div class="ko" style="margin-top:.4rem"><i class="fas fa-exclamation-triangle"></i> Fallidos: ' + fallidos.length + '</div>'
+                      + fallidos.map(f => '<div class="ko">' + escapeHtml(f.email) + ' &mdash; ' + escapeHtml(f.error || '') + '</div>').join('')
+                    : '');
+
+            msg.textContent = fallidos.length
+                ? 'Envio terminado con ' + fallidos.length + ' error(es).'
+                : 'Comunicado enviado a ' + enviados.length + ' destinatarios.';
+            msg.className = 'admin-modal-msg ' + (fallidos.length ? 'error' : 'success');
+
+            send.disabled = !fallidos.length;
+            send.innerHTML = fallidos.length
+                ? '<i class="fas fa-redo"></i> Reintentar'
+                : '<i class="fas fa-check"></i> Enviado';
+            logAction('comunicaciones', 'Envio de comunicado', p.asunto + ' -> ' + enviados.length + ' ok, ' + fallidos.length + ' error');
+            comRenderResumen();
+        }
+
+        // ── Wiring ──
+        (function comInit() {
+            document.getElementById('comFirma').value = COM_FIRMA_DEFAULT;
+
+            document.querySelectorAll('#panel-comunicaciones .com-tgl').forEach(b =>
+                b.addEventListener('click', () => comSetModo(b.dataset.modo)));
+
+            document.getElementById('comOrigen').addEventListener('change', () => { comRenderLista(); comPreviewDebounce(); });
+            document.getElementById('comBuscar').addEventListener('input', comRenderLista);
+            document.getElementById('comManual').addEventListener('input', () => { comRenderResumen(); comPreviewDebounce(); });
+
+            document.getElementById('comSelAll').addEventListener('click', () => {
+                const q = (document.getElementById('comBuscar').value || '').trim().toLowerCase();
+                comUniverso().filter(r => !q || r.nombre.toLowerCase().indexOf(q) !== -1 || r.email.indexOf(q) !== -1)
+                    .forEach(r => comSeleccion.add(r.email));
+                comRenderLista(); comPreviewDebounce();
+            });
+            document.getElementById('comSelNone').addEventListener('click', () => {
+                comSeleccion.clear(); comRenderLista(); comPreviewDebounce();
+            });
+
+            ['comAsunto', 'comTitulo', 'comMensaje', 'comCtaTexto', 'comCtaUrl', 'comFirma', 'comReplyTo'].forEach(id =>
+                document.getElementById(id).addEventListener('input', comPreviewDebounce));
+            document.getElementById('comSaludo').addEventListener('change', comPreviewDebounce);
+            document.getElementById('comPrevRefresh').addEventListener('click', comPreview);
+
+            document.getElementById('comCopiar').addEventListener('click', async () => {
+                const d = comDestinatarios();
+                if (!d.length) return;
+                await comCopiarTexto(d.map(x => x.email).join(', '));
+                const b = document.getElementById('comCopiar');
+                const html = b.innerHTML;
+                b.innerHTML = '<i class="fas fa-check"></i> ' + d.length + ' emails copiados';
+                setTimeout(() => { b.innerHTML = html; }, 2000);
+                logAction('comunicaciones', 'Copio emails', d.length + ' direcciones');
+            });
+
+            document.getElementById('comCsv').addEventListener('click', () => {
+                const d = comDestinatarios();
+                if (!d.length) return;
+                const csv = '﻿Nombre,Email\n' + d.map(x =>
+                    '"' + (x.nombre || '').replace(/"/g, '""') + '","' + x.email + '"').join('\n');
+                const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
+                const a = document.createElement('a');
+                a.href = url; a.download = 'emails-menorca-rugby.csv';
+                document.body.appendChild(a); a.click(); document.body.removeChild(a);
+                setTimeout(() => URL.revokeObjectURL(url), 1000);
+                logAction('comunicaciones', 'Descargo CSV de emails', d.length + ' direcciones');
+            });
+
+            document.getElementById('comEnviarBtn').addEventListener('click', comAbrirConfirmacion);
+            document.getElementById('comModalSend').addEventListener('click', comEnviar);
+            document.getElementById('comModalClose').addEventListener('click', () => {
+                if (!comEnviando) document.getElementById('comModal').classList.remove('is-active');
+            });
+            document.getElementById('comModal').addEventListener('click', e => {
+                if (e.target === document.getElementById('comModal') && !comEnviando) e.target.classList.remove('is-active');
+            });
+
+            const tab = document.querySelector('.admin-tab[data-tab="comunicaciones"]');
+            if (tab) tab.addEventListener('click', () => {
+                comBuildLista();
+                comRenderLista();
+                if (!comCargado) { comCargado = true; comCargarRemitente(); comPreview(); }
+            });
+        })();
+
+        async function comCargarRemitente() {
+            try {
+                const { data: { session } } = await sb.auth.getSession();
+                if (!session) return;
+                const resp = await fetch('/api/send-welcome-email', { headers: { 'Authorization': 'Bearer ' + session.access_token } });
+                const data = await resp.json();
+                if (!resp.ok) throw new Error(data.error || 'error');
+                comFrom = data.from || '';
+                document.getElementById('comFrom').textContent = comFrom || '(GMAIL_USER sin configurar)';
+                const rt = document.getElementById('comReplyTo');
+                if (!rt.value) rt.value = data.reply_to || 'info@menorcarugbyclub.com';
+            } catch (e) {
+                document.getElementById('comFrom').textContent = 'no se pudo comprobar';
+            }
+        }
+
         // ── Deep-linking de tabs por URL: /admin?tab=socios|jugadores|ingresos|gastos ──
         try { const _t = new URLSearchParams(window.location.search).get('tab'); if (_t) sessionStorage.setItem('adminTab', _t); } catch (e) {}
         function contCurrentUrlValue() {
@@ -1921,7 +2541,7 @@
             let v = (new URLSearchParams(window.location.search).get('tab') || '').toLowerCase();
             if (!v) { try { v = (sessionStorage.getItem('adminTab') || '').toLowerCase(); } catch (e) {} }
             if (!v) v = 'banco-gastos';
-            const map = { socios: ['socios'], jugadores: ['jugadores'], contabilidad: ['contabilidad', 'gestion', 'ingresos'], administracion: ['contabilidad', 'gestion', 'ingresos'], ingresos: ['contabilidad', 'gestion', 'ingresos'], gastos: ['contabilidad', 'gestion', 'gastos'], facturas: ['contabilidad', 'gestion', 'gastos'], bancos: ['contabilidad', 'bancos', 'bgastos'], 'banco-gastos': ['contabilidad', 'bancos', 'bgastos'], 'banco-ingresos': ['contabilidad', 'bancos', 'bingresos'], mapeos: ['contabilidad', 'mapeos'], analytics: ['analytics'] };
+            const map = { socios: ['socios'], jugadores: ['jugadores'], contabilidad: ['contabilidad', 'gestion', 'ingresos'], administracion: ['contabilidad', 'gestion', 'ingresos'], ingresos: ['contabilidad', 'gestion', 'ingresos'], gastos: ['contabilidad', 'gestion', 'gastos'], facturas: ['contabilidad', 'gestion', 'gastos'], bancos: ['contabilidad', 'bancos', 'bgastos'], 'banco-gastos': ['contabilidad', 'bancos', 'bgastos'], 'banco-ingresos': ['contabilidad', 'bancos', 'bingresos'], mapeos: ['contabilidad', 'mapeos'], analytics: ['analytics'], comunicaciones: ['comunicaciones'] };
             const t = map[v]; if (!t) return;
             if (t[1] === 'mapeos' && adminEmail !== 'leandro.rios@menorcarugbyclub.com') return;
             activateTab(t[0]); if (t[1]) activateSource(t[1]); if (t[2]) activateSub(t[2]);
