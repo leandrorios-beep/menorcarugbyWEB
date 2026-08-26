@@ -8,7 +8,7 @@ const { createClient } = require('@supabase/supabase-js');
 //   POST action=comunicado_preview -> HTML del comunicado (vista previa)
 //   POST action=comunicado         -> envia el comunicado a un lote de destinatarios
 
-const REPLY_TO_DEFAULT = 'info@menorcarugbyclub.com';
+const REPLY_TO_DEFAULT = 'comision.directiva@menorcarugbyclub.com';
 const MAX_LOTE = 25; // el cliente trocea; mantiene cada invocacion bajo maxDuration
 const EMAIL_RE = /^[^s@]+@[^s@]+.[^s@]+$/;
 

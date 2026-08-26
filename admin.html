@@ -1058,7 +1058,7 @@
                     </div>
                     <div class="reply">
                         <label for="comReplyTo">Responder a</label>
-                        <input type="email" id="comReplyTo" value="info@menorcarugbyclub.com">
+                        <input type="email" id="comReplyTo" value="comision.directiva@menorcarugbyclub.com">
                     </div>
                 </div>
 
@@ -2287,7 +2287,7 @@
 
             const meta = document.getElementById('comPrevMeta');
             meta.innerHTML = '<b>De:</b> Menorca Rugby Club &lt;' + escapeHtml(comFrom || '...') + '&gt;<br>'
-                + '<b>Responder a:</b> ' + escapeHtml(p.reply_to || 'info@menorcarugbyclub.com') + '<br>'
+                + '<b>Responder a:</b> ' + escapeHtml(p.reply_to || 'comision.directiva@menorcarugbyclub.com') + '<br>'
                 + '<b>Para:</b> ' + (ejemplo
                     ? escapeHtml(ejemplo.nombre || ejemplo.email) + ' &lt;' + escapeHtml(ejemplo.email) + '&gt;'
                         + (dest.length > 1 ? ' <span style="color:#8a929e">y ' + (dest.length - 1) + ' mas (un correo individual a cada uno, nadie ve el resto)</span>' : '')
@@ -2349,7 +2349,7 @@
             const sinNombre = dest.filter(x => !x.nombre).length;
             document.getElementById('comModalSum').innerHTML =
                 '<b>De:</b> Menorca Rugby Club &lt;' + escapeHtml(comFrom || '?') + '&gt;<br>'
-                + '<b>Responder a:</b> ' + escapeHtml(p.reply_to || 'info@menorcarugbyclub.com') + '<br>'
+                + '<b>Responder a:</b> ' + escapeHtml(p.reply_to || 'comision.directiva@menorcarugbyclub.com') + '<br>'
                 + '<b>Asunto:</b> ' + escapeHtml(p.asunto || '(sin asunto)') + '<br>'
                 + '<b>Destinatarios:</b> ' + dest.length + ' (un correo individual a cada uno)';
 
@@ -2512,7 +2512,7 @@
                 comFrom = data.from || '';
                 document.getElementById('comFrom').textContent = comFrom || '(GMAIL_USER sin configurar)';
                 const rt = document.getElementById('comReplyTo');
-                if (!rt.value) rt.value = data.reply_to || 'info@menorcarugbyclub.com';
+                if (!rt.value) rt.value = data.reply_to || 'comision.directiva@menorcarugbyclub.com';
             } catch (e) {
                 document.getElementById('comFrom').textContent = 'no se pudo comprobar';
             }
