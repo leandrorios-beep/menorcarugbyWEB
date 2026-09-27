@@ -63,11 +63,46 @@ function getAuthPayload(req) {
     return verifyJWT(auth.slice(7));
 }
 
+// ---------------------------------------------------------------------------
+// Busqueda de socios por email: exacta e insensible a mayusculas.
+//
+// No sirve .eq: register-socio.js guarda el email tal cual lo escribio el
+// socio, asi que un .eq contra la version en minusculas no matchea a nadie que
+// lo haya cargado con mayusculas.
+//
+// Pero TAMPOCO vale pasar el email directo a .ilike: % y _ son comodines de
+// LIKE. Un POST sin autenticar con {"email":"%"} matcheaba a TODOS los socios;
+// en forgot-password eso agarraba al primero y le pisaba la contrasena.
+//
+// El patron correcto: escapar los comodines a "_" (comodin de 1 caracter, que
+// pide un SUPERCONJUNTO seguro del mismo largo) y filtrar exacto en JS.
+// Es el mismo mecanismo que ya usaba findSocioIds en stripe-webhook.js.
+// ---------------------------------------------------------------------------
+
+function likePatternFromEmail(email) {
+    return String(email || '').trim().toLowerCase().replace(/[%_*\\]/g, '_');
+}
+
+async function findSociosByEmail(supabase, email, columns = 'id, email') {
+    const target = String(email || '').trim().toLowerCase();
+    if (!target) return [];
+
+    const { data, error } = await supabase
+        .from('socios')
+        .select(columns)
+        .ilike('email', likePatternFromEmail(target));
+
+    if (error) throw error;
+    return (data || []).filter(r => String(r.email || '').trim().toLowerCase() === target);
+}
+
 module.exports = {
     hashPassword,
     verifyPassword,
     generatePassword,
     signJWT,
     verifyJWT,
-    getAuthPayload
+    getAuthPayload,
+    likePatternFromEmail,
+    findSociosByEmail
 };

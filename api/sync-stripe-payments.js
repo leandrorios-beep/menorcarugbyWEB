@@ -1,5 +1,6 @@
 const { createClient } = require('@supabase/supabase-js');
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+const { findSociosByEmail } = require('./_lib/auth');
 
 // Dos operaciones en un mismo endpoint porque el plan Hobby de Vercel solo
 // admite 12 funciones serverless y api/ ya estaba al limite:
@@ -180,11 +181,21 @@ async function syncPagos(supabase) {
         if (fechaPago) updateData.fecha_pago = fechaPago;
         if (fechaProximoPago) updateData.fecha_proximo_pago = fechaProximoPago;
 
-        const { data, error } = await supabase
-            .from('socios')
-            .update(updateData)
-            .ilike('email', email.trim())
-            .select('id, nombre, apellido, email');
+        // Resolver los ids con match exacto y recien despues actualizar.
+        // Un email de Stripe que contenga % en .ilike barreria fichas ajenas.
+        let data = null, error = null;
+        try {
+            const matches = await findSociosByEmail(supabase, email);
+            if (matches.length) {
+                ({ data, error } = await supabase
+                    .from('socios')
+                    .update(updateData)
+                    .in('id', matches.map(m => m.id))
+                    .select('id, nombre, apellido, email'));
+            } else {
+                data = [];
+            }
+        } catch (e) { error = e; }
 
         results.push({
             email,
@@ -213,11 +224,20 @@ async function syncPagos(supabase) {
 
         const fechaPago = new Date(session.created * 1000).toISOString();
 
-        const { data, error } = await supabase
-            .from('socios')
-            .update({ estado_pago: 'completado', fecha_pago: fechaPago })
-            .ilike('email', email.trim())
-            .select('id, nombre, apellido, email');
+        // Mismo criterio que arriba: match exacto antes del UPDATE.
+        let data = null, error = null;
+        try {
+            const matches = await findSociosByEmail(supabase, email);
+            if (matches.length) {
+                ({ data, error } = await supabase
+                    .from('socios')
+                    .update({ estado_pago: 'completado', fecha_pago: fechaPago })
+                    .in('id', matches.map(m => m.id))
+                    .select('id, nombre, apellido, email'));
+            } else {
+                data = [];
+            }
+        } catch (e) { error = e; }
 
         results.push({
             email,

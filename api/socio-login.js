@@ -1,5 +1,5 @@
 const { createClient } = require('@supabase/supabase-js');
-const { verifyPassword, signJWT } = require('./_lib/auth');
+const { verifyPassword, signJWT, findSociosByEmail } = require('./_lib/auth');
 
 module.exports = async function handler(req, res) {
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -18,13 +18,14 @@ module.exports = async function handler(req, res) {
         process.env.SUPABASE_SERVICE_ROLE_KEY
     );
 
-    const { data: socios, error } = await supabase
-        .from('socios')
-        .select('id, nombre, apellido, email, documento, tipo_socio, numero_socio, estado_pago, fecha_pago, fecha_proximo_pago, foto_url, stripe_link, familiar_de, password_hash, carnet_url')
-        .ilike('email', email.trim())
-        .limit(1);
-
-    if (error) {
+    // Match exacto: .ilike con el email crudo trata % y _ como comodines.
+    let socios;
+    try {
+        socios = await findSociosByEmail(
+            supabase, email,
+            'id, nombre, apellido, email, documento, tipo_socio, numero_socio, estado_pago, fecha_pago, fecha_proximo_pago, foto_url, stripe_link, familiar_de, password_hash, carnet_url'
+        );
+    } catch (error) {
         console.error('Login query error:', error);
         return res.status(500).json({ error: 'Error de base de datos' });
     }

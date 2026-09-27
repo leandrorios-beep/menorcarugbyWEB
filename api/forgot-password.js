@@ -1,5 +1,5 @@
 const { createClient } = require('@supabase/supabase-js');
-const { generatePassword, hashPassword } = require('./_lib/auth');
+const { generatePassword, hashPassword, findSociosByEmail } = require('./_lib/auth');
 const nodemailer = require('nodemailer');
 
 module.exports = async function handler(req, res) {
@@ -17,14 +17,16 @@ module.exports = async function handler(req, res) {
         process.env.SUPABASE_SERVICE_ROLE_KEY
     );
 
-    // Find socio by email (case-insensitive)
-    const { data: socios, error: selectError } = await supabase
-        .from('socios')
-        .select('id, nombre, apellido, email, numero_socio')
-        .ilike('email', email.trim())
-        .limit(1);
-
-    if (selectError) {
+    // Find socio by email (case-insensitive, EXACT match).
+    // Antes esto era .ilike('email', email.trim()): un POST sin autenticar con
+    // {"email":"%"} matcheaba a todos los socios y le pisaba la contrasena al
+    // primero de la lista. Ver findSociosByEmail en _lib/auth.js.
+    let socios;
+    try {
+        socios = await findSociosByEmail(
+            supabase, email, 'id, nombre, apellido, email, numero_socio'
+        );
+    } catch (selectError) {
         console.error('Forgot-password select error:', selectError);
         return res.status(500).json({ error: 'Error de base de datos' });
     }
