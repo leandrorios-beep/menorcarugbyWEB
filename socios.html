@@ -679,7 +679,7 @@
                             <div class="socio-modal-field" style="position:relative;">
                                 <label data-i18n-modal="player_search_label" style="font-size:0.95rem;">Soy familiar de:</label>
                                 <div style="position:relative;">
-                                    <input type="text" id="socioPlayerQuery" autocomplete="off" placeholder="Buscar jugador/a..." style="padding-right:2.5rem;">
+                                    <input type="text" id="socioPlayerQuery" autocomplete="off" placeholder="Nombre y apellido del jugador/a" style="padding-right:2.5rem;">
                                     <i class="fas fa-search" style="position:absolute;right:0.75rem;top:50%;transform:translateY(-50%);color:#888;pointer-events:none;"></i>
                                 </div>
                                 <div id="socioPlayerResults" style="position:absolute;left:0;right:0;background:#243045;border:1px solid rgba(255,199,44,0.3);border-radius:0.5rem;max-height:200px;overflow-y:auto;z-index:10;display:none;box-shadow:0 4px 16px rgba(0,0,0,0.4);margin-top:0.25rem;"></div>
@@ -902,7 +902,9 @@
                 // Clear player_required error when typing
                 playerQuery.closest('.socio-modal-field').classList.remove('has-error');
 
-                if (q.length < 2) {
+                // El endpoint exige 4 caracteres y nombre + apellido: pedir menos
+                // solo devuelve vacio y confunde.
+                if (q.length < 4) {
                     playerResults.style.display = 'none';
                     return;
                 }

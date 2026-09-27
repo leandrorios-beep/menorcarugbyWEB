@@ -27,6 +27,16 @@ module.exports = async function handler(req, res) {
         return res.status(401).json({ error: 'No autorizado' });
     }
 
+    // Antes SOLO se comprobaba que la cabecera empezara con "Bearer ": cualquier
+    // texto pasaba. O sea que la rama de bienvenida era un relay abierto — se
+    // podia mandar un mail con destinatario, texto y adjunto libres desde la
+    // cuenta de Gmail del club. La rama de comunicados si validaba, con
+    // verificarAdmin(); ahora se valida SIEMPRE, antes de decidir la rama.
+    const admin = await verificarAdmin(req);
+    if (!admin) {
+        return res.status(403).json({ error: 'Solo un administrador puede usar este endpoint' });
+    }
+
     // El panel necesita mostrar desde que cuenta sale el correo
     if (req.method === 'GET') {
         return res.status(200).json({ from: remitente(), reply_to: REPLY_TO_DEFAULT });

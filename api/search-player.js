@@ -5,8 +5,17 @@ module.exports = async function handler(req, res) {
         return res.status(405).json({ error: 'Method not allowed' });
     }
 
+    // Este endpoint es PUBLICO por necesidad: lo usa el alta de socio familiar
+    // para vincular al hijo, antes de que exista ninguna cuenta. Pero devuelve
+    // nombres de menores, asi que se acota todo lo posible:
+    //   - minimo 4 caracteres (antes 2: con "ma" listaba medio club)
+    //   - hace falta nombre Y apellido, no una sola palabra suelta
+    //   - como mucho 5 resultados
+    //   - NO se devuelve la categoria ni el estado: con el nombre alcanza para
+    //     elegir de una lista, y la categoria es un dato del menor que no hace
+    //     falta para vincular.
     const q = (req.query.q || '').trim();
-    if (q.length < 2) {
+    if (q.length < 4) {
         return res.status(200).json({ players: [] });
     }
 
@@ -21,7 +30,8 @@ module.exports = async function handler(req, res) {
         .map(w => w.replace(/[^a-zA-ZáéíóúñÁÉÍÓÚÑàèìòùÀÈÌÒÙüÜçÇ0-9-]/g, ''))
         .filter(w => w.length >= 2);
 
-    if (words.length === 0) {
+    // Exigir al menos dos palabras evita el listado por prefijo.
+    if (words.length < 2) {
         return res.status(200).json({ players: [] });
     }
 
@@ -45,9 +55,7 @@ module.exports = async function handler(req, res) {
     return res.status(200).json({
         players: (data || []).map(p => ({
             id: p.player_id,
-            name: `${p.first_name} ${p.last_name}`,
-            category: p.category_primary || '',
-            status: p.status
+            name: `${p.first_name} ${p.last_name}`
         }))
     });
 };
