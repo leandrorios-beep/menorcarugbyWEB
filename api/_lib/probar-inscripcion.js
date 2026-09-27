@@ -42,11 +42,14 @@ const db = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_R
 });
 
 // ── req/res de mentira ─────────────────────────────────────────────────────
-function llamar(modulo, { method = 'POST', body = null, token = null } = {}) {
-    const handler = require(path.join(__dirname, '..', modulo));
+function llamar(accion, { method = 'POST', body = null, token = null } = {}) {
+    // Se llama al router de verdad, no a cada handler por separado: asi la
+    // prueba tambien cubre el reparto por accion y el chequeo de metodo.
+    const handler = require(path.join(__dirname, '..', 'inscripcion.js'));
     const req = {
         method,
-        body,
+        body: method === 'GET' ? null : Object.assign({ accion }, body || {}),
+        query: method === 'GET' ? { accion } : {},
         headers: token ? { authorization: `Bearer ${token}` } : {},
     };
     return new Promise((resolve) => {
@@ -110,20 +113,28 @@ async function main() {
     const temporada = `${yearTemporada}/${yearTemporada + 1}`;
 
     console.log('\n1. El correo todavía no existe');
-    let r = await llamar('inscripcion-inicio.js', { body: { email: EMAIL } });
+    let r = await llamar('inicio', { body: { email: EMAIL } });
     comprobar('responde 200', r.status === 200, r);
     comprobar('dice que no existe', r.body && r.body.existe === false, r.body);
 
+    console.log('\n1b. El repartidor de acciones');
+    r = await llamar('noexiste', { body: {} });
+    comprobar('accion desconocida -> 404', r.status === 404, r.body);
+    r = await llamar('inicio', { method: 'GET' });
+    comprobar('accion de POST pedida por GET -> 405', r.status === 405, r.body);
+    r = await llamar('estado', { body: {} });
+    comprobar('accion de GET pedida por POST -> 405', r.status === 405, r.body);
+
     console.log('\n2. Rechaza lo que tiene que rechazar');
-    r = await llamar('inscripcion-enviar.js', { body: { tutor: { nombre: 'X', email: EMAIL }, jugadores: [] } });
+    r = await llamar('enviar', { body: { tutor: { nombre: 'X', email: EMAIL }, jugadores: [] } });
     comprobar('sin reglamento -> 400', r.status === 400, r.body);
 
-    r = await llamar('inscripcion-enviar.js', {
+    r = await llamar('enviar', {
         body: { acepta_reglamento: true, tutor: { nombre: 'X', email: EMAIL }, jugadores: [] },
     });
     comprobar('sin jugadores -> 400', r.status === 400, r.body);
 
-    r = await llamar('inscripcion-enviar.js', {
+    r = await llamar('enviar', {
         body: {
             acepta_reglamento: true,
             tutor: { nombre: 'X', email: EMAIL },
@@ -132,7 +143,7 @@ async function main() {
     });
     comprobar('"con hermano" con un solo hijo -> 400', r.status === 400, r.body);
 
-    r = await llamar('inscripcion-enviar.js', {
+    r = await llamar('enviar', {
         body: {
             acepta_reglamento: true,
             tutor: { nombre: 'X', email: EMAIL, tipo_documento: 'DNI' },
@@ -141,7 +152,7 @@ async function main() {
     });
     comprobar('documento a medias -> 400', r.status === 400, r.body);
 
-    r = await llamar('inscripcion-enviar.js', {
+    r = await llamar('enviar', {
         body: {
             acepta_reglamento: true,
             tutor: { nombre: 'X', email: EMAIL },
@@ -153,7 +164,7 @@ async function main() {
     console.log('\n3. Alta de una familia nueva con dos hermanos');
     const fotoMinima =
         'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==';
-    r = await llamar('inscripcion-enviar.js', {
+    r = await llamar('enviar', {
         body: {
             acepta_reglamento: true,
             tutor: {
@@ -204,14 +215,14 @@ async function main() {
     }
 
     console.log('\n4. Ahora el correo SÍ existe');
-    r = await llamar('inscripcion-inicio.js', { body: { email: EMAIL } });
+    r = await llamar('inicio', { body: { email: EMAIL } });
     comprobar('dice que existe', r.body && r.body.existe === true, r.body);
     comprobar('es tutor', r.body && r.body.tipo === 'tutor', r.body);
     comprobar('cuenta los dos hijos', r.body && r.body.hijos === 2, r.body);
     comprobar('tiene contraseña', r.body && r.body.tiene_password === true, r.body);
 
     console.log('\n5. No deja crear la familia dos veces');
-    r = await llamar('inscripcion-enviar.js', {
+    r = await llamar('enviar', {
         body: {
             acepta_reglamento: true,
             tutor: { nombre: 'Prueba', email: EMAIL },
@@ -221,7 +232,7 @@ async function main() {
     comprobar('sin token y con correo ya usado -> 409', r.status === 409, r.body);
 
     console.log('\n6. Contraseña nueva y entrar');
-    r = await llamar('inscripcion-recordar.js', { body: { email: EMAIL } });
+    r = await llamar('recordar', { body: { email: EMAIL } });
     comprobar('responde 200', r.status === 200, r.body);
     comprobar('avisa que el correo no salió', r.body && r.body.enviado === false && r.body.aviso, r.body);
 
@@ -229,16 +240,16 @@ async function main() {
     const { hashPassword } = require('../_lib/auth');
     await db.from('tutores').update({ password_hash: hashPassword('prueba1234') }).eq('email', EMAIL);
 
-    r = await llamar('inscripcion-acceso.js', { body: { email: EMAIL, password: 'malísima' } });
+    r = await llamar('acceso', { body: { email: EMAIL, password: 'malísima' } });
     comprobar('contraseña incorrecta -> 401', r.status === 401, r.body);
 
-    r = await llamar('inscripcion-acceso.js', { body: { email: EMAIL, password: 'prueba1234' } });
+    r = await llamar('acceso', { body: { email: EMAIL, password: 'prueba1234' } });
     comprobar('contraseña correcta -> 200', r.status === 200, r.body);
     const token = r.body && r.body.token;
     comprobar('devuelve token', Boolean(token), r.body);
 
     console.log('\n7. Lo que ve la familia al entrar');
-    r = await llamar('inscripcion-estado.js', { method: 'GET', token });
+    r = await llamar('estado', { method: 'GET', token });
     comprobar('responde 200', r.status === 200, r.body);
     comprobar('temporada correcta', r.body && r.body.temporada === temporada, r.body && r.body.temporada);
     comprobar('trae los dos jugadores', r.body && r.body.jugadores && r.body.jugadores.length === 2, r.body);
@@ -249,10 +260,10 @@ async function main() {
         comprobar('precarga tallas del año pasado o de este', Boolean(j.inscripcion_actual.talla_camiseta), j.inscripcion_actual);
         comprobar('guardó la foto como path, no como URL', !j.foto || j.foto.indexOf('http') !== 0, j.foto);
     }
-    comprobar('sin token -> 401', (await llamar('inscripcion-estado.js', { method: 'GET' })).status === 401);
+    comprobar('sin token -> 401', (await llamar('estado', { method: 'GET' })).status === 401);
 
     console.log('\n8. Renovar: cambia una talla y la cuota');
-    r = await llamar('inscripcion-enviar.js', {
+    r = await llamar('enviar', {
         token,
         body: {
             acepta_reglamento: true,

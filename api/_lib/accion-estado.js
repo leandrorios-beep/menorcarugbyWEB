@@ -9,20 +9,17 @@
 // ---------------------------------------------------------------------------
 
 const { createClient } = require('@supabase/supabase-js');
-const { getAuthPayload } = require('./_lib/auth');
+const { getAuthPayload } = require('./auth');
 const {
-    cors,
     temporadaKey,
     temporadaYear,
     tramoDeCategoria,
     cargarPrecios,
     cargarDescuentos,
     importeFinal,
-} = require('./_lib/inscripcion');
+} = require('./inscripcion');
 
-module.exports = async function handler(req, res) {
-    if (cors(req, res, 'GET, OPTIONS')) return;
-    if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
+module.exports = async function accionEstado(req, res) {
 
     const payload = getAuthPayload(req);
     if (!payload) return res.status(401).json({ error: 'No autorizado' });

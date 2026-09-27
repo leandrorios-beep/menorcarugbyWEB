@@ -9,12 +9,10 @@
 // ---------------------------------------------------------------------------
 
 const { createClient } = require('@supabase/supabase-js');
-const { verifyPassword, signJWT, findSociosByEmail } = require('./_lib/auth');
-const { cors, normalizarEmail, buscarTutorPorEmail } = require('./_lib/inscripcion');
+const { verifyPassword, signJWT, findSociosByEmail } = require('./auth');
+const { normalizarEmail, buscarTutorPorEmail } = require('./inscripcion');
 
-module.exports = async function handler(req, res) {
-    if (cors(req, res)) return;
-    if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+module.exports = async function accionAcceso(req, res) {
 
     const { email: emailCrudo, password } = req.body || {};
     const email = normalizarEmail(emailCrudo);

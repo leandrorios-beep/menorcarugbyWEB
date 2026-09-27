@@ -324,15 +324,21 @@ function euros(n) {
     return Number(n).toFixed(2).replace('.', ',') + ' €';
 }
 
-async function api(ruta, opciones) {
+/**
+ * Todo va por /api/inscripcion con una "accion" adentro. No son cinco rutas:
+ * el plan Hobby de Vercel solo despliega 12 funciones y la web ya las tenia
+ * todas ocupadas. Ver la cabecera de api/inscripcion.js.
+ */
+async function api(accion, opciones) {
     var o = opciones || {};
     var headers = { 'Content-Type': 'application/json' };
     if (estado.token) headers.Authorization = 'Bearer ' + estado.token;
-    var r = await fetch('/api/' + ruta, {
-        method: o.method || 'POST',
-        headers: headers,
-        body: o.body ? JSON.stringify(o.body) : undefined
-    });
+
+    var esGet = o.method === 'GET';
+    var url = '/api/inscripcion' + (esGet ? '?accion=' + encodeURIComponent(accion) : '');
+    var cuerpo = esGet ? undefined : JSON.stringify(Object.assign({ accion: accion }, o.body || {}));
+
+    var r = await fetch(url, { method: esGet ? 'GET' : 'POST', headers: headers, body: cuerpo });
     var datos = null;
     try { datos = await r.json(); } catch (e) { datos = {}; }
     if (!r.ok) throw new Error(datos.error || 'Algo falló. Probá de nuevo en un momento.');
@@ -356,7 +362,7 @@ $('formEmail').addEventListener('submit', async function (e) {
     $('btnEmail').disabled = true;
     cargando(true);
     try {
-        var r = await api('inscripcion-inicio', { body: { email: email } });
+        var r = await api('inicio', { body: { email: email } });
         estado.email = email;
 
         if (r.existe) {
@@ -402,7 +408,7 @@ $('btnRecordar').addEventListener('click', async function () {
     aviso('');
     cargando(true);
     try {
-        var r = await api('inscripcion-recordar', { body: { email: estado.email } });
+        var r = await api('recordar', { body: { email: estado.email } });
         aviso(r.enviado
             ? 'Te enviamos la contraseña a ' + estado.email + '. Mirá también en spam.'
             : r.aviso, r.enviado ? 'ok' : 'error');
@@ -419,7 +425,7 @@ $('formEntrar').addEventListener('submit', async function (e) {
     $('btnEntrar').disabled = true;
     cargando(true);
     try {
-        var r = await api('inscripcion-acceso', {
+        var r = await api('acceso', {
             body: { email: estado.email, password: $('password').value }
         });
         estado.token = r.token;
@@ -437,7 +443,7 @@ $('formEntrar').addEventListener('submit', async function (e) {
 
 // ── Cargar lo que ya hay ───────────────────────────────────────────────────
 async function cargarEstado() {
-    var r = await api('inscripcion-estado', { method: 'GET' });
+    var r = await api('estado', { method: 'GET' });
     estado.temporada = r.temporada;
     estado.descuentos = r.descuentos || [];
     estado.tutor = r.tutor || { email: estado.email };
@@ -789,7 +795,7 @@ $('btnEnviar').addEventListener('click', async function () {
     $('btnEnviar').disabled = true;
     cargando(true);
     try {
-        var r = await api('inscripcion-enviar', { body: cuerpo });
+        var r = await api('enviar', { body: cuerpo });
         mostrar('pasoFormulario', false);
         mostrar('pasoListo', true);
 

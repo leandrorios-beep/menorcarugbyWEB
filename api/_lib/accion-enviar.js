@@ -24,9 +24,8 @@
 // ---------------------------------------------------------------------------
 
 const { createClient } = require('@supabase/supabase-js');
-const { getAuthPayload, generatePassword, hashPassword } = require('./_lib/auth');
+const { getAuthPayload, generatePassword, hashPassword } = require('./auth');
 const {
-    cors,
     temporadaKey,
     temporadaYear,
     calcularCategorias,
@@ -39,7 +38,7 @@ const {
     buscarTutorPorEmail,
     nuevoId,
     soloConValor,
-} = require('./_lib/inscripcion');
+} = require('./inscripcion');
 
 const TIPOS_DOC = ['DNI', 'NIE', 'PASAPORTE', 'TARJETA_SANITARIA', 'LIBRO_FAMILIA', 'OTRO'];
 const TALLAS = ['4', '6', '8', '10', '12', '14', '16', 'XS', 'S', 'M', 'L', 'XL', '2XL', '3XL'];
@@ -50,9 +49,7 @@ const PARENTESCOS = ['madre', 'padre', 'tutor_legal', 'abuelo', 'hermano', 'otro
 const VARIANTES = ['base', 'con_hermano'];
 const REGLAMENTO_VERSION = 'web-2026';
 
-module.exports = async function handler(req, res) {
-    if (cors(req, res)) return;
-    if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+module.exports = async function accionEnviar(req, res) {
 
     const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
     const payload = getAuthPayload(req);

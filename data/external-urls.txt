@@ -9,12 +9,15 @@ STORE_FR=https://menorcarugby.clupik.app/fr/shopCategory/all
 STORE_IT=https://menorcarugby.clupik.app/it/shopCategory/all
 STORE_PT=https://menorcarugby.clupik.app/pt/shopCategory/all
 
-# REGISTRATION URLs (Clupik registrations)
-# Escuela y Juveniles van al mismo link
-REGISTRATION_SCHOOL=https://menorcarugby.clupik.app/es/registrations/21930
-REGISTRATION_YOUTH=https://menorcarugby.clupik.app/es/registrations/21930
-REGISTRATION_SENIOR=https://menorcarugby.clupik.app/es/registrations/21868
-REGISTRATION_MEMBERS=https://menorcarugby.clupik.app/es/registrations/21860
+# INSCRIPCIONES
+# Ya no van a Clupik: se hacen en la propia web, en /inscripcion. Es una sola
+# pagina para todas las categorias porque la categoria la decide la fecha de
+# nacimiento, no la eleccion de la familia.
+REGISTRATION_SCHOOL=https://www.menorcarugbyclub.com/inscripcion
+REGISTRATION_YOUTH=https://www.menorcarugbyclub.com/inscripcion
+REGISTRATION_SENIOR=https://www.menorcarugbyclub.com/inscripcion
+# Socios es otra cosa distinta de jugar: tiene su propia pagina.
+REGISTRATION_MEMBERS=https://www.menorcarugbyclub.com/socios
 
 # CHAT URL (SmartChat)
 CHAT_URL=https://smartchatweb-pi.vercel.app/

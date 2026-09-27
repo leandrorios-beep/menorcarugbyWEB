@@ -12,12 +12,10 @@
 // ---------------------------------------------------------------------------
 
 const { createClient } = require('@supabase/supabase-js');
-const { generatePassword, hashPassword, findSociosByEmail } = require('./_lib/auth');
-const { cors, normalizarEmail, buscarTutorPorEmail, enviarMail, escapeHtml } = require('./_lib/inscripcion');
+const { generatePassword, hashPassword, findSociosByEmail } = require('./auth');
+const { normalizarEmail, buscarTutorPorEmail, enviarMail, escapeHtml } = require('./inscripcion');
 
-module.exports = async function handler(req, res) {
-    if (cors(req, res)) return;
-    if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+module.exports = async function accionRecordar(req, res) {
 
     const email = normalizarEmail((req.body || {}).email);
     if (!email) return res.status(400).json({ error: 'Escribí un correo válido' });
