@@ -8,18 +8,31 @@
     },
     "api/sync-stripe-payments.js": {
       "maxDuration": 30
+    },
+    "api/inscripcion-enviar.js": {
+      "maxDuration": 60
     }
   },
   "redirects": [
     {
+      "source": "/inscripcion",
+      "destination": "/inscripcion.html",
+      "permanent": false
+    },
+    {
+      "source": "/inscripciones",
+      "destination": "/inscripcion.html",
+      "permanent": false
+    },
+    {
       "source": "/zona-socios",
-      "destination": "https://menorcarugby.clupik.app/es/registrations/21930",
-      "permanent": true
+      "destination": "/inscripcion.html",
+      "permanent": false
     },
     {
       "source": "/zona%20socios",
-      "destination": "https://menorcarugby.clupik.app/es/registrations/21930",
-      "permanent": true
+      "destination": "/inscripcion.html",
+      "permanent": false
     },
     {
       "source": "/socios",

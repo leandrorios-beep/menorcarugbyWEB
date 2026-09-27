@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-0MHQJGDWRL"></script>
+    <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-0MHQJGDWRL');</script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+
+    <title>Inscripción | Menorca Rugby Club</title>
+    <meta name="description" content="Inscribí a tus hijos en el Menorca Rugby Club. Alta nueva o renovación, todo desde acá.">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://www.menorcarugbyclub.com/inscripcion">
+
+    <link rel="icon" type="image/x-icon" href="assets/images/static/favicon.ico">
+    <link rel="apple-touch-icon" sizes="180x180" href="assets/images/static/apple-touch-icon.png">
+    <meta name="theme-color" content="#182B49">
+
+    <link rel="stylesheet" href="css/styles.css?v=2024091506">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<style>
+/* --------------------------------------------------------------------------
+   Estilos propios de esta página. Van acá y no en css/styles.css porque el
+   formulario no se parece a nada del resto del sitio y mezclarlo obligaría a
+   tocar hojas que usan todas las demás páginas.
+
+   Móvil primero: la mayoría de las familias lo van a llenar desde el teléfono,
+   de pie en el campo. Todo apilado, botones de 48 px, nada de tablas anchas.
+   -------------------------------------------------------------------------- */
+:root {
+    --navy: #182B49;
+    --amarillo: #FFC72C;
+    --gris: #6B7280;
+    --gris-claro: #F3F4F6;
+    --borde: #D8DEE7;
+    --rojo: #B42318;
+    --verde: #067647;
+}
+.insc-wrap {
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 24px 16px calc(64px + env(safe-area-inset-bottom));
+    font-family: 'Space Grotesk', system-ui, sans-serif;
+}
+.insc-hero { text-align: center; margin-bottom: 28px; }
+.insc-hero h1 { color: var(--navy); font-size: 1.75rem; margin: 0 0 8px; line-height: 1.2; }
+.insc-hero p { color: var(--gris); font-size: 0.95rem; margin: 0; line-height: 1.5; }
+
+.insc-card {
+    background: #fff;
+    border: 1px solid var(--borde);
+    border-radius: 14px;
+    padding: 20px;
+    margin-bottom: 16px;
+}
+.insc-card h2 {
+    color: var(--navy); font-size: 1.05rem; margin: 0 0 4px;
+    display: flex; align-items: center; gap: 8px;
+}
+.insc-card .sub { color: var(--gris); font-size: 0.85rem; margin: 0 0 16px; line-height: 1.45; }
+
+label { display: block; color: var(--navy); font-size: 0.8rem; font-weight: 600; margin: 0 0 6px; }
+label .opt { color: var(--gris); font-weight: 400; text-transform: none; }
+.campo { margin-bottom: 14px; }
+.fila { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+@media (max-width: 420px) { .fila { grid-template-columns: 1fr; } }
+
+input[type=text], input[type=email], input[type=tel], input[type=date],
+input[type=number], input[type=password], select, textarea {
+    width: 100%;
+    box-sizing: border-box;
+    min-height: 48px;
+    padding: 12px 14px;
+    border: 1px solid var(--borde);
+    border-radius: 10px;
+    /* 16px o más: menos que eso y Safari en iPhone hace zoom al enfocar. */
+    font-size: 16px;
+    font-family: inherit;
+    background: #fff;
+    color: #111;
+}
+textarea { min-height: 84px; resize: vertical; }
+input:focus, select:focus, textarea:focus {
+    outline: none; border-color: var(--navy); box-shadow: 0 0 0 3px rgba(24,43,73,.12);
+}
+
+.btn {
+    width: 100%;
+    min-height: 50px;
+    border: none; border-radius: 10px;
+    font-family: inherit; font-size: 1rem; font-weight: 700;
+    cursor: pointer;
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+}
+.btn-primario { background: var(--amarillo); color: var(--navy); }
+.btn-primario:disabled { background: var(--gris-claro); color: var(--gris); cursor: not-allowed; }
+.btn-secundario { background: transparent; color: var(--navy); border: 1px solid var(--borde); }
+.btn-texto {
+    background: none; border: none; color: var(--navy);
+    text-decoration: underline; cursor: pointer; font-family: inherit;
+    font-size: 0.88rem; padding: 12px 0; width: 100%;
+}
+
+.aviso { border-radius: 10px; padding: 12px 14px; font-size: 0.88rem; line-height: 1.5; margin-bottom: 14px; }
+.aviso-error { background: #FEF3F2; color: var(--rojo); border: 1px solid #FDA29B; }
+.aviso-ok { background: #ECFDF3; color: var(--verde); border: 1px solid #ABEFC6; }
+.aviso-info { background: #F0F6FF; color: var(--navy); border: 1px solid #B2D2FF; }
+
+.jugador {
+    border: 1px solid var(--borde); border-radius: 14px;
+    padding: 18px; margin-bottom: 16px; background: #fff;
+}
+.jugador > header {
+    display: flex; align-items: center; gap: 12px; margin-bottom: 14px;
+}
+.jugador > header .nom { flex: 1; min-width: 0; }
+.jugador > header .nom strong { display: block; color: var(--navy); font-size: 1rem; }
+.jugador > header .nom span { color: var(--gris); font-size: 0.8rem; }
+.avatar {
+    width: 52px; height: 52px; border-radius: 50%; object-fit: cover;
+    background: var(--gris-claro); flex-shrink: 0;
+}
+.quitar { background: none; border: none; color: var(--gris); font-size: 1.1rem; cursor: pointer; padding: 8px; }
+
+.tarifa { display: grid; gap: 10px; }
+.tarifa label {
+    display: flex; align-items: flex-start; gap: 12px;
+    border: 1px solid var(--borde); border-radius: 10px; padding: 14px;
+    cursor: pointer; font-weight: 400; text-transform: none; margin: 0;
+}
+.tarifa label:has(input:checked) { border-color: var(--navy); background: #F7F9FC; }
+.tarifa input { margin-top: 3px; width: 20px; height: 20px; flex-shrink: 0; }
+.tarifa .t-nom { color: var(--navy); font-weight: 700; font-size: 0.95rem; display: block; }
+.tarifa .t-det { color: var(--gris); font-size: 0.82rem; }
+
+.check { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 14px; }
+.check input { width: 22px; height: 22px; flex-shrink: 0; margin-top: 2px; }
+.check span { font-size: 0.88rem; color: #333; line-height: 1.5; }
+.check a { color: var(--navy); }
+
+.resumen { background: var(--navy); border-radius: 14px; padding: 20px; color: #fff; margin-bottom: 16px; }
+.resumen .linea { display: flex; justify-content: space-between; gap: 12px; padding: 8px 0; font-size: 0.92rem; border-bottom: 1px solid rgba(255,255,255,.14); }
+.resumen .linea:last-of-type { border-bottom: none; }
+.resumen .total { display: flex; justify-content: space-between; margin-top: 12px; padding-top: 12px; border-top: 2px solid var(--amarillo); }
+.resumen .total span { font-size: 0.9rem; }
+.resumen .total strong { color: var(--amarillo); font-size: 1.3rem; }
+
+.oculto { display: none !important; }
+.cargando { text-align: center; color: var(--gris); padding: 40px 0; }
+.pie { text-align: center; color: var(--gris); font-size: 0.8rem; margin-top: 24px; line-height: 1.6; }
+.foto-btn { display: flex; align-items: center; gap: 12px; }
+.foto-btn input[type=file] { display: none; }
+</style>
+</head>
+<body>
+
+<nav class="navbar" id="navbar">
+    <div class="nav-container">
+        <a href="index.html" class="nav-brand">
+            <img src="assets/images/static/logo.png" alt="Menorca Rugby" class="logo">
+            <span class="brand-text">MENORCA RUGBY</span>
+        </a>
+        <ul class="nav-menu" id="nav-menu">
+            <li><a href="index.html#inicio" class="nav-link">Inicio</a></li>
+            <li><a href="calendar.html" class="nav-link">Calendario</a></li>
+            <li><a href="socios.html" class="nav-link">Hazte Socio</a></li>
+            <li><a href="inscripcion.html" class="nav-link active">Inscripción</a></li>
+        </ul>
+        <div class="nav-toggle" id="nav-toggle"><span></span><span></span><span></span></div>
+    </div>
+</nav>
+
+<main class="insc-wrap">
+
+    <div class="insc-hero">
+        <h1>Inscripción <span id="temporadaTitulo"></span></h1>
+        <p>Da igual si es la primera vez o si venís renovando: empezá poniendo tu correo y nosotros vemos en qué caso estás.</p>
+    </div>
+
+    <div id="avisoGlobal"></div>
+
+    <!-- ── Paso 1: el correo ─────────────────────────────────────────── -->
+    <section class="insc-card" id="pasoEmail">
+        <h2><i class="fa-regular fa-envelope"></i> Tu correo</h2>
+        <p class="sub">El de la madre, el padre o quien se encargue. Si el jugador es mayor de edad, el suyo.</p>
+        <form id="formEmail">
+            <div class="campo">
+                <label for="email">Correo electrónico</label>
+                <input type="email" id="email" name="email" autocomplete="email" required inputmode="email" placeholder="tucorreo@ejemplo.com">
+            </div>
+            <button type="submit" class="btn btn-primario" id="btnEmail">Continuar</button>
+        </form>
+    </section>
+
+    <!-- ── Paso 2a: ya está en la base ───────────────────────────────── -->
+    <section class="insc-card oculto" id="pasoEntrar">
+        <h2><i class="fa-solid fa-user-check"></i> Ya estás en nuestra base de datos</h2>
+        <p class="sub" id="textoEntrar"></p>
+        <form id="formEntrar">
+            <div class="campo">
+                <label for="password">Tu contraseña</label>
+                <input type="password" id="password" autocomplete="current-password" required>
+            </div>
+            <button type="submit" class="btn btn-primario" id="btnEntrar">Entrar</button>
+        </form>
+        <button type="button" class="btn-texto" id="btnRecordar">No me acuerdo, mandámela por correo</button>
+        <button type="button" class="btn-texto" id="btnOtroEmail">Usar otro correo</button>
+    </section>
+
+    <!-- ── Paso 2b / 3: el formulario ────────────────────────────────── -->
+    <div class="oculto" id="pasoFormulario">
+
+        <section class="insc-card" id="bloqueTutor">
+            <h2><i class="fa-regular fa-address-card"></i> Tus datos</h2>
+            <p class="sub">Los del adulto responsable. Si el jugador es mayor de edad, los suyos.</p>
+
+            <div class="fila">
+                <div class="campo"><label for="t_nombre">Nombre</label><input type="text" id="t_nombre" autocomplete="given-name" required></div>
+                <div class="campo"><label for="t_apellido">Apellidos</label><input type="text" id="t_apellido" autocomplete="family-name"></div>
+            </div>
+            <div class="fila">
+                <div class="campo"><label for="t_nacimiento">Fecha de nacimiento</label><input type="date" id="t_nacimiento"></div>
+                <div class="campo"><label for="t_telefono">Teléfono</label><input type="tel" id="t_telefono" autocomplete="tel" inputmode="tel"></div>
+            </div>
+            <div class="fila">
+                <div class="campo">
+                    <label for="t_tipodoc">Documento</label>
+                    <select id="t_tipodoc">
+                        <option value="">Sin especificar</option>
+                        <option value="DNI">DNI</option>
+                        <option value="NIE">NIE</option>
+                        <option value="PASAPORTE">Pasaporte</option>
+                        <option value="OTRO">Otro</option>
+                    </select>
+                </div>
+                <div class="campo"><label for="t_numdoc">Número <span class="opt">(si pusiste tipo)</span></label><input type="text" id="t_numdoc" autocomplete="off"></div>
+            </div>
+            <div class="campo"><label for="t_direccion">Dirección</label><input type="text" id="t_direccion" autocomplete="street-address"></div>
+            <div class="fila">
+                <div class="campo"><label for="t_cp">Código postal</label><input type="text" id="t_cp" autocomplete="postal-code" inputmode="numeric"></div>
+                <div class="campo"><label for="t_ciudad">Población</label><input type="text" id="t_ciudad" autocomplete="address-level2"></div>
+            </div>
+        </section>
+
+        <div id="listaJugadores"></div>
+
+        <button type="button" class="btn btn-secundario" id="btnAgregar" style="margin-bottom:16px;">
+            <i class="fa-solid fa-plus"></i> Agregar otro jugador
+        </button>
+
+        <div class="resumen oculto" id="resumen">
+            <div id="resumenLineas"></div>
+            <div class="total"><span>Total al mes</span><strong id="resumenTotal">—</strong></div>
+            <p style="color:#AAB4C2;font-size:.78rem;margin:12px 0 0;line-height:1.5;">
+                La cuota se cobra en 10 mensualidades. La ficha federativa se paga aparte, una vez al año.
+            </p>
+        </div>
+
+        <section class="insc-card">
+            <div class="check">
+                <input type="checkbox" id="acepta_reglamento">
+                <span>He leído y acepto el <a href="https://www.menorcarugbyclub.com/privacidad" target="_blank" rel="noopener">reglamento y la política de privacidad</a> del Menorca Rugby Club.</span>
+            </div>
+            <button type="button" class="btn btn-primario" id="btnEnviar">Enviar inscripción</button>
+        </section>
+    </div>
+
+    <!-- ── Paso 4: listo ─────────────────────────────────────────────── -->
+    <section class="insc-card oculto" id="pasoListo">
+        <h2><i class="fa-solid fa-circle-check" style="color:var(--verde)"></i> Inscripción enviada</h2>
+        <div id="textoListo"></div>
+    </section>
+
+    <div class="cargando oculto" id="cargando"><i class="fa-solid fa-circle-notch fa-spin"></i> Un momento…</div>
+
+    <p class="pie">
+        ¿Algo no cuadra? Escribinos a <a href="mailto:info@menorcarugbyclub.com">info@menorcarugbyclub.com</a>
+    </p>
+</main>
+
+<script>
+(function () {
+'use strict';
+
+// ---------------------------------------------------------------------------
+// Estado de la pantalla. Un solo objeto: el formulario tiene cuatro pasos y
+// varios jugadores, y repartir eso en variables sueltas se vuelve ingobernable.
+// ---------------------------------------------------------------------------
+var estado = {
+    email: null,
+    token: null,
+    esRenovacion: false,
+    tutor: null,
+    jugadores: [],   // lo que se va a enviar
+    temporada: '',
+    descuentos: []
+};
+
+var TALLAS = ['4','6','8','10','12','14','16','XS','S','M','L','XL','2XL','3XL'];
+
+var $ = function (id) { return document.getElementById(id); };
+
+function mostrar(id, si) { $(id).classList.toggle('oculto', !si); }
+function cargando(si) { mostrar('cargando', si); }
+
+function aviso(texto, clase) {
+    $('avisoGlobal').innerHTML = texto
+        ? '<div class="aviso aviso-' + (clase || 'error') + '">' + escapar(texto) + '</div>'
+        : '';
+    if (texto) window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function escapar(s) {
+    var d = document.createElement('div');
+    d.textContent = s === null || s === undefined ? '' : String(s);
+    return d.innerHTML;
+}
+
+function euros(n) {
+    if (n === null || n === undefined) return '—';
+    return Number(n).toFixed(2).replace('.', ',') + ' €';
+}
+
+async function api(ruta, opciones) {
+    var o = opciones || {};
+    var headers = { 'Content-Type': 'application/json' };
+    if (estado.token) headers.Authorization = 'Bearer ' + estado.token;
+    var r = await fetch('/api/' + ruta, {
+        method: o.method || 'POST',
+        headers: headers,
+        body: o.body ? JSON.stringify(o.body) : undefined
+    });
+    var datos = null;
+    try { datos = await r.json(); } catch (e) { datos = {}; }
+    if (!r.ok) throw new Error(datos.error || 'Algo falló. Probá de nuevo en un momento.');
+    return datos;
+}
+
+// ── Temporada, sólo para el título ─────────────────────────────────────────
+(function () {
+    var hoy = new Date();
+    var y = hoy.getMonth() < 6 ? hoy.getFullYear() - 1 : hoy.getFullYear();
+    $('temporadaTitulo').textContent = y + '/' + String(y + 1).slice(-2);
+})();
+
+// ── Paso 1: el correo ──────────────────────────────────────────────────────
+$('formEmail').addEventListener('submit', async function (e) {
+    e.preventDefault();
+    aviso('');
+    var email = $('email').value.trim().toLowerCase();
+    if (!email) return;
+
+    $('btnEmail').disabled = true;
+    cargando(true);
+    try {
+        var r = await api('inscripcion-inicio', { body: { email: email } });
+        estado.email = email;
+
+        if (r.existe) {
+            if (!r.activo) {
+                aviso('Tu ficha está archivada porque ningún jugador figura a tu cargo. Escribinos y la reactivamos.', 'info');
+                return;
+            }
+            $('textoEntrar').textContent = r.hijos
+                ? 'Hola ' + r.nombre + '. Tenés ' + r.hijos + (r.hijos === 1 ? ' jugador' : ' jugadores') + ' a tu cargo. Entrá y renovás en dos toques.'
+                : 'Hola ' + r.nombre + '. Entrá con tu contraseña y seguimos desde ahí.';
+            if (!r.tiene_password) {
+                $('textoEntrar').textContent += ' Todavía no tenés contraseña: pedí que te la enviemos.';
+            }
+            mostrar('pasoEmail', false);
+            mostrar('pasoEntrar', true);
+        } else {
+            // Familia nueva: formulario en blanco con un jugador para empezar.
+            estado.tutor = { email: email };
+            estado.jugadores = [nuevoJugador()];
+            $('t_nombre').focus();
+            mostrar('pasoEmail', false);
+            mostrar('pasoFormulario', true);
+            dibujarJugadores();
+        }
+    } catch (err) {
+        aviso(err.message);
+    } finally {
+        $('btnEmail').disabled = false;
+        cargando(false);
+    }
+});
+
+// ── Paso 2a: entrar ────────────────────────────────────────────────────────
+$('btnOtroEmail').addEventListener('click', function () {
+    aviso('');
+    mostrar('pasoEntrar', false);
+    mostrar('pasoEmail', true);
+    $('email').value = '';
+    $('email').focus();
+});
+
+$('btnRecordar').addEventListener('click', async function () {
+    aviso('');
+    cargando(true);
+    try {
+        var r = await api('inscripcion-recordar', { body: { email: estado.email } });
+        aviso(r.enviado
+            ? 'Te enviamos la contraseña a ' + estado.email + '. Mirá también en spam.'
+            : r.aviso, r.enviado ? 'ok' : 'error');
+    } catch (err) {
+        aviso(err.message);
+    } finally {
+        cargando(false);
+    }
+});
+
+$('formEntrar').addEventListener('submit', async function (e) {
+    e.preventDefault();
+    aviso('');
+    $('btnEntrar').disabled = true;
+    cargando(true);
+    try {
+        var r = await api('inscripcion-acceso', {
+            body: { email: estado.email, password: $('password').value }
+        });
+        estado.token = r.token;
+        estado.esRenovacion = true;
+        await cargarEstado();
+        mostrar('pasoEntrar', false);
+        mostrar('pasoFormulario', true);
+    } catch (err) {
+        aviso(err.message);
+    } finally {
+        $('btnEntrar').disabled = false;
+        cargando(false);
+    }
+});
+
+// ── Cargar lo que ya hay ───────────────────────────────────────────────────
+async function cargarEstado() {
+    var r = await api('inscripcion-estado', { method: 'GET' });
+    estado.temporada = r.temporada;
+    estado.descuentos = r.descuentos || [];
+    estado.tutor = r.tutor || { email: estado.email };
+
+    $('t_nombre').value = estado.tutor.nombre || '';
+    $('t_apellido').value = estado.tutor.apellido || '';
+    $('t_nacimiento').value = estado.tutor.fecha_nacimiento || '';
+    $('t_telefono').value = (estado.tutor.telefonos || [])[0] || '';
+    $('t_tipodoc').value = estado.tutor.tipo_documento || '';
+    $('t_numdoc').value = estado.tutor.numero_documento || '';
+    $('t_direccion').value = estado.tutor.direccion || '';
+    $('t_cp').value = estado.tutor.codigo_postal || '';
+    $('t_ciudad').value = estado.tutor.ciudad || '';
+
+    // Se precarga con lo del año pasado: tallas, tarifa y alergias. Renovar
+    // tiene que ser revisar y confirmar, no volver a escribir todo.
+    estado.jugadores = (r.jugadores || []).map(function (j) {
+        var previa = j.inscripcion_actual || j.inscripcion_anterior || {};
+        var dp = j.datos_personales || {};
+        return {
+            player_id: j.player_id,
+            existente: true,
+            yaEnviado: Boolean(j.inscripcion_actual),
+            foto_url: j.foto ? fotoUrl(j.foto) : null,
+            nombre: j.nombre || '',
+            apellido: j.apellido || '',
+            fecha_nacimiento: j.fecha_nacimiento || '',
+            genero: j.genero || '',
+            categoria: j.categoria || '',
+            tipo_documento: j.tipo_documento || '',
+            numero_documento: j.numero_documento || '',
+            telefono: j.telefono || '',
+            nacionalidad: dp.nacionalidad || '',
+            direccion: dp.direccion || '',
+            codigo_postal: dp.codigo_postal || '',
+            ciudad: dp.ciudad || '',
+            alergias: dp.alergias || '',
+            altura_cm: previa.altura_cm || '',
+            peso_kg: previa.peso_kg || '',
+            talla_camiseta: previa.talla_camiseta || '',
+            talla_pantalon: previa.talla_pantalon || '',
+            talla_chandal: previa.talla_chandal || '',
+            tarifa_variante: previa.tarifa_variante === 'con_hermano' ? 'con_hermano' : 'base',
+            acepta_uso_imagen: previa.acepta_uso_imagen === true,
+            parentesco: j.parentesco || 'tutor_legal',
+            observaciones: '',
+            foto: null,
+            opciones: j.opciones || []
+        };
+    });
+
+    if (!estado.jugadores.length) estado.jugadores = [nuevoJugador()];
+    dibujarJugadores();
+}
+
+function fotoUrl(path) {
+    if (!path) return null;
+    if (String(path).indexOf('http') === 0) return path;
+    return 'https://hvskwugpxtsumesedyvk.supabase.co/storage/v1/object/public/player-photos/' + path;
+}
+
+function nuevoJugador() {
+    return {
+        player_id: null, existente: false, yaEnviado: false, foto_url: null,
+        nombre: '', apellido: '', fecha_nacimiento: '', genero: '', categoria: '',
+        tipo_documento: '', numero_documento: '', telefono: '', nacionalidad: '',
+        direccion: '', codigo_postal: '', ciudad: '', alergias: '',
+        altura_cm: '', peso_kg: '', talla_camiseta: '', talla_pantalon: '', talla_chandal: '',
+        tarifa_variante: 'base', acepta_uso_imagen: false, parentesco: 'tutor_legal',
+        observaciones: '', foto: null, opciones: []
+    };
+}
+
+// ── Dibujar los jugadores ──────────────────────────────────────────────────
+function dibujarJugadores() {
+    var cont = $('listaJugadores');
+    cont.innerHTML = '';
+    estado.jugadores.forEach(function (j, i) { cont.appendChild(tarjetaJugador(j, i)); });
+    actualizarResumen();
+}
+
+function opcion(valor, texto, seleccionado) {
+    return '<option value="' + escapar(valor) + '"' + (seleccionado === valor ? ' selected' : '') + '>' + escapar(texto) + '</option>';
+}
+
+function tarjetaJugador(j, i) {
+    var el = document.createElement('section');
+    el.className = 'jugador';
+
+    var titulo = j.nombre ? escapar(j.nombre + ' ' + j.apellido) : 'Jugador ' + (i + 1);
+    var sub = j.existente
+        ? escapar(j.categoria || '') + (j.yaEnviado ? ' · ya renovado' : ' · ya está en el club')
+        : 'Jugador nuevo';
+
+    var tallas = TALLAS.map(function (t) { return { v: t, t: t }; });
+
+    el.innerHTML =
+        '<header>' +
+            '<img class="avatar" alt="" src="' + (j.foto_url || 'data:image/svg+xml;utf8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="52" height="52"><rect width="52" height="52" fill="%23F3F4F6"/><text x="26" y="34" font-size="22" text-anchor="middle">👤</text></svg>')) + '">' +
+            '<div class="nom"><strong>' + titulo + '</strong><span>' + sub + '</span></div>' +
+            (estado.jugadores.length > 1 && !j.existente
+                ? '<button type="button" class="quitar" data-quitar="' + i + '" aria-label="Quitar"><i class="fa-solid fa-xmark"></i></button>'
+                : '') +
+        '</header>' +
+
+        (j.yaEnviado
+            ? '<div class="aviso aviso-ok">Ya nos llegó su inscripción de esta temporada. Si querés cambiar algo, volvé a enviarla y pisamos la anterior.</div>'
+            : '') +
+
+        '<div class="fila">' +
+            campo(i, 'nombre', 'Nombre', 'text', j.nombre) +
+            campo(i, 'apellido', 'Apellidos', 'text', j.apellido) +
+        '</div>' +
+        '<div class="fila">' +
+            campo(i, 'fecha_nacimiento', 'Fecha de nacimiento', 'date', j.fecha_nacimiento) +
+            '<div class="campo"><label>Sexo</label><select data-campo="genero" data-i="' + i + '">' +
+                opcion('', 'Elegí…', j.genero) + opcion('Masculino', 'Masculino', j.genero) + opcion('Femenino', 'Femenino', j.genero) +
+            '</select></div>' +
+        '</div>' +
+        '<div class="fila">' +
+            '<div class="campo"><label>Documento</label><select data-campo="tipo_documento" data-i="' + i + '">' +
+                opcion('', 'Sin especificar', j.tipo_documento) + opcion('DNI', 'DNI', j.tipo_documento) +
+                opcion('NIE', 'NIE', j.tipo_documento) + opcion('PASAPORTE', 'Pasaporte', j.tipo_documento) +
+                opcion('TARJETA_SANITARIA', 'Tarjeta sanitaria', j.tipo_documento) + opcion('OTRO', 'Otro', j.tipo_documento) +
+            '</select></div>' +
+            campo(i, 'numero_documento', 'Número', 'text', j.numero_documento) +
+        '</div>' +
+        '<div class="fila">' +
+            campo(i, 'altura_cm', 'Altura (cm)', 'number', j.altura_cm) +
+            campo(i, 'peso_kg', 'Peso (kg)', 'number', j.peso_kg) +
+        '</div>' +
+        '<div class="fila">' +
+            selectCampo(i, 'talla_camiseta', 'Talla camiseta', tallas, j.talla_camiseta) +
+            selectCampo(i, 'talla_pantalon', 'Talla pantalón', tallas, j.talla_pantalon) +
+        '</div>' +
+        '<div class="fila">' +
+            selectCampo(i, 'talla_chandal', 'Talla chándal', tallas, j.talla_chandal) +
+            '<div class="campo"><label>Parentesco contigo</label><select data-campo="parentesco" data-i="' + i + '">' +
+                opcion('madre', 'Soy su madre', j.parentesco) + opcion('padre', 'Soy su padre', j.parentesco) +
+                opcion('tutor_legal', 'Soy su tutor/a legal', j.parentesco) + opcion('abuelo', 'Soy su abuelo/a', j.parentesco) +
+                opcion('otro', 'Otro', j.parentesco) +
+            '</select></div>' +
+        '</div>' +
+        '<div class="campo"><label>Alergias o algo que debamos saber <span class="opt">(opcional)</span></label>' +
+            '<textarea data-campo="alergias" data-i="' + i + '" placeholder="Alergias, medicación, lesiones previas…">' + escapar(j.alergias) + '</textarea></div>' +
+
+        '<div class="campo"><label>Foto del jugador ' + (j.foto_url ? '<span class="opt">(ya tiene una, podés cambiarla)</span>' : '') + '</label>' +
+            '<div class="foto-btn">' +
+                '<button type="button" class="btn btn-secundario" data-foto="' + i + '" style="width:auto;padding:0 18px;min-height:44px;">' +
+                    '<i class="fa-solid fa-camera"></i> ' + (j.foto ? 'Cambiar' : 'Elegir foto') + '</button>' +
+                '<span style="color:var(--gris);font-size:.82rem;" id="fotoNombre' + i + '">' + (j.foto ? 'Foto lista' : 'JPG o PNG') + '</span>' +
+                '<input type="file" accept="image/*" data-archivo="' + i + '">' +
+            '</div></div>' +
+
+        '<label style="margin-top:6px;">Cuota</label>' +
+        '<div class="tarifa">' + tarifas(i, j) + '</div>' +
+
+        '<div class="check" style="margin-top:14px;">' +
+            '<input type="checkbox" data-campo="acepta_uso_imagen" data-i="' + i + '"' + (j.acepta_uso_imagen ? ' checked' : '') + '>' +
+            '<span>Autorizo que el club publique fotos y vídeos donde aparezca en sus redes y en la web. <strong>Es opcional</strong> y podés cambiarlo cuando quieras.</span>' +
+        '</div>';
+
+    return el;
+}
+
+function campo(i, nombre, etiqueta, tipo, valor) {
+    return '<div class="campo"><label>' + escapar(etiqueta) + '</label>' +
+        '<input type="' + tipo + '" data-campo="' + nombre + '" data-i="' + i + '" value="' + escapar(valor) + '"' +
+        (tipo === 'number' ? ' inputmode="numeric"' : '') + '></div>';
+}
+
+function selectCampo(i, nombre, etiqueta, opciones, valor) {
+    var html = '<div class="campo"><label>' + escapar(etiqueta) + '</label><select data-campo="' + nombre + '" data-i="' + i + '">' + opcion('', 'Elegí…', valor);
+    opciones.forEach(function (o) { html += opcion(o.v, o.t, valor); });
+    return html + '</select></div>';
+}
+
+/**
+ * Las opciones de cuota. Para un jugador que ya está, vienen del servidor con
+ * el importe de su tramo. Para uno nuevo todavía no sabemos la categoría —
+ * depende de la fecha de nacimiento, y la calcula la base al enviar — así que
+ * se muestran sin importe y el resumen lo dice.
+ */
+function tarifas(i, j) {
+    var opciones = j.opciones && j.opciones.length ? j.opciones : null;
+    var def = [
+        { variante: 'base', nom: 'Normal', det: 'Un solo jugador de la familia' },
+        { variante: 'con_hermano', nom: 'Con hermano', det: 'Dos o más hermanos en el club' }
+    ];
+    return def.map(function (d) {
+        var o = opciones ? opciones.filter(function (x) { return x.variante === d.variante; })[0] : null;
+        if (opciones && !o) return '';
+        var det = o ? euros(o.mensualidad) + '/mes · ' + d.det : d.det;
+        return '<label><input type="radio" name="tarifa' + i + '" value="' + d.variante + '" data-tarifa="' + i + '"' +
+            (j.tarifa_variante === d.variante ? ' checked' : '') + '>' +
+            '<span><span class="t-nom">' + d.nom + '</span><span class="t-det">' + escapar(det) + '</span></span></label>';
+    }).join('');
+}
+
+// ── Eventos delegados: las tarjetas se redibujan, los listeners no ─────────
+$('listaJugadores').addEventListener('input', function (e) {
+    var el = e.target;
+    var i = el.getAttribute('data-i');
+    if (i === null) return;
+    var campo = el.getAttribute('data-campo');
+    if (!campo) return;
+    estado.jugadores[Number(i)][campo] = el.type === 'checkbox' ? el.checked : el.value;
+});
+
+$('listaJugadores').addEventListener('change', function (e) {
+    var el = e.target;
+    if (el.hasAttribute('data-tarifa')) {
+        estado.jugadores[Number(el.getAttribute('data-tarifa'))].tarifa_variante = el.value;
+        actualizarResumen();
+        return;
+    }
+    var i = el.getAttribute('data-i');
+    if (i !== null && el.getAttribute('data-campo')) {
+        estado.jugadores[Number(i)][el.getAttribute('data-campo')] = el.type === 'checkbox' ? el.checked : el.value;
+    }
+    if (el.hasAttribute('data-archivo')) elegirFoto(el, Number(el.getAttribute('data-archivo')));
+});
+
+$('listaJugadores').addEventListener('click', function (e) {
+    var quitar = e.target.closest('[data-quitar]');
+    if (quitar) {
+        estado.jugadores.splice(Number(quitar.getAttribute('data-quitar')), 1);
+        dibujarJugadores();
+        return;
+    }
+    var foto = e.target.closest('[data-foto]');
+    if (foto) {
+        var i = foto.getAttribute('data-foto');
+        var input = document.querySelector('[data-archivo="' + i + '"]');
+        if (input) input.click();
+    }
+});
+
+$('btnAgregar').addEventListener('click', function () {
+    estado.jugadores.push(nuevoJugador());
+    dibujarJugadores();
+    window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+});
+
+/**
+ * Reduce la foto antes de mandarla.
+ *
+ * Una foto de móvil pesa entre 3 y 8 MB, y Vercel corta el cuerpo de la petición
+ * en 4,5. Sin esto, cualquiera con un teléfono moderno recibe un error que no
+ * explica nada. A 800 px de lado y JPEG al 85 % queda en unos 100 KB, de sobra
+ * para un carnet.
+ */
+function elegirFoto(input, i) {
+    var file = input.files && input.files[0];
+    if (!file) return;
+    var lector = new FileReader();
+    lector.onload = function () {
+        var img = new Image();
+        img.onload = function () {
+            var max = 800;
+            var escala = Math.min(1, max / Math.max(img.width, img.height));
+            var w = Math.round(img.width * escala);
+            var h = Math.round(img.height * escala);
+            var canvas = document.createElement('canvas');
+            canvas.width = w; canvas.height = h;
+            canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+            estado.jugadores[i].foto = canvas.toDataURL('image/jpeg', 0.85);
+            estado.jugadores[i].foto_url = estado.jugadores[i].foto;
+            var etiqueta = $('fotoNombre' + i);
+            if (etiqueta) etiqueta.textContent = 'Foto lista';
+            var avatar = input.closest('.jugador').querySelector('.avatar');
+            if (avatar) avatar.src = estado.jugadores[i].foto;
+        };
+        img.onerror = function () { aviso('No pudimos leer esa imagen. Probá con otra.'); };
+        img.src = lector.result;
+    };
+    lector.readAsDataURL(file);
+}
+
+// ── Resumen ────────────────────────────────────────────────────────────────
+function actualizarResumen() {
+    var lineas = [];
+    var total = 0;
+    var faltanPrecios = false;
+
+    estado.jugadores.forEach(function (j) {
+        var o = (j.opciones || []).filter(function (x) { return x.variante === j.tarifa_variante; })[0];
+        var nombre = j.nombre ? j.nombre + ' ' + j.apellido : 'Jugador sin nombre';
+        if (o) {
+            total += o.mensualidad;
+            lineas.push('<div class="linea"><span>' + escapar(nombre) + '</span><span>' + euros(o.mensualidad) + '/mes</span></div>');
+        } else {
+            faltanPrecios = true;
+            lineas.push('<div class="linea"><span>' + escapar(nombre) + '</span><span style="color:#AAB4C2">según categoría</span></div>');
+        }
+    });
+
+    mostrar('resumen', estado.jugadores.length > 0);
+    $('resumenLineas').innerHTML = lineas.join('');
+    $('resumenTotal').textContent = faltanPrecios && total === 0 ? 'Te lo confirmamos' : euros(total) + (faltanPrecios ? ' + los nuevos' : '');
+}
+
+// ── Enviar ─────────────────────────────────────────────────────────────────
+$('btnEnviar').addEventListener('click', async function () {
+    aviso('');
+    if (!$('acepta_reglamento').checked) {
+        aviso('Hay que aceptar el reglamento para poder inscribirse.');
+        return;
+    }
+
+    var cuerpo = {
+        acepta_reglamento: true,
+        tutor: {
+            nombre: $('t_nombre').value,
+            apellido: $('t_apellido').value,
+            email: estado.email,
+            fecha_nacimiento: $('t_nacimiento').value || null,
+            tipo_documento: $('t_tipodoc').value || null,
+            numero_documento: $('t_numdoc').value || null,
+            telefonos: [$('t_telefono').value],
+            direccion: $('t_direccion').value,
+            codigo_postal: $('t_cp').value,
+            ciudad: $('t_ciudad').value,
+            provincia: 'Balears, Illes',
+            pais: 'España'
+        },
+        jugadores: estado.jugadores.map(function (j) {
+            return {
+                player_id: j.player_id,
+                nombre: j.nombre, apellido: j.apellido,
+                fecha_nacimiento: j.fecha_nacimiento, genero: j.genero,
+                tipo_documento: j.tipo_documento || null, numero_documento: j.numero_documento || null,
+                telefono: j.telefono || null, nacionalidad: j.nacionalidad || null,
+                direccion: j.direccion || null, codigo_postal: j.codigo_postal || null,
+                ciudad: j.ciudad || null, alergias: j.alergias || null,
+                altura_cm: j.altura_cm || null, peso_kg: j.peso_kg || null,
+                talla_camiseta: j.talla_camiseta || null,
+                talla_pantalon: j.talla_pantalon || null,
+                talla_chandal: j.talla_chandal || null,
+                tarifa_variante: j.tarifa_variante,
+                parentesco: j.parentesco,
+                acepta_uso_imagen: j.acepta_uso_imagen === true,
+                observaciones: j.observaciones || null,
+                foto: j.foto
+            };
+        })
+    };
+
+    $('btnEnviar').disabled = true;
+    cargando(true);
+    try {
+        var r = await api('inscripcion-enviar', { body: cuerpo });
+        mostrar('pasoFormulario', false);
+        mostrar('pasoListo', true);
+
+        var html = '<p class="sub">Recibimos la inscripción de ' +
+            r.jugadores.map(function (x) { return '<strong>' + escapar(x.nombre) + '</strong> (' + escapar(x.categoria) + ')'; }).join(', ') +
+            ' para la temporada ' + escapar(r.temporada) + '. La revisamos y te avisamos.</p>';
+
+        html += '<div class="resumen" style="margin-top:8px;">' +
+            r.jugadores.map(function (x) {
+                return '<div class="linea"><span>' + escapar(x.nombre) + '</span><span>' + euros(x.mensualidad) + '/mes</span></div>';
+            }).join('') +
+            '<div class="total"><span>Total al mes</span><strong>' + euros(r.total_mensual) + '</strong></div></div>';
+
+        if (r.cuenta_creada) {
+            html += '<div class="aviso aviso-' + (r.aviso ? 'error' : 'ok') + '">' +
+                escapar(r.aviso || 'Te enviamos tu contraseña a ' + estado.email + '. Guardala: con eso entrás a ver y renovar sin volver a cargar todo.') +
+                '</div>';
+        }
+        $('textoListo').innerHTML = html;
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    } catch (err) {
+        aviso(err.message);
+    } finally {
+        $('btnEnviar').disabled = false;
+        cargando(false);
+    }
+});
+
+// El menú de hamburguesa del resto del sitio.
+var toggle = $('nav-toggle');
+if (toggle) toggle.addEventListener('click', function () { $('nav-menu').classList.toggle('active'); });
+
+})();
+</script>
+</body>
+</html>
