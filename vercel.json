@@ -9,7 +9,7 @@
     "api/sync-stripe-payments.js": {
       "maxDuration": 30
     },
-    "api/inscripcion-enviar.js": {
+    "api/inscripcion.js": {
       "maxDuration": 60
     }
   },
