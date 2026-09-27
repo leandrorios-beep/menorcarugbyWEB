@@ -290,6 +290,17 @@ async function main() {
     comprobar('el correo NO se puede cambiar por el cuerpo', Boolean(tutorFinal), tutorFinal);
     comprobar('sí actualiza el resto de los datos', tutorFinal && tutorFinal.ciudad === 'Ciutadella', tutorFinal);
 
+    console.log('\n8b. El pago, sin pasarela configurada');
+    // Sin STRIPE_SECRET_KEY el pago tiene que devolver un 503 con un mensaje
+    // en castellano, NO tumbar la funcion entera. Antes el require de stripe
+    // estaba en la cabecera del modulo y reventaba al cargar el repartidor:
+    // sin clave no se podia ni escribir el correo.
+    r = await llamar('pagar', { token, body: {} });
+    comprobar('sin clave de Stripe -> 503, no 500', r.status === 503, r.body);
+    comprobar('lo explica en castellano', r.body && /activado|escribinos/i.test(r.body.error || ''), r.body);
+    r = await llamar('pagar', { body: {} });
+    comprobar('pagar sin token -> 401', r.status === 401, r.body);
+
     console.log('\n9. Los invariantes de la base siguen en pie');
     const { data: tutorRow } = await db.from('tutores').select('tutor_id, activo').eq('email', EMAIL).single();
     comprobar('el tutor quedó activo', tutorRow.activo === true, tutorRow);

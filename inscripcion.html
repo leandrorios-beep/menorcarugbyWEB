@@ -268,6 +268,17 @@ input:focus, select:focus, textarea:focus {
         </section>
     </div>
 
+    <!-- ── Pagar: solo cuando el club ya aprobo la inscripcion ───────── -->
+    <section class="insc-card oculto" id="pasoPagar">
+        <h2><i class="fa-regular fa-credit-card"></i> Domiciliar la cuota</h2>
+        <p class="sub" id="textoPagar"></p>
+        <div class="resumen" id="resumenPago"></div>
+        <button type="button" class="btn btn-primario" id="btnPagar">Ir a pagar</button>
+        <p style="color:var(--gris);font-size:.78rem;text-align:center;margin:12px 0 0;line-height:1.5;">
+            El pago se hace en Stripe, no acá: el club nunca ve tu tarjeta.
+        </p>
+    </section>
+
     <!-- ── Paso 4: listo ─────────────────────────────────────────────── -->
     <section class="insc-card oculto" id="pasoListo">
         <h2><i class="fa-solid fa-circle-check" style="color:var(--verde)"></i> Inscripción enviada</h2>
@@ -344,6 +355,20 @@ async function api(accion, opciones) {
     if (!r.ok) throw new Error(datos.error || 'Algo falló. Probá de nuevo en un momento.');
     return datos;
 }
+
+// ── Vuelta desde Stripe ────────────────────────────────────────────────────
+// Stripe manda de vuelta a /inscripcion?pago=ok o ?pago=cancelado. El "ok" NO
+// significa que el cobro este confirmado —eso lo dice el webhook— asi que el
+// texto no promete mas de lo que se sabe en ese momento.
+(function () {
+    var pago = new URLSearchParams(window.location.search).get('pago');
+    if (pago === 'ok') {
+        aviso('Listo, el pago se envio. En cuanto el banco lo confirme te llega el recibo por correo.', 'ok');
+    } else if (pago === 'cancelado') {
+        aviso('No se completo el pago. Podes volver a intentarlo cuando quieras.', 'info');
+    }
+    if (pago) history.replaceState({}, '', window.location.pathname);
+})();
 
 // ── Temporada, sólo para el título ─────────────────────────────────────────
 (function () {
@@ -497,6 +522,46 @@ async function cargarEstado() {
 
     if (!estado.jugadores.length) estado.jugadores = [nuevoJugador()];
     dibujarJugadores();
+    prepararPago(r.jugadores || []);
+}
+
+/**
+ * La cuota solo se puede domiciliar cuando el club YA aprobo la inscripcion.
+ * Mientras esta "enviada" no se ensena el boton: cobrar antes de revisar seria
+ * cobrar una tarifa que todavia nadie miro.
+ */
+function prepararPago(jugadores) {
+    var aprobados = jugadores.filter(function (j) {
+        var i = j.inscripcion_actual;
+        return i && i.estado === 'aprobada' && i.estado_cobro !== 'al_dia';
+    });
+    var alDia = jugadores.filter(function (j) {
+        return j.inscripcion_actual && j.inscripcion_actual.estado_cobro === 'al_dia';
+    });
+
+    if (alDia.length && !aprobados.length) {
+        mostrar('pasoPagar', true);
+        $('textoPagar').textContent = 'Ya tenes la cuota domiciliada. Si necesitas cambiar la tarjeta, escribinos.';
+        $('resumenPago').classList.add('oculto');
+        $('btnPagar').classList.add('oculto');
+        return;
+    }
+    if (!aprobados.length) { mostrar('pasoPagar', false); return; }
+
+    mostrar('pasoPagar', true);
+    $('resumenPago').classList.remove('oculto');
+    $('btnPagar').classList.remove('oculto');
+    $('textoPagar').textContent = 'La inscripcion esta aprobada. Se cobran 10 mensualidades, y la ficha anual va en el primer recibo.';
+
+    var total = 0, filas = '';
+    aprobados.forEach(function (j) {
+        var o = (j.opciones || []).filter(function (x) { return x.variante === j.inscripcion_actual.tarifa_variante; })[0];
+        var importe = o ? (j.inscripcion_actual.tarifa_descuentos && j.inscripcion_actual.tarifa_descuentos.length ? o.con_delegado : o.mensualidad) : null;
+        if (importe) total += importe;
+        filas += '<div class="linea"><span>' + escapar(j.nombre + ' ' + j.apellido) + '</span><span>' + euros(importe) + '/mes</span></div>';
+    });
+    $('resumenPago').innerHTML = filas +
+        '<div class="total"><span>Al mes, 10 meses</span><strong>' + euros(total) + '</strong></div>';
 }
 
 function fotoUrl(path) {
@@ -820,6 +885,22 @@ $('btnEnviar').addEventListener('click', async function () {
         aviso(err.message);
     } finally {
         $('btnEnviar').disabled = false;
+        cargando(false);
+    }
+});
+
+$('btnPagar').addEventListener('click', async function () {
+    aviso('');
+    $('btnPagar').disabled = true;
+    cargando(true);
+    try {
+        var r = await api('pagar', { body: {} });
+        // Se sale de la pagina: el pago lo cobra Stripe, no nosotros.
+        window.location.href = r.url;
+    } catch (err) {
+        aviso(err.message);
+        $('btnPagar').disabled = false;
+    } finally {
         cargando(false);
     }
 });

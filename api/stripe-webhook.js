@@ -35,6 +35,28 @@ module.exports = async function handler(req, res) {
         process.env.SUPABASE_SERVICE_ROLE_KEY
     );
 
+    // ============================================================
+    // 0) Cuotas de jugadores
+    //
+    // Va PRIMERO y sale si lo maneja. Los socios se identifican por el correo
+    // del cliente de Stripe; las cuotas, por la metadata de la suscripcion. Si
+    // se dejara caer un pago de cuota por el camino de socios, se le marcaria
+    // "pagado" a la ficha de socio de cualquiera que tenga ese mismo correo.
+    //
+    // Si algo falla se devuelve 500 A PROPOSITO: Stripe reintenta, y el
+    // reintento es seguro porque todo lo que escribe va contra linea_clave.
+    // Tragarse el error con un 200 perderia el cobro para siempre.
+    // ============================================================
+    try {
+        const cobros = require('./_lib/cobros-inscripcion');
+        if (await cobros.manejar(event, stripe, supabase)) {
+            return res.status(200).json({ received: true, tipo: 'cuota' });
+        }
+    } catch (e) {
+        console.error('Webhook de cuotas:', e && e.message);
+        return res.status(500).json({ error: 'Error procesando la cuota' });
+    }
+
     // --- Helper: get customer email from Stripe customer ID ---
     async function getCustomerEmail(customerId) {
         if (!customerId) return null;
