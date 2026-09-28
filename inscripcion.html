@@ -311,6 +311,13 @@ input:focus, select:focus, textarea:focus {
         <p class="sub" id="textoPagar"></p>
         <div class="resumen" id="resumenPago"></div>
         <button type="button" class="btn btn-primario" id="btnPagar" data-i18n="inscripcion.ir_a_pagar">Ir a pagar</button>
+        <!--
+            La zona de pagos de Stripe. Sólo tiene sentido para quien ya dejó
+            una tarjeta, así que se enseña desde el JavaScript.
+        -->
+        <button type="button" class="btn btn-secundario oculto" id="btnPortal" style="margin-top:10px;">
+            <i class="fa-regular fa-file-lines"></i> Mis recibos y mi tarjeta
+        </button>
         <p style="color:var(--gris);font-size:.78rem;text-align:center;margin:12px 0 0;line-height:1.5;">
             El pago se hace en Stripe, no acá: el club nunca ve tu tarjeta.
         </p>
@@ -645,6 +652,7 @@ function prepararPago(jugadores) {
         $('btnPagar').classList.remove('oculto');
         $('btnPagar').textContent = 'Cambiar mi tarjeta';
         $('btnPagar').removeAttribute('data-i18n');
+        mostrar('btnPortal', true);
         return;
     }
 
@@ -658,6 +666,7 @@ function prepararPago(jugadores) {
         $('btnPagar').classList.remove('oculto');
         $('btnPagar').textContent = 'Cambiar mi tarjeta';
         $('btnPagar').removeAttribute('data-i18n');
+        mostrar('btnPortal', true);
         return;
     }
 
@@ -1212,6 +1221,21 @@ $('btnEnviar').addEventListener('click', async function () {
         aviso(err.message);
     } finally {
         $('btnEnviar').disabled = false;
+        cargando(false);
+    }
+});
+
+$('btnPortal').addEventListener('click', async function () {
+    aviso('');
+    $('btnPortal').disabled = true;
+    cargando(true);
+    try {
+        var r = await api('portal', { body: {} });
+        window.location.href = r.url;
+    } catch (err) {
+        aviso(err.message);
+        $('btnPortal').disabled = false;
+    } finally {
         cargando(false);
     }
 });
