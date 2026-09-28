@@ -343,7 +343,6 @@ var estado = {
     descuentos: []
 };
 
-var TALLAS = ['4','6','8','10','12','14','16','XS','S','M','L','XL','2XL','3XL'];
 
 var $ = function (id) { return document.getElementById(id); };
 
@@ -534,7 +533,8 @@ async function cargarEstado() {
     $('t_cp').value = estado.tutor.codigo_postal || '';
     $('t_ciudad').value = estado.tutor.ciudad || '';
 
-    // Se precarga con lo del año pasado: tallas, tarifa y alergias. Renovar
+    // Se precarga con lo del año pasado: tallas, tarifa y alergias. Las
+    // tallas ya no se preguntan, pero se arrastran para no pisarlas. Renovar
     // tiene que ser revisar y confirmar, no volver a escribir todo.
     estado.jugadores = (r.jugadores || []).map(function (j) {
         var previa = j.inscripcion_actual || j.inscripcion_anterior || {};
@@ -697,7 +697,6 @@ function tarjetaJugador(j, i) {
         ? escapar(j.categoria || '') + (j.yaEnviado ? ' · ya renovado' : ' · ya está en el club')
         : 'Jugador nuevo';
 
-    var tallas = TALLAS.map(function (t) { return { v: t, t: t }; });
 
     el.innerHTML =
         '<header>' +
@@ -720,11 +719,10 @@ function tarjetaJugador(j, i) {
             ? '<div class="aviso aviso-ok">Ya nos llegó su inscripción de esta temporada. Si querés cambiar algo, volvé a enviarla y pisamos la anterior.</div>'
             : '')) +
 
-        // Un chico de diez años crece dos tallas en una temporada. Si lo del año
-        // pasado aparece como si fuera de hoy, la familia confirma sin mirar y
-        // el club pide la equipación con las tallas viejas.
+        // Un chico de diez años cambia mucho en una temporada. Si lo del año
+        // pasado aparece como si fuera de hoy, la familia confirma sin mirar.
         (j.heredado && !j.no_renueva
-            ? '<div class="aviso aviso-info">Lo de abajo es lo que nos diste la temporada pasada. Mirá sobre todo las <strong>tallas</strong> y la <strong>altura</strong>.</div>'
+            ? '<div class="aviso aviso-info">Lo de abajo es lo que nos diste la temporada pasada. Mirá sobre todo la <strong>altura</strong> y el <strong>peso</strong>.</div>'
             : '') +
 
         // "Soy yo, el jugador": en este club hay 32 adultos que juegan y se
@@ -762,11 +760,6 @@ function tarjetaJugador(j, i) {
             campo(i, 'peso_kg', 'Peso (kg)', 'number', j.peso_kg) +
         '</div>' +
         '<div class="fila">' +
-            selectCampo(i, 'talla_camiseta', 'Talla camiseta', tallas, j.talla_camiseta) +
-            selectCampo(i, 'talla_pantalon', 'Talla pantalón', tallas, j.talla_pantalon) +
-        '</div>' +
-        '<div class="fila">' +
-            selectCampo(i, 'talla_chandal', 'Talla chándal', tallas, j.talla_chandal) +
             '<div class="campo"><label>Parentesco contigo</label><select data-campo="parentesco" data-i="' + i + '">' +
                 opcion('madre', 'Soy su madre', j.parentesco) + opcion('padre', 'Soy su padre', j.parentesco) +
                 opcion('tutor_legal', 'Soy su tutor/a legal', j.parentesco) + opcion('abuelo', 'Soy su abuelo/a', j.parentesco) +
@@ -806,12 +799,6 @@ function campo(i, nombre, etiqueta, tipo, valor) {
     return '<div class="campo"><label>' + escapar(etiqueta) + '</label>' +
         '<input type="' + tipo + '" data-campo="' + nombre + '" data-i="' + i + '" value="' + escapar(valor) + '"' +
         (tipo === 'number' ? ' inputmode="numeric"' : '') + '></div>';
-}
-
-function selectCampo(i, nombre, etiqueta, opciones, valor) {
-    var html = '<div class="campo"><label>' + escapar(etiqueta) + '</label><select data-campo="' + nombre + '" data-i="' + i + '">' + opcion('', 'Elegí…', valor);
-    opciones.forEach(function (o) { html += opcion(o.v, o.t, valor); });
-    return html + '</select></div>';
 }
 
 /**
