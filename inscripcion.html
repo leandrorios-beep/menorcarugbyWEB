@@ -707,6 +707,19 @@ function tarjetaJugador(j, i) {
                 : '') +
         '</header>' +
 
+        // La salida, ARRIBA y visible. Estaba al final de la ficha, en gris y
+        // en letra chica: el que venía justamente a dar de baja a un hijo
+        // rellenaba primero todo el formulario y recién después la encontraba.
+        // Equivocarse no cuesta nada —se deshace con un botón— y no encontrarla
+        // sí, así que se ve.
+        (j.existente && !j.no_renueva
+            ? '<button type="button" class="btn-texto" data-norenueva="' + i + '" ' +
+                'style="display:block;width:100%;text-align:left;margin:0 0 14px;padding:10px 12px;' +
+                'border:1px solid rgba(255,255,255,.18);border-radius:8px;color:var(--gris);">' +
+                '<i class="fa-solid fa-circle-minus"></i> Este año <strong>no</strong> va a jugar' +
+              '</button>'
+            : '') +
+
         (j.no_renueva
             ? '<div class="aviso aviso-info"><strong>Este año no juega.</strong> Lo damos de baja de la temporada. ' +
                 'Su ficha y su historial se conservan: si el año que viene vuelve, no hay que cargar nada de cero.</div>' +
@@ -721,8 +734,12 @@ function tarjetaJugador(j, i) {
 
         // Un chico de diez años cambia mucho en una temporada. Si lo del año
         // pasado aparece como si fuera de hoy, la familia confirma sin mirar.
+        //
+        // No se nombra ningún campo en concreto: decir "mirá la altura y el
+        // peso" hace que se mire eso y nada más, y lo que cambia de un año a
+        // otro es un teléfono, una dirección o una alergia igual de a menudo.
         (j.heredado && !j.no_renueva
-            ? '<div class="aviso aviso-info">Lo de abajo es lo que nos diste la temporada pasada. Mirá sobre todo la <strong>altura</strong> y el <strong>peso</strong>.</div>'
+            ? '<div class="aviso aviso-info">Es el momento de actualizar lo que haya cambiado: <strong>verificá bien todos los datos</strong>.</div>'
             : '') +
 
         // "Soy yo, el jugador": en este club hay 32 adultos que juegan y se
@@ -760,7 +777,13 @@ function tarjetaJugador(j, i) {
             campo(i, 'peso_kg', 'Peso (kg)', 'number', j.peso_kg) +
         '</div>' +
         '<div class="fila">' +
+            // "Soy yo mismo" TIENE que estar en la lista. La marca del check de
+            // arriba pone parentesco = 'el_mismo', pero si la opción no existe
+            // el desplegable no puede mostrarla: el adulto que se inscribe a sí
+            // mismo veía "Soy su madre" en su propia ficha, y bastaba con que
+            // tocara el desplegable para pisar el dato con algo falso.
             '<div class="campo"><label>Parentesco contigo</label><select data-campo="parentesco" data-i="' + i + '">' +
+                opcion('el_mismo', 'Soy yo mismo, el jugador', j.parentesco) +
                 opcion('madre', 'Soy su madre', j.parentesco) + opcion('padre', 'Soy su padre', j.parentesco) +
                 opcion('tutor_legal', 'Soy su tutor/a legal', j.parentesco) + opcion('abuelo', 'Soy su abuelo/a', j.parentesco) +
                 opcion('otro', 'Otro', j.parentesco) +
@@ -791,11 +814,7 @@ function tarjetaJugador(j, i) {
             (j.uso_imagen_anterior ? ' <em>La temporada pasada lo autorizaste.</em>' : '') + '</span>' +
         '</div>') +
 
-        // La salida, abajo y discreta: es una decisión, no un botón que se
-        // aprieta sin querer. Sólo para los que ya están en el club.
-        (j.existente && !j.no_renueva
-            ? '<button type="button" class="btn-texto" data-norenueva="' + i + '" style="color:var(--gris);">Este año no juega</button>'
-            : '');
+        '';
 
     return el;
 }
