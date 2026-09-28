@@ -154,6 +154,41 @@ input:focus, select:focus, textarea:focus {
    Estaban en navy sobre texto gris oscuro: a tamaño de móvil eran
    indistinguibles del resto de la frase, así que nadie encontraba el
    reglamento que se le estaba pidiendo aceptar. */
+/* Las tarjetas eran blancas sobre fondo blanco: lo unico que las separaba era
+   un borde de 1px, y en un movil al sol eso no existe. Una familia con tres
+   hijos bajaba cuatro pantallas sin una sola senal de haber cambiado de ficha,
+   y es donde mas facil es cruzar los datos de un hermano con los del otro. */
+body { background: #F1F4F8; }
+.insc-card, .jugador { box-shadow: 0 1px 2px rgba(24,43,73,.06), 0 6px 16px -6px rgba(24,43,73,.10); }
+/* Los dos unicos textos que quedan sobre el fondo gris y no sobre blanco. */
+.insc-hero p, .pie { color: #5A6472; }
+
+/* El nombre del hijo encabeza el bloque mas grande de la pagina y era el
+   titulo mas chico de todos: mas chico que el h2 de "Tus datos". */
+#listaJugadores { counter-reset: jug; }
+.jugador { counter-increment: jug; }
+.jugador > header .nom strong { font-size: 1.2rem; line-height: 1.2; }
+/* Numerar solo cuando hay varias fichas que contar: con un hijo unico,
+   "JUGADOR 1" encima de su nombre no es un ancla, es ruido. */
+#listaJugadores:has(.jugador + .jugador) .jugador > header .nom::before {
+    content: "JUGADOR " counter(jug);
+    display: block; color: var(--gris);
+    font-size: .68rem; font-weight: 700; letter-spacing: .08em; margin-bottom: 2px;
+}
+
+/* Los dos importes gritaban igual: mismo amarillo, mismo tamano. Quien se
+   quedaba con el grande creia que le sacaban la temporada entera de la
+   tarjeta. Manda el que se debita cada mes; el otro es contexto. */
+.resumen .total.secundaria { border-top: 1px solid rgba(255,255,255,.2); margin-top: 8px; padding-top: 8px; }
+.resumen .total.secundaria > span { color: #AAB4C2; }
+.resumen .total.secundaria strong { color: #fff; font-size: 1.05rem; }
+.resumen .total .nota { display: block; color: #AAB4C2; font-size: .72rem; font-weight: 400; margin-top: 2px; }
+
+/* El texto de una casilla tiene que ser parte de la casilla. En el movil
+   todo el mundo toca la frase, no el cuadrito de 22px: tocaban, no pasaba
+   nada, y concluian que la pagina estaba rota. */
+.check label, .check > span { cursor: pointer; }
+
 .check a { color: var(--navy); font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
 .check a:hover { opacity: .75; }
 
@@ -280,9 +315,16 @@ input:focus, select:focus, textarea:focus {
 
         <div class="resumen oculto" id="resumen">
             <div id="resumenLineas"></div>
-            <div class="total"><span data-i18n="inscripcion.total_mes">Total al mes</span><strong id="resumenTotal">—</strong></div>
-            <div class="total" style="border-top:1px solid rgba(255,255,255,.2);margin-top:8px;padding-top:8px;">
-                <span data-i18n="inscripcion.total_temporada">Toda la temporada</span><strong id="resumenAnual">—</strong>
+            <!-- La nota va FUERA del span traducido: el sistema de idiomas
+                 reemplaza el contenido del elemento marcado y se la llevaria
+                 por delante al cambiar de idioma. -->
+            <div class="total">
+                <span><span data-i18n="inscripcion.total_mes">Total al mes</span><span class="nota">es lo que se debita cada mes</span></span>
+                <strong id="resumenTotal">—</strong>
+            </div>
+            <div class="total secundaria">
+                <span><span data-i18n="inscripcion.total_temporada">Toda la temporada</span><span class="nota">las nueve cuotas más la ficha federativa</span></span>
+                <strong id="resumenAnual">—</strong>
             </div>
             <p id="resumenDetalle" style="color:#AAB4C2;font-size:.78rem;margin:12px 0 0;line-height:1.5;"></p>
             <!--
@@ -306,7 +348,7 @@ input:focus, select:focus, textarea:focus {
             -->
             <div class="check">
                 <input type="checkbox" id="pago_anual">
-                <span data-i18n="inscripcion.pago_anual"><strong>Quiero pagar el año completo de una vez</strong>, en lugar de las cuotas mensuales. Te preparamos un único recibo con la ficha y todas las cuotas.</span>
+                <label for="pago_anual" data-i18n="inscripcion.pago_anual"><strong>Quiero pagar el año completo de una vez</strong>, en lugar de las cuotas mensuales. Te preparamos un único recibo con la ficha y todas las cuotas.</label>
             </div>
 
             <div class="legales">
@@ -316,8 +358,12 @@ input:focus, select:focus, textarea:focus {
 
             <div class="check">
                 <input type="checkbox" id="acepta_reglamento">
-                <span data-i18n="inscripcion.reglamento">He leído y acepto el <a href="/reglamento" target="_blank" rel="noopener">reglamento del club</a> y la <a href="/privacidad" target="_blank" rel="noopener">política de privacidad</a>: cuotas, bajas, uso de instalaciones, tratamiento de mis datos y derechos de imagen.</span>
+                <label for="acepta_reglamento" data-i18n="inscripcion.reglamento">He leído y acepto el <a href="/reglamento" target="_blank" rel="noopener">reglamento del club</a> y la <a href="/privacidad" target="_blank" rel="noopener">política de privacidad</a>: cuotas, bajas, uso de instalaciones, tratamiento de mis datos y derechos de imagen.</label>
             </div>
+            <!-- El mismo aviso, aca abajo. El de arriba queda para quien
+                 esta mirando la cabecera; este es el que ve quien acaba de
+                 tocar el boton. -->
+            <div id="avisoEnvio"></div>
             <button type="button" class="btn btn-primario" id="btnEnviar" data-i18n="inscripcion.enviar">Enviar inscripción</button>
         </section>
     </div>
@@ -425,7 +471,20 @@ function aviso(texto, clase) {
     $('avisoGlobal').innerHTML = texto
         ? '<div class="aviso aviso-' + (clase || 'error') + '">' + escapar(texto) + '</div>'
         : '';
-    if (texto) window.scrollTo({ top: 0, behavior: 'smooth' });
+    // El mismo mensaje junto al boton de enviar, que esta abajo del todo.
+    //
+    // Antes el aviso salia solo arriba y la pantalla subia sola: la familia
+    // tocaba "Enviar", se iba cuatro pantallas hacia arriba, leia que faltaba
+    // aceptar el reglamento, y tenia que volver a bajar buscando donde. Se
+    // lleva el mensaje a donde estan sus ojos.
+    var abajo = $('avisoEnvio');
+    var formularioALaVista = !$('pasoFormulario').classList.contains('oculto');
+    if (abajo) abajo.innerHTML = texto && formularioALaVista ? $('avisoGlobal').innerHTML : '';
+
+    if (!texto) return;
+    var destino = (texto && formularioALaVista && abajo) ? abajo : $('avisoGlobal');
+    var y = destino.getBoundingClientRect().top + window.scrollY - 96;
+    window.scrollTo({ top: Math.max(0, y), behavior: 'smooth' });
 }
 
 function escapar(s) {
@@ -1278,6 +1337,19 @@ $('btnEnviar').addEventListener('click', async function () {
         mostrar('pasoFormulario', false);
         mostrar('pasoListo', true);
 
+        // El aviso de la vuelta de Stripe es de antes: ya no viene al caso.
+        mostrar('avisoVuelta', false);
+
+        // Y que el titulo diga lo que acaba de pasar. Guardar un cambio sobre
+        // una inscripcion ya enviada no es "inscripcion enviada".
+        var tituloListo = $('pasoListo').querySelector('h2 span');
+        if (tituloListo) {
+            tituloListo.removeAttribute('data-i18n');
+            tituloListo.textContent = estado.jugadores.some(function (j) { return j.yaEnviado; })
+                ? 'Cambios guardados'
+                : 'Inscripción enviada';
+        }
+
         var bajas = (r.jugadores || []).filter(function (x) { return x.no_renueva; });
         var altas = (r.jugadores || []).filter(function (x) { return !x.no_renueva; });
 
@@ -1333,7 +1405,13 @@ $('btnEnviar').addEventListener('click', async function () {
             mostrar('pasoTarjeta', true);
         }
 
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        // A la confirmacion, no al top. Subiendo al principio, la familia ve
+        // lo mismo de antes y le parece que no paso nada: fue exactamente lo
+        // que le paso al presidente al probarlo. Los 96px son el navbar fijo.
+        window.scrollTo({
+            top: $('pasoListo').getBoundingClientRect().top + window.scrollY - 96,
+            behavior: 'smooth'
+        });
     } catch (err) {
         aviso(err.message);
     } finally {
