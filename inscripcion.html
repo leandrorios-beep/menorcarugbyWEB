@@ -299,7 +299,7 @@ input:focus, select:focus, textarea:focus {
 
             <div class="check">
                 <input type="checkbox" id="acepta_reglamento">
-                <span data-i18n="inscripcion.reglamento">He leído y acepto el <a href="https://www.menorcarugbyclub.com/privacidad" target="_blank" rel="noopener">reglamento y la política de privacidad</a> del Menorca Rugby Club.</span>
+                <span data-i18n="inscripcion.reglamento">He leído y acepto el <a href="/reglamento" target="_blank" rel="noopener">reglamento del club</a> y la <a href="/privacidad" target="_blank" rel="noopener">política de privacidad</a>.</span>
             </div>
             <button type="button" class="btn btn-primario" id="btnEnviar" data-i18n="inscripcion.enviar">Enviar inscripción</button>
         </section>
@@ -881,7 +881,7 @@ function tarjetaJugador(j, i) {
 
         '<div class="check" style="margin-top:14px;">' +
             '<input type="checkbox" data-campo="acepta_uso_imagen" data-i="' + i + '"' + (j.acepta_uso_imagen ? ' checked' : '') + '>' +
-            '<span>Autorizo que el club publique fotos y vídeos donde aparezca en sus redes y en la web. <strong>Es opcional</strong> y podés cambiarlo cuando quieras.' +
+            '<span>Autorizo que el club publique fotos y vídeos donde aparezca en sus redes y en la web. <strong>Es opcional</strong> y podés cambiarlo cuando quieras (<a href="/reglamento#imagenes" target="_blank" rel="noopener">cómo</a>).' +
             (j.uso_imagen_anterior ? ' <em>La temporada pasada lo autorizaste.</em>' : '') + '</span>' +
         '</div>') +
 

@@ -302,7 +302,7 @@
     "enviar": "Send registration",
     "cargando": "One moment…",
     "pie": "Something not right? Write to us at <a href=\"mailto:info@menorcarugbyclub.com\">info@menorcarugbyclub.com</a>",
-    "reglamento": "I have read and accept the <a href=\"https://www.menorcarugbyclub.com/privacidad\" target=\"_blank\" rel=\"noopener\">club rules and privacy policy</a> of Menorca Rugby Club.",
+    "reglamento": "I have read and accept the <a href=\"/reglamento\" target=\"_blank\" rel=\"noopener\">club rules</a> and the <a href=\"/privacidad\" target=\"_blank\" rel=\"noopener\">privacy policy</a>.",
     "total_temporada": "Whole season",
     "pago_anual": "<strong>I want to pay the whole year at once</strong>, instead of monthly instalments. We will send you a single invoice with the licence and every fee.",
     "aviso_descuentos": "If you are the family of a board member, a coach or a club volunteer, send the registration anyway: we apply the reduced price when we review it."

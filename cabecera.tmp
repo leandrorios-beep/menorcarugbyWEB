@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-0MHQJGDWRL"></script>
+    <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-0MHQJGDWRL');</script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- SEO Meta Tags -->
+    <title>Politica de Privacidad y Cookies | Menorca Rugby Club</title>
+    <meta name="description" content="Politica de privacidad y cookies del sitio web de Menorca Rugby Club. Informacion sobre el tratamiento de datos personales conforme al RGPD y la LSSI.">
+    <meta name="robots" content="index, follow">
+
+    <!-- Favicons -->
+    <link rel="icon" type="image/x-icon" href="assets/images/static/favicon.ico">
+    <link rel="apple-touch-icon" sizes="180x180" href="assets/images/static/apple-touch-icon.png">
+    <meta name="theme-color" content="#182B49">
+
+    <!-- Canonical -->
+    <link rel="canonical" href="https://www.menorcarugbyclub.com/privacidad">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="css/styles.css?v=2024091506">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar" id="navbar">
+        <div class="nav-container">
+            <a href="index.html" class="nav-brand">
+                <img src="assets/images/static/logo.png" alt="Menorca Rugby" class="logo">
+                <span class="brand-text" data-i18n="nav.brand">MENORCA RUGBY</span>
+            </a>
+
+            <ul class="nav-menu" id="nav-menu">
+                <li><a href="index.html#inicio" class="nav-link" data-i18n="nav.home">Inicio</a></li>
+                <li><a href="index.html#nosotros" class="nav-link" data-i18n="nav.about">Nosotros</a></li>
+                <li><a href="index.html#equipo" class="nav-link" data-i18n="nav.team">Equipo</a></li>
+                <li><a href="calendar.html" class="nav-link" data-i18n="nav.calendar">Calendario</a></li>
+                <li><a href="index.html#galeria" class="nav-link" data-i18n="nav.gallery">Galeria</a></li>
+                <li><a href="index.html#tienda" class="nav-link" data-i18n="nav.store">Tienda</a></li>
+                <li><a href="index.html#contacto" class="nav-link" data-i18n="nav.contact">Contacto</a></li>
+                <li><a href="socios.html" class="nav-link" data-i18n="nav.membership">Hazte Socio</a></li>
+                            <li><a href="mi-carnet.html" class="nav-link" data-i18n="nav.account">Mi cuenta</a></li>
+</ul>
+
+            <div class="nav-toggle" id="nav-toggle">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>

@@ -68,6 +68,11 @@
       "source": "/miCarnet",
       "destination": "/mi-carnet.html",
       "permanent": false
+    },
+    {
+      "source": "/reglamento",
+      "destination": "/reglamento.html",
+      "permanent": false
     }
   ]
 }
