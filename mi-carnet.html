@@ -475,7 +475,7 @@
                     que acababa de hacer ni de lo que le van a cobrar.
                 -->
                 <div class="services-section" id="jugadoresSection" style="display:none;">
-                    <h3 class="services-title"><i class="fas fa-user-group"></i> Mis jugadores</h3>
+                    <h3 class="services-title"><i class="fas fa-user-group"></i> <span id="jugadoresTitulo">Mis jugadores</span></h3>
                     <div class="services-grid" id="jugadoresList"></div>
                     <button class="pwd-toggle" id="btnPortalCarnet" style="display:none;margin-top:10px;">
                         <i class="fas fa-credit-card"></i> Cambiar mi tarjeta y ver mis recibos
@@ -687,6 +687,17 @@
                 const jugadores = (d.jugadores || []).filter(j => j.inscripcion_actual);
                 if (!jugadores.length) return;
 
+                // Una persona puede estar inscripta ELLA MISMA —parentesco
+                // 'el_mismo'— y ademas tener hijos. Un titulo fijo de «Mis
+                // jugadores» encabezando tu propia ficha se lee mal: la
+                // pregunta que traes es «¿y lo mio donde esta?».
+                const meIncluyo = jugadores.some(j => j.parentesco === 'el_mismo');
+                const hayOtros  = jugadores.some(j => j.parentesco !== 'el_mismo');
+                document.getElementById('jugadoresTitulo').textContent =
+                    meIncluyo && hayOtros ? 'Mi ficha y mis jugadores'
+                  : meIncluyo             ? 'Mi ficha de jugador'
+                  :                         'Mis jugadores';
+
                 const euros = n => (n === null || n === undefined)
                     ? '—'
                     : new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(n);
@@ -722,7 +733,9 @@
 
                     return '<div class="service-card">' +
                         '<div class="service-head">' +
-                            '<span class="service-name">' + (j.nombre || '') + ' ' + (j.apellido || '') + '</span>' +
+                            '<span class="service-name">' + (j.nombre || '') + ' ' + (j.apellido || '') +
+                                (j.parentesco === 'el_mismo' ? ' <small style="opacity:.6;font-weight:400">(vos)</small>' : '') +
+                            '</span>' +
                             '<span class="service-price" style="color:' + color + '">' + texto + '</span>' +
                         '</div>' +
                         '<p class="service-desc">' + (j.categoria || '') + (cobro ? ' — ' + cobro : '') + '</p>' +
@@ -731,6 +744,18 @@
 
                 document.getElementById('jugadoresSection').style.display = '';
                 if (hayTarjeta) document.getElementById('btnPortalCarnet').style.display = '';
+
+                // Y que el carnet lo diga, no solo la seccion de abajo: la
+                // chapa decia unicamente el tipo de socio.
+                if (meIncluyo && jugadores.some(j => j.parentesco === 'el_mismo'
+                        && j.inscripcion_actual && j.inscripcion_actual.estado === 'aprobada')) {
+                    ['carnetType', 'memberType'].forEach(id => {
+                        const el = document.getElementById(id);
+                        if (el && !/JUGADOR/.test(el.textContent)) {
+                            el.textContent = (el.textContent || 'SOCIO') + ' · JUGADOR';
+                        }
+                    });
+                }
             } catch (e) {
                 // Que falle esto no puede tumbar el carnet, que es lo que la
                 // persona vino a ver.

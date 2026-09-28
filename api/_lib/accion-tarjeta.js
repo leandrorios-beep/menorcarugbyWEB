@@ -26,7 +26,7 @@
 // ---------------------------------------------------------------------------
 
 const { createClient } = require('@supabase/supabase-js');
-const { getAuthPayload } = require('./auth');
+const { getAuthPayload, identidad } = require('./auth');
 const { temporadaKey } = require('./inscripcion');
 
 const URL_BASE = 'https://www.menorcarugbyclub.com';
@@ -46,7 +46,7 @@ function conectarStripe() {
 
 module.exports = async function accionTarjeta(req, res) {
     const payload = getAuthPayload(req);
-    if (!payload || !payload.tutor_id) {
+    if (!payload) {
         return res.status(401).json({ error: 'Entrá con tu correo y tu contraseña.' });
     }
 
@@ -59,13 +59,22 @@ module.exports = async function accionTarjeta(req, res) {
     const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
     const temporada = temporadaKey();
 
+    // Quien es, mire por donde entro: el token de mi-carnet trae socio_id y no
+    // tutor_id, y esto respondia 401 a la misma persona con la misma clave.
+    const { tutorId } = await identidad(supabase, payload);
+    if (!tutorId) {
+        return res.status(409).json({
+            error: 'No encontramos ninguna inscripción tuya de esta temporada.',
+        });
+    }
+
     try {
         const stripe = conectarStripe();
 
         const { data: inscripciones, error } = await supabase
             .from('inscripciones')
             .select('inscripcion_id, temporada, estado, stripe_customer_id')
-            .eq('tutor_id', payload.tutor_id);
+            .eq('tutor_id', tutorId);
         if (error) throw new Error(error.message);
 
         const deEstaTemporada = (inscripciones || []).filter((i) => i.temporada === temporada);
@@ -85,7 +94,7 @@ module.exports = async function accionTarjeta(req, res) {
         const { data: tutor } = await supabase
             .from('tutores')
             .select('tutor_id, nombre, apellido, email, telefonos')
-            .eq('tutor_id', payload.tutor_id)
+            .eq('tutor_id', tutorId)
             .single();
 
         const conCliente = (inscripciones || []).find((i) => i.stripe_customer_id);

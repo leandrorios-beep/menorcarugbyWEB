@@ -636,6 +636,128 @@ async function main() {
         for (const x of repes || []) await db.from('players').delete().eq('player_id', x.player_id);
     }
 
+    // ── 14 ──────────────────────────────────────────────────────────────
+    //
+    // La misma persona, dos correos, una sola cuenta.
+    //
+    // Quien es socio con un correo y tutor con otro —lo normal: uno es el de
+    // siempre y el otro el que tenia a mano el dia que inscribio a los hijos—
+    // entraba a la inscripcion y NO a su carnet. Y al reves: entrando por el
+    // carnet, «Mis jugadores» salia vacia y «Cambiar mi tarjeta» daba 401,
+    // porque el token de esa puerta nunca llevo tutor_id.
+    //
+    // Se prueba con los handlers de verdad porque el fallo no estaba en la
+    // logica de negocio sino en la forma del token, que es justo lo que un mock
+    // se inventa.
+    console.log('\n14. La misma persona, dos correos, un solo carnet');
+    {
+        const login = require(path.join(__dirname, '..', 'socio-login.js'));
+        const CLAVE_SOCIO = 'clave-de-prueba-socio';
+        const CLAVE_TUTOR = 'clave-de-prueba-tutor';
+        const MAIL_SOCIO = 'prueba.doble.socio.borrar@menorcarugbyclub.test';
+        const MAIL_TUTOR = 'prueba.doble.tutor.borrar@menorcarugbyclub.test';
+        const MAIL_HUERFANO = 'prueba.solo.tutor.borrar@menorcarugbyclub.test';
+        const { hashPassword } = require('./auth');
+
+        function entrar(email, password) {
+            const req = { method: 'POST', body: { email, password }, headers: {} };
+            return new Promise((resolve) => {
+                const res = {
+                    _status: 200,
+                    setHeader() {},
+                    end() { resolve({ status: this._status, body: null }); },
+                    status(c) { this._status = c; return this; },
+                    json(b) { resolve({ status: this._status, body: b }); },
+                };
+                Promise.resolve(login(req, res)).catch((e) => resolve({ status: 500, body: { error: e.message } }));
+            });
+        }
+
+        const limpiarDoble = async () => {
+            for (const m of [MAIL_TUTOR, MAIL_HUERFANO]) {
+                await db.from('tutores').delete().eq('email', m);
+            }
+            await db.from('socios').delete().eq('email', MAIL_SOCIO);
+        };
+        await limpiarDoble();
+
+        const { data: socio } = await db
+            .from('socios')
+            .insert({
+                nombre: 'Prueba', apellido: 'Doble Cuenta', documento: 'X0000000P',
+                email: MAIL_SOCIO, tipo_socio: 'gym', estado_pago: 'completado',
+                password_hash: hashPassword(CLAVE_SOCIO),
+            })
+            .select('id')
+            .single();
+
+        // El tutor se crea inactivo y sin hijos: uno activo sin hijos hace
+        // saltar `tutores_exigir_hijo_alta` al cerrar el request.
+        const { data: tutor } = await db
+            .from('tutores')
+            .insert({
+                nombre: 'Prueba', apellido: 'Doble Cuenta', email: MAIL_TUTOR,
+                activo: false, socio_id: socio.id,
+                password_hash: hashPassword(CLAVE_TUTOR),
+            })
+            .select('tutor_id')
+            .single();
+
+        // (a) Entrando por el correo de SOCIO, el token tiene que llevar
+        //     tambien el tutor_id, que es lo que enciende «Mis jugadores».
+        let e = await entrar(MAIL_SOCIO, CLAVE_SOCIO);
+        comprobar('entra con el correo de socio', e.status === 200, e.body);
+        const { verifyJWT } = require('./auth');
+        const pay = e.body && e.body.token ? verifyJWT(e.body.token) : null;
+        comprobar('el token lleva socio_id', Boolean(pay && pay.socio_id), pay);
+        comprobar('y AHORA tambien tutor_id', Boolean(pay && pay.tutor_id), pay);
+
+        // (b) Entrando por el correo de TUTOR, con la clave del tutor, llega al
+        //     mismo carnet. Antes esto era «Email o contraseña incorrectos».
+        e = await entrar(MAIL_TUTOR, CLAVE_TUTOR);
+        comprobar('entra al carnet con el correo de la inscripcion', e.status === 200, e.body);
+        comprobar('y es la ficha de socio correcta',
+            e.body && e.body.socio && e.body.socio.id === socio.id, e.body && e.body.socio);
+
+        // (c) La clave equivocada sigue sin entrar por ninguna de las dos.
+        e = await entrar(MAIL_TUTOR, 'no-es-esta-clave');
+        comprobar('la clave mala no entra por el correo de tutor', e.status === 401, e.body);
+        e = await entrar(MAIL_SOCIO, CLAVE_TUTOR);
+        comprobar('cada correo lleva SU clave', e.status === 401, e.body);
+
+        // (d) Un tutor que NO es socio recibe un mensaje que dice adonde ir, no
+        //     «contraseña incorrecta» — que es la respuesta que hace pedir una
+        //     nueva, ANULA la que servia, y repite el ciclo.
+        await db.from('tutores').insert({
+            nombre: 'Solo', apellido: 'Tutor Prueba', email: MAIL_HUERFANO,
+            activo: false, password_hash: hashPassword(CLAVE_TUTOR),
+        });
+        e = await entrar(MAIL_HUERFANO, CLAVE_TUTOR);
+        comprobar('al tutor sin ficha de socio no se le miente', e.status === 403, e.body);
+        comprobar('y se le dice adonde ir',
+            e.body && /inscripcion/i.test(e.body.error || ''), e.body);
+
+        // (e) `identidad` resuelve en los dos sentidos.
+        const { identidad } = require('./auth');
+        let id1 = await identidad(db, { socio_id: socio.id });
+        comprobar('de socio a tutor', id1.tutorId === tutor.tutor_id, id1);
+        let id2 = await identidad(db, { tutor_id: tutor.tutor_id });
+        comprobar('de tutor a socio', id2.socioId === socio.id, id2);
+        let id3 = await identidad(db, null);
+        comprobar('sin token no inventa a nadie', !id3.tutorId && !id3.socioId, id3);
+
+        // (f) Y lo que lo motivo: `accion=estado` con el token del carnet ya no
+        //     devuelve 200 con la lista vacia.
+        const tokenCarnet = (await entrar(MAIL_SOCIO, CLAVE_SOCIO)).body.token;
+        const est = await llamar('estado', { method: 'GET', token: tokenCarnet });
+        comprobar('estado responde 200 con el token del carnet', est.status === 200, est.body);
+        comprobar('y encuentra al tutor', est.body && est.body.tutor
+            && est.body.tutor.tutor_id === tutor.tutor_id, est.body && est.body.tutor);
+        comprobar('y sabe que ademas es socio', est.body && est.body.es_socio === true, est.body);
+
+        await limpiarDoble();
+    }
+
     console.log('\nLimpieza');
     await limpiar();
 

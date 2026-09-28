@@ -22,7 +22,7 @@
 // ---------------------------------------------------------------------------
 
 const { createClient } = require('@supabase/supabase-js');
-const { getAuthPayload } = require('./auth');
+const { getAuthPayload, identidad } = require('./auth');
 const {
     temporadaKey,
     temporadaYear,
@@ -69,7 +69,7 @@ function conectarStripe() {
 
 module.exports = async function accionPagar(req, res) {
     const payload = getAuthPayload(req);
-    if (!payload || !payload.tutor_id) return res.status(401).json({ error: 'No autorizado' });
+    if (!payload) return res.status(401).json({ error: 'No autorizado' });
 
     if (!process.env.STRIPE_SECRET_KEY) {
         return res.status(503).json({
@@ -81,12 +81,21 @@ module.exports = async function accionPagar(req, res) {
     const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
     const temporada = temporadaKey();
 
+    // Quien es, mire por donde entro: el token de mi-carnet trae socio_id y no
+    // tutor_id, y esto respondia 401 a la misma persona con la misma clave.
+    const { tutorId } = await identidad(supabase, payload);
+    if (!tutorId) {
+        return res.status(409).json({
+            error: 'No encontramos ninguna inscripción tuya de esta temporada.',
+        });
+    }
+
     try {
         // ── Qué inscripciones son suyas y están listas para cobrar ───────
         const { data: inscripciones, error } = await supabase
             .from('inscripciones')
             .select('inscripcion_id, player_id, temporada, estado, estado_cobro, tarifa_tramo, tarifa_variante, tarifa_descuentos, stripe_customer_id, stripe_subscription_id')
-            .eq('tutor_id', payload.tutor_id);
+            .eq('tutor_id', tutorId);
         // Sin .eq('temporada'): el cliente de Stripe es de la FAMILIA y vive en
         // las filas de la temporada ANTERIOR. Filtrando por la temporada en
         // curso nunca se lo encontraba y se creaba un cliente nuevo en cada
@@ -209,7 +218,7 @@ module.exports = async function accionPagar(req, res) {
         const { data: tutor } = await supabase
             .from('tutores')
             .select('tutor_id, nombre, apellido, email, telefonos')
-            .eq('tutor_id', payload.tutor_id)
+            .eq('tutor_id', tutorId)
             .single();
 
         // De cualquier temporada: es el cliente de la familia, no el del año.

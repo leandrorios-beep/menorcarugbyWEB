@@ -9,7 +9,7 @@
 // ---------------------------------------------------------------------------
 
 const { createClient } = require('@supabase/supabase-js');
-const { getAuthPayload } = require('./auth');
+const { getAuthPayload, identidad } = require('./auth');
 const {
     temporadaKey,
     temporadaYear,
@@ -33,6 +33,11 @@ module.exports = async function accionEstado(req, res) {
 
     const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
 
+    // Quien es, mire por donde entro. Con el token de mi-carnet no habia
+    // tutor_id y esta accion devolvia 200 con cero jugadores: la pantalla se
+    // dibujaba vacia sin decir por que.
+    const { tutorId, socioId } = await identidad(supabase, payload);
+
     const year = temporadaYear();
     const temporada = temporadaKey(year);
     const anterior = temporadaKey(year - 1);
@@ -44,21 +49,21 @@ module.exports = async function accionEstado(req, res) {
         let tutor = null;
         let jugadores = [];
 
-        if (payload.tutor_id) {
+        if (tutorId) {
             const { data } = await supabase
                 .from('tutores')
                 .select(
                     'tutor_id, nombre, apellido, email, fecha_nacimiento, genero, nacionalidad, ' +
                         'tipo_documento, numero_documento, telefonos, direccion, codigo_postal, ciudad, provincia, pais'
                 )
-                .eq('tutor_id', payload.tutor_id)
+                .eq('tutor_id', tutorId)
                 .maybeSingle();
             tutor = data || null;
 
             const { data: vinculos } = await supabase
                 .from('tutor_jugador')
                 .select('player_id, parentesco, es_pagador')
-                .eq('tutor_id', payload.tutor_id);
+                .eq('tutor_id', tutorId);
 
             const ids = (vinculos || []).map((v) => v.player_id);
             if (ids.length) {
@@ -194,7 +199,7 @@ module.exports = async function accionEstado(req, res) {
             temporada,
             temporada_anterior: anterior,
             tutor,
-            es_socio: Boolean(payload.socio_id),
+            es_socio: Boolean(socioId),
             jugadores,
             descuentos: descuentos.map((d) => ({
                 codigo: d.codigo,

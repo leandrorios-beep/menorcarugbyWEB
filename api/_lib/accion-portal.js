@@ -23,13 +23,13 @@
 // ---------------------------------------------------------------------------
 
 const { createClient } = require('@supabase/supabase-js');
-const { getAuthPayload } = require('./auth');
+const { getAuthPayload, identidad } = require('./auth');
 
 const URL_BASE = 'https://www.menorcarugbyclub.com';
 
 module.exports = async function accionPortal(req, res) {
     const payload = getAuthPayload(req);
-    if (!payload || !payload.tutor_id) {
+    if (!payload) {
         return res.status(401).json({ error: 'Entrá con tu correo y tu contraseña.' });
     }
 
@@ -41,6 +41,15 @@ module.exports = async function accionPortal(req, res) {
 
     const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
 
+    // Quien es, mire por donde entro: el token de mi-carnet trae socio_id y no
+    // tutor_id, y esto respondia 401 a la misma persona con la misma clave.
+    const { tutorId } = await identidad(supabase, payload);
+    if (!tutorId) {
+        return res.status(409).json({
+            error: 'Tu cuenta todavía no tiene ninguna inscripción asociada, así que no hay recibos que ver.',
+        });
+    }
+
     try {
         // El cliente de Stripe es de la FAMILIA y puede estar en una fila de
         // cualquier temporada: sin filtrar por la actual, que es donde ya nos
@@ -48,7 +57,7 @@ module.exports = async function accionPortal(req, res) {
         const { data: inscripciones, error } = await supabase
             .from('inscripciones')
             .select('stripe_customer_id')
-            .eq('tutor_id', payload.tutor_id)
+            .eq('tutor_id', tutorId)
             .not('stripe_customer_id', 'is', null)
             .limit(1);
         if (error) throw new Error(error.message);

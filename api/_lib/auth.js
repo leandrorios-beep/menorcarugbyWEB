@@ -96,6 +96,58 @@ async function findSociosByEmail(supabase, email, columns = 'id, email') {
     return (data || []).filter(r => String(r.email || '').trim().toLowerCase() === target);
 }
 
+// ---------------------------------------------------------------------------
+// QUIEN ES, MIRE POR DONDE ENTRO
+//
+// Hay dos puertas de entrada y cada una firmaba un token distinto:
+//
+//   /api/socio-login              -> { socio_id }        (mi-carnet.html)
+//   /api/inscripcion accion=acceso-> { tutor_id, socio_id } (inscripcion.html)
+//
+// Y cuatro acciones —estado, pagar, portal, tarjeta— empezaban con
+// `if (!payload.tutor_id) return 401`. Resultado: la misma persona, con la
+// misma contrasena, veia a sus hijos y podia cambiar la tarjeta entrando por
+// una puerta, y por la otra la pantalla salia vacia SIN decir por que: la
+// llamada devolvia 200 con la lista de jugadores en cero.
+//
+// Le paso al presidente, que es socio Y jugador: entro a su carnet y no habia
+// rastro de la inscripcion que acababa de hacer ni de sus recibos.
+//
+// Desde donde se para la persona hay UNA cuenta. El vinculo existe en la base
+// (`tutores.socio_id`) y se sigue en los dos sentidos. Esta funcion es el unico
+// sitio donde se resuelve: si la regla viviera en cuatro acciones, un dia tres
+// la tendrian y la cuarta no, que es exactamente de donde venimos.
+// ---------------------------------------------------------------------------
+async function identidad(supabase, payload) {
+    const vacia = { tutorId: null, socioId: null };
+    if (!payload) return vacia;
+
+    let tutorId = payload.tutor_id || null;
+    let socioId = payload.socio_id || null;
+
+    // Entro como socio: buscar si esa persona es ademas tutor.
+    if (!tutorId && socioId) {
+        const { data } = await supabase
+            .from('tutores')
+            .select('tutor_id')
+            .eq('socio_id', socioId)
+            .maybeSingle();
+        if (data) tutorId = data.tutor_id;
+    }
+
+    // Entro como tutor: buscar si esa persona es ademas socia.
+    if (tutorId && !socioId) {
+        const { data } = await supabase
+            .from('tutores')
+            .select('socio_id')
+            .eq('tutor_id', tutorId)
+            .maybeSingle();
+        if (data && data.socio_id) socioId = data.socio_id;
+    }
+
+    return { tutorId, socioId };
+}
+
 module.exports = {
     hashPassword,
     verifyPassword,
@@ -104,5 +156,6 @@ module.exports = {
     verifyJWT,
     getAuthPayload,
     likePatternFromEmail,
-    findSociosByEmail
+    findSociosByEmail,
+    identidad
 };
