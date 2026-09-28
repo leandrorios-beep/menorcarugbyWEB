@@ -6476,6 +6476,124 @@ img {
 }
 
 /* ==========================================================================
+   ETIQUETA COLGANTE DE INSCRIPCIONES
+
+   Hermana de la de FRIDAS, pero del lado IZQUIERDO. Dos motivos: no se pisan
+   —la de FRIDAS es position:fixed a la derecha— y en un teléfono, con una a
+   cada lado, las dos entran sin encimarse.
+
+   Colores del club (azul marino y amarillo) para que se distinga de FRIDAS de
+   un vistazo, que es otra cosa.
+   ========================================================================== */
+
+.inscripcion-hanging-tag {
+    position: fixed;
+    top: 72px;
+    left: 100px;
+    z-index: 999;
+    text-decoration: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    animation: inscripcion-swing 3.6s ease-in-out infinite;
+    transform-origin: top center;
+    cursor: pointer;
+}
+
+.inscripcion-hanging-tag::before {
+    content: '';
+    width: 2px;
+    height: 55px;
+    background: linear-gradient(to bottom, rgba(255,255,255,0.3), #FFC72C);
+    display: block;
+}
+
+.inscripcion-tag-body {
+    background: linear-gradient(135deg, #182B49, #24406b);
+    color: #fff;
+    font-family: var(--font-primary);
+    padding: 12px 24px;
+    border-radius: 0 0 10px 10px;
+    position: relative;
+    overflow: hidden;
+    white-space: nowrap;
+    text-align: center;
+    border-bottom: 3px solid #FFC72C;
+    box-shadow: 0 4px 20px rgba(24, 43, 73, 0.45);
+}
+
+.inscripcion-tag-body strong {
+    display: block;
+    font-size: 1.05rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    color: #FFC72C;
+}
+
+.inscripcion-tag-body span {
+    display: block;
+    font-size: 0.68rem;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    opacity: 0.85;
+    margin-top: 2px;
+}
+
+.inscripcion-tag-body::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,199,44,0.25), transparent);
+    transform: translateX(-100%);
+    animation: inscripcion-shimmer 3.6s ease-in-out infinite;
+}
+
+/* Desfasado respecto del de FRIDAS: si los dos se mueven igual parecen una
+   guirnalda en vez de dos carteles. */
+@keyframes inscripcion-swing {
+    0%, 100% { transform: rotate(-2.5deg); }
+    50% { transform: rotate(2.5deg); }
+}
+
+@keyframes inscripcion-shimmer {
+    0% { transform: translateX(-100%); }
+    50% { transform: translateX(100%); }
+    100% { transform: translateX(100%); }
+}
+
+.inscripcion-hanging-tag:hover .inscripcion-tag-body {
+    box-shadow: 0 8px 30px rgba(24, 43, 73, 0.65);
+    transform: scale(1.08);
+    transition: all 0.3s ease;
+}
+
+@media (max-width: 768px) {
+    .inscripcion-hanging-tag {
+        left: 16px;
+        top: 66px;
+    }
+
+    .inscripcion-tag-body {
+        padding: 9px 14px;
+    }
+
+    .inscripcion-tag-body strong { font-size: 0.82rem; letter-spacing: 1.5px; }
+    .inscripcion-tag-body span { font-size: 0.58rem; letter-spacing: 1px; }
+
+    .inscripcion-hanging-tag::before { height: 50px; }
+}
+
+/* Pantallas muy angostas: los dos carteles no entran juntos, y el que tiene
+   que ganar es el de inscripciones, que es el que trae gente al club. */
+@media (max-width: 400px) {
+    .fridas-hanging-tag { display: none; }
+}
+
+/* ==========================================================================
    FRIDAS PAGE STYLES
    ========================================================================== */
 

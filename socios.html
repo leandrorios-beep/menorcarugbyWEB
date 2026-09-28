@@ -72,6 +72,16 @@
     </nav>
 
     <!-- FRIDAS Hanging Tag -->
+    <!-- Cartel colgante de inscripciones. Hermano del de FRIDAS pero a la
+         izquierda, para que no se pisen. Los textos llevan data-i18n: sin
+         traducción cargada se quedan con el castellano de aquí. -->
+    <a href="inscripcion.html" class="inscripcion-hanging-tag" id="inscripcionTag">
+        <div class="inscripcion-tag-body">
+            <strong data-i18n="inscripcion.tag_title">Inscripciones</strong>
+            <span data-i18n="inscripcion.tag_season">Temporada 2026/2027</span>
+        </div>
+    </a>
+
     <a href="fridas.html" class="fridas-hanging-tag" id="fridasTag">
         <div class="fridas-tag-body">FRIDAS</div>
     </a>
@@ -195,13 +205,19 @@
                     <h3 data-i18n-membership="types.player.title">Socio Jugador</h3>
                     <div class="type-price"><span class="type-badge" data-i18n-membership="types.player.badge">Incluido con ficha</span></div>
                     <ul class="type-features">
-                        <li><i class="fas fa-check"></i> <span data-i18n-membership="types.player.f1">Se asigna al federarse</span></li>
+                        <li><i class="fas fa-check"></i> <span data-i18n-membership="types.player.f1">Se asigna solo al inscribirte como jugador</span></li>
                         <li><i class="fas fa-check"></i> <span data-i18n-membership="types.player.f2">Carnet digital personalizado</span></li>
                     </ul>
-                    <span class="type-cta-btn type-cta-btn--disabled">
-                        <span data-i18n-membership="types.player.cta">Automático con ficha</span>
-                        <i class="fas fa-id-badge"></i>
-                    </span>
+                    <!--
+                        Antes era un botón muerto que decía "Automático con
+                        ficha". Cierto, pero dejaba sin salida a quien todavía NO
+                        es jugador: para ser socio jugador hay que inscribirse
+                        primero, y ese es justo el camino que faltaba enseñar.
+                    -->
+                    <a href="inscripcion.html" class="type-cta-btn">
+                        <span data-i18n-membership="types.player.cta">Inscribirme como jugador</span>
+                        <i class="fas fa-arrow-right"></i>
+                    </a>
                 </div>
             </div>
         </div>
@@ -1251,9 +1267,9 @@
                         'types.protector.cta': 'Hacerme protector',
                         'types.player.title': 'Socio Jugador',
                         'types.player.badge': 'Incluido con ficha',
-                        'types.player.f1': 'Se asigna al federarse',
+                        'types.player.f1': 'Se asigna solo al inscribirte como jugador',
                         'types.player.f2': 'Carnet digital personalizado',
-                        'types.player.cta': 'Automático con ficha',
+                        'types.player.cta': 'Inscribirme como jugador',
                         'card.title': 'Tu Carnet Digital',
                         'card.subtitle': 'Lleva tu carnet de socio siempre contigo en tu móvil',
                         'card.coming_soon': 'Próximamente',
@@ -1338,9 +1354,9 @@
                         'types.protector.cta': 'Fer-me protector',
                         'types.player.title': 'Soci Jugador',
                         'types.player.badge': 'Inclos amb fitxa',
-                        'types.player.f1': 'S\'assigna en federar-se',
+                        'types.player.f1': 'S\'assigna sol en inscriure\'t com a jugador',
                         'types.player.f2': 'Carnet digital personalitzat',
-                        'types.player.cta': 'Automatic amb fitxa',
+                        'types.player.cta': 'Inscriure\'m com a jugador',
                         'card.title': 'El teu Carnet Digital',
                         'card.subtitle': 'Porta el teu carnet de soci sempre amb tu al teu mobil',
                         'card.coming_soon': 'Properament',
@@ -1425,9 +1441,9 @@
                         'types.protector.cta': 'Become a patron',
                         'types.player.title': 'Player Member',
                         'types.player.badge': 'Included with license',
-                        'types.player.f1': 'Assigned when registering with federation',
+                        'types.player.f1': 'Assigned automatically when you sign up as a player',
                         'types.player.f2': 'Personalized digital card',
-                        'types.player.cta': 'Automatic with license',
+                        'types.player.cta': 'Register as a player',
                         'card.title': 'Your Digital Card',
                         'card.subtitle': 'Carry your membership card always with you on your phone',
                         'card.coming_soon': 'Coming Soon',
@@ -1512,9 +1528,9 @@
                         'types.protector.cta': 'Devenir protecteur',
                         'types.player.title': 'Membre Joueur',
                         'types.player.badge': 'Inclus avec la licence',
-                        'types.player.f1': 'Attribue lors de la federation',
+                        'types.player.f1': 'Attribue automatiquement a l\'inscription comme joueur',
                         'types.player.f2': 'Carte numerique personnalisee',
-                        'types.player.cta': 'Automatique avec licence',
+                        'types.player.cta': 'M\'inscrire comme joueur',
                         'card.title': 'Votre Carte Numerique',
                         'card.subtitle': 'Portez votre carte de membre toujours avec vous sur votre telephone',
                         'card.coming_soon': 'Bientot',
@@ -1599,9 +1615,9 @@
                         'types.protector.cta': 'Diventa protettore',
                         'types.player.title': 'Socio Giocatore',
                         'types.player.badge': 'Incluso con la tessera federale',
-                        'types.player.f1': 'Assegnato al momento della federazione',
+                        'types.player.f1': 'Assegnato in automatico iscrivendoti come giocatore',
                         'types.player.f2': 'Tessera digitale personalizzata',
-                        'types.player.cta': 'Automatico con tessera',
+                        'types.player.cta': 'Iscrivermi come giocatore',
                         'card.title': 'La tua Tessera Digitale',
                         'card.subtitle': 'Porta la tua tessera di socio sempre con te sul tuo cellulare',
                         'card.coming_soon': 'Prossimamente',
@@ -1686,9 +1702,9 @@
                         'types.protector.cta': 'Tornar-me protetor',
                         'types.player.title': 'Socio Jogador',
                         'types.player.badge': 'Incluido com ficha',
-                        'types.player.f1': 'Atribuido ao federar-se',
+                        'types.player.f1': 'Atribuido automaticamente ao inscrever-te como jogador',
                         'types.player.f2': 'Cartao digital personalizado',
-                        'types.player.cta': 'Automatico com ficha',
+                        'types.player.cta': 'Inscrever-me como jogador',
                         'card.title': 'O teu Cartao Digital',
                         'card.subtitle': 'Leva o teu cartao de socio sempre contigo no teu telemovel',
                         'card.coming_soon': 'Em breve',

@@ -57,12 +57,9 @@ class ConfigLoader {
 
     loadDefaultConfig() {
         this.config = {
-            'STORE_ES': 'https://menorcarugby.clupik.app/es/shopCategory/all',
-            'STORE_CA': 'https://menorcarugby.clupik.app/ca/shopCategory/all',
-            'STORE_EN': 'https://menorcarugby.clupik.app/en/shopCategory/all',
-            'STORE_FR': 'https://menorcarugby.clupik.app/fr/shopCategory/all',
-            'STORE_IT': 'https://menorcarugby.clupik.app/it/shopCategory/all',
-            'STORE_PT': 'https://menorcarugby.clupik.app/pt/shopCategory/all',
+            // Tienda discontinuada: ver data/external-urls.txt.
+            'STORE_ES': '', 'STORE_CA': '', 'STORE_EN': '',
+            'STORE_FR': '', 'STORE_IT': '', 'STORE_PT': '',
             'REGISTRATION_SCHOOL': 'https://www.menorcarugbyclub.com/inscripcion',
             'REGISTRATION_YOUTH': 'https://www.menorcarugbyclub.com/inscripcion',
             'REGISTRATION_SENIOR': 'https://www.menorcarugbyclub.com/inscripcion',
@@ -138,6 +135,25 @@ class ConfigLoader {
         const currentLang = i18n?.currentLanguage || 'es';
         const storeURL = this.getStoreURL(currentLang);
         const self = this;
+
+        // Sin direccion de tienda no se engancha nada: el boton se queda
+        // deshabilitado diciendo que esta en preparacion, en vez de abrir una
+        // pestaña en blanco. El dia que el club tenga tienda propia, se pone la
+        // direccion en data/external-urls.txt y esto vuelve a funcionar solo.
+        if (!storeURL) {
+            document.querySelectorAll('.store-link, .product-btn').forEach(link => {
+                link.setAttribute('disabled', 'disabled');
+                link.style.opacity = '0.55';
+                link.style.cursor = 'not-allowed';
+                const texto = link.querySelector('span');
+                if (texto) texto.textContent = this.textoTiendaCerrada();
+                link.querySelectorAll('i').forEach(ic => ic.remove());
+                link.addEventListener('click', (e) => e.preventDefault());
+            });
+            const navStore = document.querySelector('a[href="#tienda"]');
+            if (navStore) navStore.addEventListener('click', (e) => e.preventDefault());
+            return;
+        }
 
         // Clone and replace to remove old listeners, then add new ones
         document.querySelectorAll('.store-link, .product-btn').forEach(link => {
@@ -224,6 +240,19 @@ class ConfigLoader {
 
         // Hide loading after a short delay
         setTimeout(() => this.hideLoadingMessage(), 1000);
+    }
+
+    /** El aviso de tienda cerrada, en el idioma que este navegando. */
+    textoTiendaCerrada() {
+        const t = {
+            es: 'Tienda en preparación',
+            ca: 'Botiga en preparació',
+            en: 'Shop coming soon',
+            fr: 'Boutique en préparation',
+            it: 'Negozio in preparazione',
+            pt: 'Loja em preparação',
+        };
+        return t[(typeof i18n !== 'undefined' && i18n && i18n.currentLanguage) || 'es'] || t.es;
     }
 
     openExternalStore(url) {

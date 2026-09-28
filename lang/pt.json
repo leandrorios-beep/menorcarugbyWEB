@@ -268,5 +268,9 @@
       "calendar": "Calendário",
       "list": "Lista"
     }
+  },
+  "inscripcion": {
+    "tag_title": "Inscrições",
+    "tag_season": "Época 2026/2027"
   }
 }
