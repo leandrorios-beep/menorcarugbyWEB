@@ -124,6 +124,10 @@ const VARIANTES = {
     directivo: 'directivo',
     colaborador: 'colaborador',
     familiar_colaborador: 'hijo/a de colaborador',
+    // La tarifa de 1 € para probar el cobro de punta a punta. El nombre lleva
+    // "PRUEBA" en mayúsculas a propósito: en el panel de Stripe queda al lado
+    // de los precios de verdad y no puede confundirse con uno.
+    prueba: 'PRUEBA 1 €',
 };
 
 /**
