@@ -156,6 +156,47 @@ async function main() {
         }
     }
 
+    // El caso que habría roto el primer cobro de verdad: un chico de 17 CON
+    // HERMANO. La cuota le va por la categoría (juvenil, con descuento de
+    // hermano) y la ficha por el año de nacimiento (senior). Buscar la ficha
+    // por la variante de la cuota pedía `ficha_anual|con_hermano|senior`, una
+    // fila que la base PROHÍBE crear, así que el pago de la familia entera se
+    // cortaba con un 503 que nadie podía arreglar.
+    const MAIL_HERMANOS = 'prueba.hermano.de.17@menorcarugbyclub.test';
+    r = await llamar('enviar', {
+        body: {
+            acepta_reglamento: true,
+            tutor: { nombre: 'Dos', apellido: 'Hermanos Prueba', email: MAIL_HERMANOS },
+            jugadores: [
+                { nombre: 'Grande', apellido: 'Hermanos Prueba17', fecha_nacimiento: '2009-05-10',
+                  genero: 'Masculino', parentesco: 'padre' },
+                { nombre: 'Chico', apellido: 'Hermanos Prueba17', fecha_nacimiento: '2014-05-10',
+                  genero: 'Masculino', parentesco: 'padre' },
+            ],
+        },
+    });
+    {
+        comprobar('la familia de dos entra', r.status === 200, r.body);
+        const js = (r.body && r.body.jugadores) || [];
+        const grande = js.find((x) => /Grande/.test(x.nombre));
+        const chico = js.find((x) => /Chico/.test(x.nombre));
+        comprobar('los dos llevan descuento de hermano',
+            grande && chico && grande.variante === 'con_hermano' && chico.variante === 'con_hermano',
+            js);
+        comprobar('el de 17 paga cuota de juvenil con hermano', grande && grande.mensualidad === 40, grande);
+        comprobar('pero su ficha es la de senior, sin descuento', grande && grande.ficha_anual === 300, grande);
+        comprobar('el chico paga la ficha de juvenil', chico && chico.ficha_anual === 235, chico);
+        comprobar('y ninguno se queda sin total de temporada',
+            grande && chico && grande.total_temporada === 660 && chico.total_temporada === 595,
+            js);
+        const { data: t } = await db.from('tutores').select('tutor_id').eq('email', MAIL_HERMANOS).maybeSingle();
+        if (t) {
+            const { data: v } = await db.from('tutor_jugador').select('player_id').eq('tutor_id', t.tutor_id);
+            await db.from('tutores').delete().eq('tutor_id', t.tutor_id);
+            for (const x of v || []) await db.from('players').delete().eq('player_id', x.player_id);
+        }
+    }
+
     // La ficha federativa va por el AÑO DE NACIMIENTO, no por la categoría en
     // la que entrena. El que este año cumple 17 juega de juvenil —cuota de
     // juvenil— pero su ficha ya es la de 300 €.

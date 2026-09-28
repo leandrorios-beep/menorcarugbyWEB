@@ -19,7 +19,13 @@
 // revisar: antes que cuadrar a la fuerza, que se vea.
 // ---------------------------------------------------------------------------
 
-const { temporadaKey, importeFinal, MESES_DE_CUOTA } = require('./inscripcion');
+const {
+    temporadaKey,
+    importeFinal,
+    MESES_DE_CUOTA,
+    tramoDeFicha,
+    varianteDeFicha,
+} = require('./inscripcion');
 
 /**
  * ¿Este evento es de una cuota de jugador?
@@ -67,17 +73,26 @@ async function sesionCompletada(event, stripe, supabase) {
 
     const suscripcion = await stripe.subscriptions.retrieve(sesion.subscription);
 
-    // EL CORTE A LOS 10 MESES.
+    // EL CORTE A LAS NUEVE CUOTAS.
     //
     // Checkout no acepta "cancelá después de N cobros", así que se pone acá,
-    // que es el primer momento en que la suscripción existe. El ancla es
-    // current_period_end de la primera factura: sumarle 9 períodos más da
-    // exactamente 10 cobros.
+    // que es el primer momento en que la suscripción existe. Sin esto la
+    // familia paga doce meses en vez de nueve y se entera en julio.
     //
-    // Sin esto la familia paga 12 meses en vez de 10, y se entera en julio.
-    if (!suscripcion.cancel_at && suscripcion.current_period_end) {
-        const fin = new Date(suscripcion.current_period_end * 1000);
-        fin.setMonth(fin.getMonth() + (MESES_DE_CUOTA - 1));
+    // EL ANCLA ES EL PRIMER COBRO, NO EL FIN DEL PERÍODO EN CURSO
+    //
+    // Y no son lo mismo, porque a quien se inscribe antes de octubre se le pone
+    // un trial hasta el día 5: ahí `current_period_end` es la fecha del PRIMER
+    // cobro, mientras que para quien se suma en enero —sin trial— es la del
+    // SEGUNDO. Anclar en el sitio equivocado corría el corte un mes, y de un
+    // lado sobraba una cuota y del otro faltaba la de junio.
+    //
+    // Con el primer cobro como ancla, sumarle MESES_DE_CUOTA da el final del
+    // noveno período: nueve cobros, del 5 de octubre al 5 de junio.
+    const primerCobro = suscripcion.trial_end || suscripcion.current_period_start;
+    if (!suscripcion.cancel_at && primerCobro) {
+        const fin = new Date(primerCobro * 1000);
+        fin.setMonth(fin.getMonth() + MESES_DE_CUOTA);
         try {
             await stripe.subscriptions.update(suscripcion.id, {
                 cancel_at: Math.floor(fin.getTime() / 1000),
@@ -86,7 +101,7 @@ async function sesionCompletada(event, stripe, supabase) {
         } catch (e) {
             // Que falle el corte no puede tirar el webhook: el cobro ya está
             // hecho. Queda en el log para arreglarlo a mano.
-            console.error(`No se pudo poner el corte a los ${MESES_DE_CUOTA} meses en ${suscripcion.id}:`, e.message);
+            console.error(`No se pudo poner el corte a las ${MESES_DE_CUOTA} cuotas en ${suscripcion.id}:`, e.message);
         }
     }
 
@@ -215,10 +230,31 @@ async function suscripcionCancelada(event, stripe, supabase) {
     const ids = inscripcionesDe(suscripcion);
     if (!ids) return false;
 
+    // Se BORRAN los identificadores de la suscripción, no sólo se marca el
+    // estado. accion-pagar decide quién puede pagar mirando
+    // `stripe_subscription_id`: con la columna puesta y la suscripción muerta,
+    // la familia recibía "Ya tenés la cuota domiciliada" y no podía volver a
+    // pagar nunca, cuando en realidad no se le estaba cobrando nada. Para
+    // salir de ahí había que tocarle la fila a mano en la base.
+    //
+    // Pasa más de lo que parece: alcanza con que alguien cancele desde el panel
+    // de Stripe, o con que la primera factura no se cobre —Stripe expira la
+    // suscripción a las 23 horas y manda este mismo evento.
+    //
+    // El `stripe_customer_id` SÍ se conserva: es de la familia, no de la
+    // suscripción, y reutilizarlo evita clientes duplicados en Stripe.
+    //
+    // A quien está de baja en el club no se le toca: ahí la cancelación es el
+    // final correcto y no queremos ofrecerle pagar otra vez.
     const { error } = await supabase
         .from('inscripciones')
-        .update({ estado_cobro: 'cancelada' })
-        .in('inscripcion_id', ids);
+        .update({
+            estado_cobro: 'cancelada',
+            stripe_subscription_id: null,
+            stripe_subscription_item_id: null,
+        })
+        .in('inscripcion_id', ids)
+        .neq('estado', 'baja');
     if (error) throw new Error(`inscripciones: ${error.message}`);
 
     console.log(`Suscripción ${suscripcion.id} dada de baja: ${ids.length} inscripción(es)`);
@@ -262,7 +298,9 @@ async function anotar(supabase, { factura, suscripcion, ids, pagada, event }) {
 
     const { data: jugadores } = await supabase
         .from('players')
-        .select('player_id, first_name, last_name, category_primary')
+        // La fecha de nacimiento hace falta para la matrícula: la ficha
+        // federativa va por el año de nacimiento, no por la categoría.
+        .select('player_id, first_name, last_name, category_primary, dob')
         .in('player_id', inscripciones.map((i) => i.player_id));
     const jugadorDe = new Map((jugadores || []).map((j) => [j.player_id, j]));
 
@@ -317,7 +355,17 @@ async function anotar(supabase, { factura, suscripcion, ids, pagada, event }) {
         }));
 
         if (esPrimera) {
-            const matricula = precio('ficha_anual', i.tarifa_variante, i.tarifa_tramo);
+            // Los dos ejes otra vez: la cuota va por la categoría y la ficha
+            // por el año de nacimiento, y la ficha de la federación no lleva
+            // los descuentos del club. Buscándola por `tarifa_tramo` y por la
+            // variante de la cuota, a un chico de 17 se le anotaban 235 €
+            // donde Stripe le había cobrado 300, y el libro de ingresos
+            // arrancaba la temporada descuadrado en 65 € por cabeza.
+            const matricula = precio(
+                'ficha_anual',
+                varianteDeFicha(i.tarifa_variante),
+                tramoDeFicha(j.dob, Number(String(i.temporada || temporada).slice(0, 4)))
+            );
             if (matricula !== null) {
                 suma += matricula;
                 filas.push(fila({

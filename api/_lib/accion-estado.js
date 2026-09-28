@@ -19,6 +19,7 @@ const {
     cargarDescuentos,
     importeFinal,
     tramoDeFicha,
+    varianteDeFicha,
     varianteAutomatica,
     MESES_DE_CUOTA,
     PRIMER_COBRO,
@@ -233,7 +234,7 @@ function tarifaDe(varianteGuardada, tramoCuota, tramoFicha, jugadoresDeLaFamilia
     const mensual = precios.get(`mensualidad|${variante}|${tramoCuota}`);
     // La ficha va por EDAD, no por la categoría: quien cumple 17 o 18 paga la
     // de los grandes aunque siga jugando en juveniles.
-    const ficha = precios.get(`ficha_anual|${variante}|${tramoFicha}`);
+    const ficha = precios.get(`ficha_anual|${varianteDeFicha(variante)}|${tramoFicha}`);
 
     const cuota = mensual && mensual.importe !== null ? Number(mensual.importe) : null;
     const anual = ficha && ficha.importe !== null ? Number(ficha.importe) : null;

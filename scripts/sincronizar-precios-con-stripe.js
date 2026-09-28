@@ -45,6 +45,7 @@ if (argEnv) {
 
 const DRY = process.argv.includes('--dry-run');
 const BR = String.fromCharCode(10);
+const MESES = 9; // meses_de_cuota() en la base: del 5 de octubre al 5 de junio
 
 const faltan = ['STRIPE_SECRET_KEY', 'SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY'].filter(
     (k) => !process.env[k]
@@ -198,6 +199,40 @@ async function main() {
     }
     console.log();
 
+    // ── Modo lista: el cuadro, para validarlo con la comisión ───────────
+    //
+    // Antes de crear nada en la cuenta REAL conviene que alguien que no sea
+    // quien escribió esto mire la lista y diga "sí, eso es lo que acordamos".
+    // Imprime lo mismo que se va a publicar, con el nombre exacto que va a
+    // quedar en Stripe y cómo se cobra cada cosa.
+    if (process.argv.includes('--lista')) {
+        const ancho = Math.max(...conImporte.map((x) => nombreVisible(x).length));
+        console.log('NOMBRE EN STRIPE'.padEnd(ancho + 24) + 'IMPORTE'.padStart(10) + '   CÓMO SE COBRA');
+        console.log('-'.repeat(ancho + 24 + 10 + 25));
+        let anterior = null;
+        for (const p of conImporte) {
+            if (anterior && p.concepto !== anterior) console.log();
+            anterior = p.concepto;
+            const r = RECURRENCIA[p.concepto];
+            const como = r
+                ? r.interval_count === 1
+                    ? `cada mes, ${MESES} veces (5 oct a 5 jun)`
+                    : `cada ${r.interval_count} ${r.interval}es`
+                : 'una sola vez, en el primer recibo';
+            console.log(
+                `Menorca Rugby Club — ${nombreVisible(p)}`.padEnd(ancho + 24) +
+                    `${Number(p.importe).toFixed(2)} €`.padStart(10) +
+                    '   ' + como
+            );
+        }
+        console.log();
+        const mens = conImporte.filter((x) => x.concepto === 'mensualidad');
+        const fich = conImporte.filter((x) => x.concepto === 'ficha_anual');
+        console.log(`${conImporte.length} en total: ${mens.length} cuotas mensuales y ${fich.length} fichas anuales.`);
+        console.log('Con --dry-run se ve qué haría en Stripe; sin nada, lo hace.');
+        return;
+    }
+
     const resumen = { creados: 0, actualizados: 0, sinCambios: 0, errores: 0 };
     const migrar = [];
 
@@ -216,7 +251,10 @@ async function main() {
             let productId = p.stripe_product_id || null;
             if (productId) {
                 const existe = await stripe.products.retrieve(productId).catch(() => null);
-                if (!existe || existe.deleted) productId = null;
+                // `active` además de `deleted`: un producto archivado se
+                // recupera sin error y sin la marca de borrado, pero un precio
+                // colgado de él no sirve en Checkout.
+                if (!existe || existe.deleted || existe.active === false) productId = null;
             }
             if (!productId) {
                 if (DRY) {
@@ -243,7 +281,18 @@ async function main() {
             let precioActual = null;
             if (priceId) {
                 precioActual = await stripe.prices.retrieve(priceId).catch(() => null);
-                if (!precioActual || !precioActual.active) priceId = null;
+                // Si está archivado se tira el dato ENTERO, no sólo el id.
+                //
+                // Antes se ponía `priceId = null` pero `precioActual` seguía
+                // apuntando al precio archivado, y la comparación de más abajo
+                // mira importe, moneda y recurrencia — no si está activo. Con
+                // el importe igual, el script imprimía «ya estaba bien», no
+                // creaba nada, y dejaba en la tabla un precio que Stripe
+                // rechaza en el checkout. El cobro roto y el script en verde.
+                if (!precioActual || !precioActual.active) {
+                    priceId = null;
+                    precioActual = null;
+                }
             }
 
             const quiere = centimos(p.importe);

@@ -39,6 +39,7 @@ const {
     nuevoId,
     soloConValor,
     tramoDeFicha,
+    varianteDeFicha,
     varianteAutomatica,
     MESES_DE_CUOTA,
 } = require('./inscripcion');
@@ -270,6 +271,27 @@ module.exports = async function accionEnviar(req, res) {
                     conservarEstado = true;
                     notas.push('La familia mando cambios sobre una inscripcion ya aprobada.');
                 }
+                // Rechazada -> la familia esta corrigiendo lo que le pidieron.
+                //
+                // La maquina de estados no permite rechazada -> enviada; si la
+                // permitiera saltarse, el upsert moria con el error crudo de
+                // Postgres en la cara de la familia, la correccion no se
+                // guardaba, y no habia ningun boton —ni en la web ni en la app—
+                // que la sacara de ahi. Rechazar a alguien lo dejaba encerrado.
+                //
+                // El camino legal existe: rechazada -> borrador -> enviada. Se
+                // da el primer paso aca y el upsert de mas abajo da el segundo.
+                if (yaHay && yaHay.estado === 'rechazada') {
+                    const { error: errVolver } = await supabase
+                        .from('inscripciones')
+                        .update({ estado: 'borrador' })
+                        .eq('temporada', temporada)
+                        .eq('player_id', playerId);
+                    if (errVolver) {
+                        throw new Error(`No se pudo reabrir la inscripcion de ${j.nombre}: ${errVolver.message}`);
+                    }
+                    notas.push('La familia corrigio y volvio a enviar una inscripcion rechazada.');
+                }
             }
 
             if (playerId) {
@@ -355,6 +377,19 @@ module.exports = async function accionEnviar(req, res) {
                         );
                     }
                     if (suya && suya.estado === 'aprobada') conservarEstado = true;
+                    // Y el mismo camino de vuelta para una rechazada: sin esto,
+                    // corregir lo que el club pidio devolvia un error de base.
+                    if (suya && suya.estado === 'rechazada') {
+                        const { error: errVolver } = await supabase
+                            .from('inscripciones')
+                            .update({ estado: 'borrador' })
+                            .eq('temporada', temporada)
+                            .eq('player_id', playerId);
+                        if (errVolver) {
+                            throw new Error(`No se pudo reabrir la inscripcion de ${j.nombre}: ${errVolver.message}`);
+                        }
+                        notas.push('La familia corrigio y volvio a enviar una inscripcion rechazada.');
+                    }
                     descuentosPrevios = (suya && suya.tarifa_descuentos) || [];
 
                     notas.push(
@@ -518,7 +553,7 @@ module.exports = async function accionEnviar(req, res) {
             // de nacimiento. El que este año cumple 17 o 18 paga la de senior
             // (300 €) aunque entrene con los juveniles y pague cuota juvenil.
             const ficha = precios.get(
-                `ficha_anual|${j.tarifa_variante}|${tramoDeFicha(j.fecha_nacimiento, year)}`
+                `ficha_anual|${varianteDeFicha(j.tarifa_variante)}|${tramoDeFicha(j.fecha_nacimiento, year)}`
             );
 
             resultado.push({

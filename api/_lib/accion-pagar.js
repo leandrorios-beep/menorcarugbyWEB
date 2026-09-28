@@ -30,9 +30,30 @@ const {
     importeFinal,
     cargarDescuentos,
     tramoDeFicha,
+    varianteDeFicha,
+    MESES_DE_CUOTA,
 } = require('./inscripcion');
 
 const URL_BASE = 'https://www.menorcarugbyclub.com';
+
+/**
+ * Cuándo sale la primera cuota: el 5 de octubre, como dice la web.
+ *
+ * Sin esto, quien se inscribe el 28 de septiembre paga la primera cuota ese
+ * mismo día y las nueve se le corren un mes: la última caería el 28 de junio,
+ * fuera de la temporada. Se le pone a la suscripción un "período de prueba"
+ * que termina el 5 de octubre; la ficha federativa no espera, porque las
+ * líneas de pago único se cobran al cerrar el checkout.
+ *
+ * Devuelve null si el 5 de octubre ya pasó —quien se suma en enero empieza a
+ * pagar en el acto— o si faltan menos de dos días, que es el mínimo que acepta
+ * Stripe para un trial.
+ */
+function primerCobroDeLaTemporada(year) {
+    const cincoDeOctubre = Math.floor(Date.UTC(year, 9, 5, 9, 0, 0) / 1000);
+    const ahora = Math.floor(Date.now() / 1000);
+    return cincoDeOctubre - ahora > 48 * 3600 ? cincoDeOctubre : null;
+}
 
 /**
  * Stripe se instancia DENTRO del handler, no al cargar el modulo.
@@ -125,14 +146,36 @@ module.exports = async function accionPagar(req, res) {
                 });
             }
 
-            // El descuento del delegado no puede aplicarse sobre un Price de
-            // Stripe ya creado: se manda como cupón de la suscripción.
+            // Un descuento APILADO no se puede aplicar sobre un Price de
+            // Stripe: los Price son inmutables y un cupón de suscripción se
+            // aplicaría a todas las líneas, o sea también al hermano que no
+            // tiene derecho. Así que si una inscripción trae descuentos, este
+            // cobro no puede ser fiel a lo que se le prometió a la familia.
+            //
+            // Antes seguía adelante: al formulario le enseñaba la mitad y a
+            // Stripe le mandaba el precio entero. La familia veía 25 €/mes y
+            // se le cobraban 50. Es preferible no cobrar y que alguien lo mire.
+            //
+            // Los descuentos del cuadro nuevo son VARIANTES —directivo,
+            // familiar_directivo— y esas sí viajan en el precio, así que por el
+            // camino normal esto no salta nunca.
             const conDescuento = importeFinal(
                 Number(mensual.importe),
                 'mensualidad',
                 i.tarifa_descuentos || [],
                 descuentos
             );
+            if (conDescuento !== Number(mensual.importe)) {
+                console.error(
+                    `Inscripción ${i.inscripcion_id} con descuento apilado (${(i.tarifa_descuentos || []).join(',')}): ` +
+                        `la pasarela cobraría ${mensual.importe} y se le prometió ${conDescuento}.`
+                );
+                return res.status(503).json({
+                    error:
+                        `La cuota de ${nombre} tiene un descuento que todavía no podemos cobrar por la web. ` +
+                        'Escribinos a info@menorcarugbyclub.com y lo resolvemos sin que pagues de más.',
+                });
+            }
 
             lineas.push({ price: mensual.stripe_price_id, quantity: 1 });
 
@@ -140,7 +183,9 @@ module.exports = async function accionPagar(req, res) {
             // cuota. Buscándola por tarifa_tramo, a un chico de 17 —que entrena
             // de juvenil— se le cobraban 235 € en vez de 300.
             const tramoFicha = tramoDeFicha(dobDe.get(i.player_id), temporadaYear());
-            const ficha = precios.get(`ficha_anual|${i.tarifa_variante}|${tramoFicha}`);
+            const ficha = precios.get(
+                `ficha_anual|${varianteDeFicha(i.tarifa_variante)}|${tramoFicha}`
+            );
             // Y si no está publicada, se para. Antes se saltaba la línea sin
             // decir nada: la familia pagaba la cuota mensual, se iba contenta y
             // el club se quedaba sin cobrar la matrícula entera, que es la
@@ -190,15 +235,42 @@ module.exports = async function accionPagar(req, res) {
             inscripciones: aCobrar.map((i) => i.inscripcion_id).join(','),
         };
 
+        // ── Agrupar por precio ───────────────────────────────────────────
+        //
+        // Una suscripción de Stripe NO admite dos líneas con el mismo precio:
+        // van agrupadas en una sola con cantidad 2. Y dos hermanos juveniles
+        // caen siempre en el mismo precio, porque la regla de hermanos los
+        // manda a los dos a 'con_hermano'. Sin agrupar, Stripe rechazaba la
+        // sesión entera y 7 de las 8 familias con dos hijos no podían pagar.
+        //
+        // El webhook ya daba por hecho que venían agrupadas (repartirLineas en
+        // cobros-inscripcion.js): era este lado el que no cumplía su parte.
+        const primeraCuota = primerCobroDeLaTemporada(temporadaYear());
+
+        const agrupar = (items) => {
+            const cuenta = new Map();
+            for (const x of items) cuenta.set(x.price, (cuenta.get(x.price) || 0) + x.quantity);
+            return [...cuenta].map(([price, quantity]) => ({ price, quantity }));
+        };
+
         const sesion = await stripe.checkout.sessions.create({
             mode: 'subscription',
             customer: customerId,
-            line_items: lineas,
+            // Las matrículas van acá, no en subscription_data: `add_invoice_items`
+            // es de la API de suscripciones y Checkout lo rechaza como parámetro
+            // desconocido, tirando abajo la sesión entera. Checkout sí admite
+            // precios de pago único entre las líneas de una suscripción, y los
+            // cobra sólo en la primera factura, que es exactamente lo que hace
+            // falta para la ficha federativa.
+            line_items: [...agrupar(lineas), ...agrupar(matriculas)],
             subscription_data: {
-                // Las matriculas son pago unico: se cargan en la PRIMERA
-                // factura de la suscripcion en vez de crear un cobro aparte,
-                // asi la familia paga una sola vez.
-                ...(matriculas.length ? { add_invoice_items: matriculas } : {}),
+                // La primera cuota sale el 5 de octubre, que es lo que dice la
+                // web. Sin esto, quien se inscribe el 28 de septiembre paga la
+                // primera el 28 y las nueve se le corren un mes.
+                //
+                // La ficha NO espera: las líneas de pago único se cobran al
+                // cerrar el checkout. Matrícula hoy, primera cuota el 5.
+                ...(primeraCuota ? { trial_end: primeraCuota } : {}),
                 metadata: meta,
                 description: `Cuotas ${temporada} — ${detalle.map((d) => d.jugador).join(', ')}`,
             },

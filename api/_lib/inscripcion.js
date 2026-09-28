@@ -100,6 +100,31 @@ function tramoDeFicha(dob, year = temporadaYear()) {
 }
 
 /**
+ * Con qué variante se busca la FICHA ANUAL.
+ *
+ * La ficha es de la federación, no del club: el club no puede hacerle descuento
+ * por tener un hermano, ni por tener beca, ni por colaborar. En el cuadro de la
+ * comisión se ve de un vistazo — normal, colaborador e hijo de colaborador
+ * pagan los mismos 235/300 € — y la ÚNICA excepción son el directivo o
+ * entrenador y sus hijos, que pagan 215 € mientras estén en la franja de abajo.
+ *
+ * POR QUÉ HACE FALTA ESTA FUNCIÓN Y NO ALCANZA CON BUSCAR POR LA VARIANTE
+ *
+ * La cuota va por la categoría y la ficha por el año de nacimiento. Un chico de
+ * 17 con un hermano en el club tiene variante 'con_hermano' y tramo de ficha
+ * 'senior'. Buscar `ficha_anual|con_hermano|senior` pedía una combinación que la
+ * base PROHÍBE crear —el CHECK precios_sin_hermano_en_adultos— así que no se
+ * encontraba nunca. Resultado: el pago de TODA la familia se cortaba con un 503
+ * que nadie podía arreglar, porque la fila que faltaba no se puede dar de alta.
+ *
+ * Es el caso de Héctor Brotons, nacido en 2009, que tiene un hermano. Y el año
+ * que viene son los otros 16 de su quinta.
+ */
+function varianteDeFicha(variante) {
+    return variante === 'directivo' || variante === 'familiar_directivo' ? variante : 'base';
+}
+
+/**
  * Qué tarifa le toca, SIN preguntárselo a la familia.
  *
  * La familia no elige: todo sale a precio normal. Las tarifas de directivo,
@@ -233,6 +258,10 @@ async function enviarMail({ to, subject, html }) {
         });
         await transporter.sendMail({
             from: `"Menorca Rugby Club" <${process.env.GMAIL_USER}>`,
+            // El remitente es noreply@, que nadie lee. Sin esto, la familia que
+            // conteste el correo —y contestan— escribe a un buzón vacío y se
+            // queda pensando que el club no le responde.
+            replyTo: 'info@menorcarugbyclub.com',
             to,
             subject,
             html,
@@ -357,6 +386,7 @@ module.exports = {
     PRIMER_COBRO,
     ULTIMO_COBRO,
     tramoDeFicha,
+    varianteDeFicha,
     varianteAutomatica,
     buscarJugadoresPorEmail,
     temporadaYear,
