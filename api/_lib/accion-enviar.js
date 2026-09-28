@@ -51,7 +51,13 @@ const GENEROS = ['Masculino', 'Femenino'];
 // pagan lo suyo. Sin esto podian crear la cuenta pero el envio les respondia
 // "parentesco no valido": la base ya lo aceptaba y el validador de la web no.
 const PARENTESCOS = ['madre', 'padre', 'tutor_legal', 'abuelo', 'hermano', 'otro', 'el_mismo'];
-const REGLAMENTO_VERSION = 'web-2026';
+// La version del texto que la familia acepta al enviar. Se guarda en cada
+// inscripcion, asi que cambiarla aca y en /reglamento a la vez es lo que
+// permite saber, dentro de dos anos, que decia lo que alguien firmo.
+//
+// La anterior era 'web-2026' y enlazaba a la pagina de privacidad: se estaba
+// aceptando un reglamento que no existia en ninguna parte.
+const REGLAMENTO_VERSION = 'reglamento-2026.1';
 
 /**
  * Un rechazo con mensaje para la familia, que ademas deshace el alta a medias.
