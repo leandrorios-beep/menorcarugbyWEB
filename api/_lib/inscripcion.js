@@ -246,6 +246,34 @@ async function buscarTutorPorEmail(supabase, email, columnas = '*') {
     return (data || []).find((r) => String(r.email || '').trim().toLowerCase() === target) || null;
 }
 
+/**
+ * Jugadores que tienen ESE correo en su propia ficha.
+ *
+ * Es la puerta que faltaba. El club tiene 113 jugadores y sólo 73 tutores: los
+ * 32 adultos que juegan y pagan lo suyo no tienen ficha de tutor, y hay
+ * familias cuyo correo quedó en players.email y no en tutores. En total, 49
+ * correos que existen en la base y que el alta no reconocía.
+ *
+ * El resultado era el peor posible: una familia que YA está en el club escribía
+ * su correo, el sistema le decía que no existía y la dejaba cargar todo de cero
+ * — creando un jugador duplicado al lado del que ya estaba.
+ *
+ * Mismo cuidado con los comodines de LIKE que en las otras búsquedas por correo.
+ */
+async function buscarJugadoresPorEmail(supabase, email) {
+    const target = normalizarEmail(email);
+    if (!target) return [];
+
+    const patron = target.replace(/[%_*\\]/g, '_');
+    const { data, error } = await supabase
+        .from('players')
+        .select('player_id, first_name, last_name, dob, email, category_primary, estado_club')
+        .ilike('email', patron);
+    if (error) throw new Error(`Error de base de datos: ${error.message}`);
+
+    return (data || []).filter((r) => String(r.email || '').trim().toLowerCase() === target);
+}
+
 /** Cabeceras CORS + preflight. Devuelve true si ya respondió (OPTIONS). */
 function cors(req, res, metodos = 'POST, OPTIONS') {
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -264,6 +292,7 @@ function nuevoId() {
 
 module.exports = {
     soloConValor,
+    buscarJugadoresPorEmail,
     temporadaYear,
     temporadaKey,
     calcularCategorias,

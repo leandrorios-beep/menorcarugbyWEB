@@ -359,6 +359,72 @@ async function main() {
         comprobar('la baja marca al jugador, el entrenador deja de verlo', data.estado_club === 'baja', data);
     }
 
+    console.log('\n11. Alguien que YA esta en el club pero nunca tuvo cuenta');
+    // Es el caso de los 32 adultos que juegan y se pagan lo suyo, y de las
+    // familias cuyo correo quedo en la ficha del chico. Antes el sistema les
+    // decia 'no existis' y los dejaba cargar todo de cero, duplicando al
+    // jugador que ya estaba.
+    const MAIL_HUERFANO = 'prueba.jugador.sin.cuenta@menorcarugbyclub.test';
+    const idHuerfano = 'PRUEBA-SIN-CUENTA';
+    await db.from('players').insert({
+        player_id: idHuerfano, first_name: 'Adulto', last_name: 'Sin Cuenta Prueba',
+        dob: '1995-04-04', category_primary: 'SENIOR', categories_extra: [],
+        status: 'available', gender: 'Masculino', email: MAIL_HUERFANO,
+    });
+
+    r = await llamar('inicio', { body: { email: MAIL_HUERFANO } });
+    comprobar('lo reconoce por el mail del jugador', r.body && r.body.existe === true, r.body);
+    comprobar('dice que es por la ficha del jugador', r.body && r.body.tipo === 'jugador', r.body);
+    comprobar('dice a quien encontro', r.body && (r.body.encontrados || []).some(function (n) { return /Sin Cuenta Prueba/.test(n); }), r.body);
+    comprobar('avisa que no tiene contrasena', r.body && r.body.tiene_password === false, r.body);
+
+    r = await llamar('recordar', { body: { email: MAIL_HUERFANO } });
+    comprobar('pedir la contrasena le crea la cuenta', r.status === 200, r.body);
+    {
+        const { data: cuenta } = await db.from('tutores').select('tutor_id, nombre, activo').eq('email', MAIL_HUERFANO).maybeSingle();
+        comprobar('la cuenta existe y quedo activa', cuenta && cuenta.activo === true, cuenta);
+        comprobar('toma el nombre del propio jugador', cuenta && cuenta.nombre === 'Adulto', cuenta);
+        if (cuenta) {
+            const { data: vinc } = await db.from('tutor_jugador').select('parentesco, es_pagador').eq('tutor_id', cuenta.tutor_id);
+            comprobar('se vincula al jugador', vinc && vinc.length === 1, vinc);
+            comprobar('un adulto es el_mismo, no su propio tutor', vinc && vinc[0].parentesco === 'el_mismo', vinc);
+            comprobar('y es el pagador', vinc && vinc[0].es_pagador === true, vinc);
+            await db.from('tutores').delete().eq('tutor_id', cuenta.tutor_id);
+        }
+    }
+    await db.from('players').delete().eq('player_id', idHuerfano);
+
+    console.log('\n12. No duplicar a un jugador que ya esta');
+    // Aunque venga por un correo distinto del que tenia.
+    const idViejo = 'PRUEBA-YA-ESTABA';
+    await db.from('players').insert({
+        player_id: idViejo, first_name: 'Repetido', last_name: 'De Prueba',
+        dob: '2013-02-02', category_primary: 'SUB14', categories_extra: [],
+        status: 'available', gender: 'Masculino',
+    });
+    r = await llamar('enviar', {
+        body: {
+            acepta_reglamento: true,
+            tutor: { nombre: 'Otro', apellido: 'Correo', email: 'otro.correo.prueba@menorcarugbyclub.test' },
+            jugadores: [{
+                nombre: 'Repetido', apellido: 'De Prueba', fecha_nacimiento: '2013-02-02',
+                genero: 'Masculino', tarifa_variante: 'base', parentesco: 'madre',
+            }],
+        },
+    });
+    comprobar('acepta el alta', r.status === 200, r.body);
+    {
+        const { data: repes } = await db.from('players').select('player_id').eq('last_name', 'De Prueba');
+        comprobar('NO creo un segundo jugador', repes && repes.length === 1, repes);
+        const { data: ins } = await db.from('inscripciones').select('observaciones').eq('player_id', idViejo).maybeSingle();
+        comprobar('anota que reuso la ficha', ins && /ya estaba/i.test(ins.observaciones || ''), ins);
+    }
+    {
+        const { data: otro } = await db.from('tutores').select('tutor_id').eq('email', 'otro.correo.prueba@menorcarugbyclub.test').maybeSingle();
+        if (otro) await db.from('tutores').delete().eq('tutor_id', otro.tutor_id);
+    }
+    await db.from('players').delete().eq('player_id', idViejo);
+
     console.log('\nLimpieza');
     await limpiar();
 

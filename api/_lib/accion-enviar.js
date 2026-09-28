@@ -207,6 +207,46 @@ module.exports = async function accionEnviar(req, res) {
                     .eq('player_id', playerId);
                 if (error) throw new Error(`No se pudo actualizar a ${j.nombre}: ${error.message}`);
             } else {
+                // ¿Este chico YA está en el club?
+                //
+                // Última defensa contra el duplicado. Aunque el correo sea nuevo
+                // —una madre que se inscribe con otra dirección, un padre que
+                // antes figuraba con el correo del otro— el jugador puede estar
+                // en la base desde hace años. Crear uno nuevo al lado parte su
+                // historia en dos: los cobros viejos quedan en una ficha y los
+                // nuevos en la otra.
+                //
+                // Se cruza por documento (exacto) o por nombre + fecha de
+                // nacimiento. Si aparece, se REUSA la ficha y se anota, para que
+                // quien revise vea que esto no es un alta.
+                const yaEstaba = await buscarJugadorExistente(supabase, j);
+                if (yaEstaba) {
+                    playerId = yaEstaba.player_id;
+                    notas.push(
+                        `Ya estaba en la base como "${yaEstaba.first_name} ${yaEstaba.last_name}" ` +
+                            '(se reutilizó su ficha en vez de crear una nueva).'
+                    );
+                    const { error } = await supabase
+                        .from('players')
+                        .update({
+                            first_name: j.nombre,
+                            last_name: j.apellido,
+                            gender: j.genero,
+                            category_primary: cat.principal,
+                            categories_extra: cat.extra,
+                            ...soloConValor({
+                                email: j.email,
+                                phone: j.telefono,
+                                tax_type: j.tipo_documento,
+                                tax_number: j.numero_documento,
+                            }),
+                        })
+                        .eq('player_id', playerId);
+                    if (error) throw new Error(`No se pudo actualizar a ${j.nombre}: ${error.message}`);
+                }
+            }
+
+            if (!playerId) {
                 // players.player_id es VARCHAR y NO tiene DEFAULT: hay que darle
                 // uno. El número de licencia todavía no existe, lo asigna la
                 // federación después.
@@ -383,6 +423,55 @@ module.exports = async function accionEnviar(req, res) {
         return res.status(500).json({ error: (e && e.message) || 'No se pudo guardar la inscripción' });
     }
 };
+
+// ---------------------------------------------------------------------------
+
+/**
+ * Busca si ese chico ya está en la base, aunque venga por un correo nuevo.
+ *
+ * Dos criterios, de más fuerte a más débil:
+ *   1. el documento, exacto — es único de verdad
+ *   2. nombre + apellido + fecha de nacimiento
+ *
+ * El segundo se compara sin tildes ni mayúsculas, porque en la base conviven
+ * "Goñalons" y "Gonalons", "MARTÍNEZ" y "Martinez". Si hay más de un candidato
+ * NO se elige ninguno: mejor crear un duplicado que fusionar a dos chicos
+ * distintos, que es un error que después no se puede deshacer.
+ */
+async function buscarJugadorExistente(supabase, j) {
+    const limpiar = (v) => String(v || '').replace(/[^0-9A-Za-z]/g, '').toUpperCase();
+    const norm = (v) =>
+        String(v || '')
+            .normalize('NFD')
+            .replace(/[̀-ͯ]/g, '')
+            .toLowerCase()
+            .replace(/[^a-z0-9 ]/g, ' ')
+            .replace(/\s+/g, ' ')
+            .trim();
+
+    if (j.numero_documento) {
+        const doc = limpiar(j.numero_documento);
+        if (doc.length >= 7) {
+            const { data } = await supabase
+                .from('players')
+                .select('player_id, first_name, last_name, tax_number')
+                .not('tax_number', 'is', null);
+            const hit = (data || []).find((p) => limpiar(p.tax_number) === doc);
+            if (hit) return hit;
+        }
+    }
+
+    const { data } = await supabase
+        .from('players')
+        .select('player_id, first_name, last_name, dob')
+        .eq('dob', j.fecha_nacimiento);
+
+    const buscado = norm(`${j.nombre} ${j.apellido}`);
+    const candidatos = (data || []).filter(
+        (p) => norm(`${p.first_name} ${p.last_name}`) === buscado
+    );
+    return candidatos.length === 1 ? candidatos[0] : null;
+}
 
 // ---------------------------------------------------------------------------
 // Validación

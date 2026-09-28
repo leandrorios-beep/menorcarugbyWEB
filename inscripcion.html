@@ -42,7 +42,12 @@
 .insc-wrap {
     max-width: 640px;
     margin: 0 auto;
-    padding: 24px 16px calc(64px + env(safe-area-inset-bottom));
+    /*
+       El .navbar del sitio es position:fixed y mide 80px, asi que el contenido
+       le pasa por debajo si no se le deja el hueco. Las demas paginas lo
+       resuelven con su hero; esta no tiene hero, asi que va aca.
+    */
+    padding: calc(80px + 24px) 16px calc(64px + env(safe-area-inset-bottom));
     font-family: 'Space Grotesk', system-ui, sans-serif;
 }
 .insc-hero { text-align: center; margin-bottom: 28px; }
@@ -395,11 +400,26 @@ $('formEmail').addEventListener('submit', async function (e) {
                 aviso('Tu ficha está archivada porque ningún jugador figura a tu cargo. Escribinos y la reactivamos.', 'info');
                 return;
             }
-            $('textoEntrar').textContent = r.hijos
-                ? 'Hola ' + r.nombre + '. Tenés ' + r.hijos + (r.hijos === 1 ? ' jugador' : ' jugadores') + ' a tu cargo. Entrá y renovás en dos toques.'
-                : 'Hola ' + r.nombre + '. Entrá con tu contraseña y seguimos desde ahí.';
-            if (!r.tiene_password) {
-                $('textoEntrar').textContent += ' Todavía no tenés contraseña: pedí que te la enviemos.';
+            // Reconocido por la ficha del jugador y todavía sin cuenta: es el
+            // caso de los adultos que juegan y de las familias cuyo correo
+            // quedó en la ficha del chico y no en una cuenta. Se le dice a
+            // QUIÉN encontramos, para que confirme que es su familia y no cargue
+            // todo de cero duplicando al jugador.
+            if (r.tipo === 'jugador') {
+                $('textoEntrar').innerHTML =
+                    'Ya estás en el club. Con ese correo encontramos a <strong>' +
+                    (r.encontrados || []).map(escapar).join('</strong> y <strong>') + '</strong>.' +
+                    '<br><br>Todavía no tenés contraseña: pedila y te la mandamos por correo. ' +
+                    'Entrás, ves sus datos y renovás sin volver a cargar nada.';
+                $('formEntrar').classList.add('oculto');
+            } else {
+                $('formEntrar').classList.remove('oculto');
+                $('textoEntrar').textContent = r.hijos
+                    ? 'Hola ' + r.nombre + '. Tenés ' + r.hijos + (r.hijos === 1 ? ' jugador' : ' jugadores') + ' a tu cargo. Entrá y renovás en dos toques.'
+                    : 'Hola ' + r.nombre + '. Entrá con tu contraseña y seguimos desde ahí.';
+                if (!r.tiene_password) {
+                    $('textoEntrar').textContent += ' Todavía no tenés contraseña: pedí que te la enviemos.';
+                }
             }
             mostrar('pasoEmail', false);
             mostrar('pasoEntrar', true);
@@ -437,6 +457,9 @@ $('btnRecordar').addEventListener('click', async function () {
         aviso(r.enviado
             ? 'Te enviamos la contraseña a ' + estado.email + '. Mirá también en spam.'
             : r.aviso, r.enviado ? 'ok' : 'error');
+        // Si el formulario estaba escondido (cuenta recien creada), ahora si
+        // tiene con que entrar.
+        $('formEntrar').classList.remove('oculto');
     } catch (err) {
         aviso(err.message);
     } finally {

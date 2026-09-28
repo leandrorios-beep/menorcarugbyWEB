@@ -13,7 +13,7 @@
 
 const { createClient } = require('@supabase/supabase-js');
 const { generatePassword, hashPassword, findSociosByEmail } = require('./auth');
-const { normalizarEmail, buscarTutorPorEmail, enviarMail, escapeHtml } = require('./inscripcion');
+const { normalizarEmail, buscarTutorPorEmail, buscarJugadoresPorEmail, enviarMail, escapeHtml } = require('./inscripcion');
 
 module.exports = async function accionRecordar(req, res) {
 
@@ -32,6 +32,33 @@ module.exports = async function accionRecordar(req, res) {
     }
 
     const socio = (socios || [])[0] || null;
+
+    // Si el correo no tiene cuenta pero SÍ está en la ficha de algún jugador, se
+    // le crea la cuenta acá y se le vincula a los suyos. Es el momento correcto:
+    // hay una persona esperando un correo, y sin cuenta no tiene forma de entrar
+    // a ver ni a renovar lo que ya existe.
+    //
+    // No es un agujero: la contraseña se manda a ESE mismo correo, así que quien
+    // no controle el buzón no gana nada. Es la misma propiedad que un reseteo.
+    if (!tutor) {
+        let jugadores = [];
+        try {
+            jugadores = (await buscarJugadoresPorEmail(supabase, email)).filter(
+                (j) => j.estado_club !== 'baja'
+            );
+        } catch (e) {
+            console.error('inscripcion-recordar (jugadores):', e && e.message);
+        }
+        if (jugadores.length) {
+            try {
+                tutor = await crearCuentaDesdeJugadores(supabase, email, jugadores);
+            } catch (e) {
+                console.error('inscripcion-recordar (crear cuenta):', e && e.message);
+                return res.status(500).json({ error: 'No pudimos preparar tu cuenta. Escribinos.' });
+            }
+        }
+    }
+
     if (!tutor && !socio) {
         // Acá no hay nada que proteger: inscripcion-inicio ya dice si el mail
         // existe, y decir dos cosas distintas sólo confunde.
@@ -82,6 +109,70 @@ module.exports = async function accionRecordar(req, res) {
 
     return res.status(200).json({ enviado: true });
 };
+
+/**
+ * Crea la cuenta de quien ya está en el club pero nunca tuvo uno.
+ *
+ * El orden es obligado por los CONSTRAINT TRIGGER, que son DEFERRABLE y se
+ * evalúan al cerrar cada request de PostgREST:
+ *   1. el tutor entra con activo = false (uno activo sin jugadores no se puede)
+ *   2. los vínculos de cada jugador, TODOS en una llamada y con un solo pagador
+ *   3. recién ahí se activa
+ *
+ * El nombre sale del propio jugador adulto si lo hay. Si son todos menores no
+ * sabemos cómo se llama la madre o el padre, así que queda el correo y lo
+ * corrigen ellos en el formulario: inventarle un nombre a alguien es peor.
+ */
+async function crearCuentaDesdeJugadores(supabase, email, jugadores) {
+    const adulto = jugadores.find((j) => ['SENIOR', 'FEMENINO'].includes(j.category_primary));
+
+    const { data: creado, error } = await supabase
+        .from('tutores')
+        .insert({
+            nombre: adulto ? adulto.first_name : email.split('@')[0],
+            apellido: adulto ? adulto.last_name : null,
+            email,
+            activo: false,
+            notas:
+                'Cuenta creada sola al pedir la contraseña: el correo ya estaba en la ficha de ' +
+                jugadores.map((j) => `${j.first_name} ${j.last_name}`).join(', ') + '.',
+        })
+        .select('tutor_id, nombre, email')
+        .single();
+    if (error) throw new Error(error.message);
+
+    for (const j of jugadores) {
+        // 'el_mismo' cuando la cuenta ES el jugador: un adulto que juega y se
+        // paga su cuota no es "tutor" de nadie.
+        const esElMismo = adulto && j.player_id === adulto.player_id;
+        const { error: errV } = await supabase.from('tutor_jugador').insert({
+            tutor_id: creado.tutor_id,
+            player_id: j.player_id,
+            parentesco: esElMismo ? 'el_mismo' : 'tutor_legal',
+            // es_pagador: true en TODOS, y no sólo en el primero.
+            //
+            // El trigger cuenta los pagadores de CADA JUGADOR, no de la familia:
+            // pide exactamente uno por chico, porque por cada chico se cobra una
+            // cuota. Marcando sólo al primero, el segundo hijo se quedaba con
+            // cero pagadores y la cuenta entera no se podía crear.
+            //
+            // Acá esta cuenta es la única que tiene a cada uno de ellos a cargo,
+            // así que es la pagadora de todos.
+            es_pagador: true,
+            notificar: true,
+        });
+        if (errV) throw new Error(errV.message);
+    }
+
+    const { error: errA } = await supabase
+        .from('tutores')
+        .update({ activo: true })
+        .eq('tutor_id', creado.tutor_id);
+    if (errA) throw new Error(errA.message);
+
+    console.log(`Cuenta creada para ${email} con ${jugadores.length} jugador(es) que ya estaban`);
+    return creado;
+}
 
 function plantilla(nombre, password) {
     return `<!DOCTYPE html>

@@ -21,7 +21,7 @@
 // ---------------------------------------------------------------------------
 
 const { createClient } = require('@supabase/supabase-js');
-const { normalizarEmail, buscarTutorPorEmail } = require('./inscripcion');
+const { normalizarEmail, buscarTutorPorEmail, buscarJugadoresPorEmail } = require('./inscripcion');
 const { findSociosByEmail } = require('./auth');
 
 module.exports = async function accionInicio(req, res) {
@@ -46,8 +46,43 @@ module.exports = async function accionInicio(req, res) {
 
     const socio = (socios || [])[0] || null;
 
-    if (!tutor && !socio) {
+    // La tercera puerta, que faltaba: el correo puede estar en la ficha del
+    // JUGADOR y no en ninguna cuenta. Pasa con los 32 adultos que juegan y
+    // pagan lo suyo —no tienen ficha de tutor— y con las familias cuyo correo
+    // quedó en players.email. Son 49 correos que existen en la base.
+    //
+    // Sin esto el sistema le decía "no existe" a alguien que está en el club
+    // desde hace años y lo dejaba cargar todo de cero, duplicando al jugador.
+    let jugadores = [];
+    if (!tutor) {
+        try {
+            jugadores = await buscarJugadoresPorEmail(supabase, email);
+            jugadores = jugadores.filter((j) => j.estado_club !== 'baja');
+        } catch (e) {
+            console.error('inscripcion-inicio (jugadores):', e && e.message);
+        }
+    }
+
+    if (!tutor && !socio && !jugadores.length) {
         return res.status(200).json({ existe: false });
+    }
+
+    // Reconocido por la ficha del jugador, pero todavía sin cuenta. No se crea
+    // acá: este endpoint no cambia nada a propósito. La cuenta se crea cuando
+    // pide la contraseña, que es cuando hay alguien esperando un correo.
+    if (!tutor && jugadores.length) {
+        return res.status(200).json({
+            existe: true,
+            tipo: 'jugador',
+            nombre: jugadores[0].first_name,
+            hijos: jugadores.length,
+            // Los nombres, para que la pantalla pueda decir a quién encontró y
+            // la persona confirme que es su familia antes de seguir.
+            encontrados: jugadores.map((j) => `${j.first_name} ${j.last_name}`),
+            tiene_password: false,
+            activo: true,
+            es_socio: Boolean(socio),
+        });
     }
 
     // Cuántos hijos tiene vinculados, para que la pantalla siguiente pueda decir
