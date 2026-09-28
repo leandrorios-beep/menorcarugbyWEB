@@ -21,6 +21,8 @@ const {
     tramoDeFicha,
     varianteDeFicha,
     varianteAutomatica,
+    cuentaComoHermano,
+    identidadDePlayer,
     MESES_DE_CUOTA,
     PRIMER_COBRO,
     ULTIMO_COBRO,
@@ -101,8 +103,16 @@ module.exports = async function accionEstado(req, res) {
                         .filter((i) => i.temporada === temporada && i.estado === 'baja')
                         .map((i) => i.player_id)
                 );
-                const jugadoresDeLaFamilia = (players || []).filter(
-                    (p) => !deBaja.has(p.player_id)
+                // Y tampoco cuenta el titular de la cuenta: no es hermano de su
+                // propio hijo. Se compara contra la MISMA fila de `tutores` que
+                // usa accion-enviar, con la misma función. Si cada uno mirara su
+                // propia fuente, un día darían números distintos y la familia
+                // vería 40 €/mes en pantalla con 50 guardados.
+                const parentescoDe = new Map((vinculos || []).map((v) => [v.player_id, v.parentesco]));
+                const hijosDeLaFamilia = (players || []).filter(
+                    (p) =>
+                        !deBaja.has(p.player_id) &&
+                        cuentaComoHermano(identidadDePlayer(p), tutor, parentescoDe.get(p.player_id))
                 ).length;
 
                 const categoriaDe = new Map();
@@ -185,7 +195,7 @@ module.exports = async function accionEstado(req, res) {
                             base ? base.tarifa_variante : null,
                             tramo,
                             tramoDeFicha(p.dob, year),
-                            jugadoresDeLaFamilia,
+                            hijosDeLaFamilia,
                             precios,
                             descuentos
                         ),
@@ -232,9 +242,9 @@ module.exports = async function accionEstado(req, res) {
  *
  * Si el club ya le concedió una especial, se respeta y se muestra ésa.
  */
-function tarifaDe(varianteGuardada, tramoCuota, tramoFicha, jugadoresDeLaFamilia, precios, descuentos) {
+function tarifaDe(varianteGuardada, tramoCuota, tramoFicha, hijosDeLaFamilia, precios, descuentos) {
     const especial = varianteGuardada && !['base', 'con_hermano'].includes(varianteGuardada);
-    const variante = especial ? varianteGuardada : varianteAutomatica(tramoCuota, jugadoresDeLaFamilia);
+    const variante = especial ? varianteGuardada : varianteAutomatica(tramoCuota, hijosDeLaFamilia);
 
     const mensual = precios.get(`mensualidad|${variante}|${tramoCuota}`);
     // La ficha va por EDAD, no por la categoría: quien cumple 17 o 18 paga la

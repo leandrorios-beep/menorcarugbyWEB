@@ -124,7 +124,27 @@ module.exports = async function accionRecordar(req, res) {
  * corrigen ellos en el formulario: inventarle un nombre a alguien es peor.
  */
 async function crearCuentaDesdeJugadores(supabase, email, jugadores) {
-    const adulto = jugadores.find((j) => ['SENIOR', 'FEMENINO'].includes(j.category_primary));
+    // ¿La cuenta ES el jugador, o es la de alguien que lo tiene a cargo?
+    //
+    // SÓLO se da por hecho que la cuenta es del propio jugador cuando en ese
+    // correo hay UNO. Con un adulto y un menor no se sabe: lo más habitual es
+    // que sea el correo de la madre, puesto en la ficha de los dos hijos.
+    //
+    // Antes se elegía por CATEGORÍA — el que estuviera en SENIOR o FEMENINO era
+    // "el mismo". Eso es el criterio de la EDAD, y desde que 'el_mismo' decide
+    // el descuento por hermano hacía esto: familia con un hijo de 19 en senior
+    // y otro de 15 en SUB16, la madre pide su contraseña, el mayor queda como
+    // titular de la cuenta — y el de 15 deja de tener hermano y pasa de 40 a
+    // 50 €/mes. 90 € de más por temporada a una familia con DOS hijos en el
+    // club, coherente en las dos puntas, con la cuenta a nombre del chico y no
+    // de su madre, y sin nada que lo delate.
+    //
+    // Adivinar de menos deja el parentesco en 'tutor_legal', que la familia
+    // corrige en el formulario con un click. Adivinar de más le cobra 90 €.
+    const adulto =
+        jugadores.length === 1
+            ? jugadores.find((j) => ['SENIOR', 'FEMENINO'].includes(j.category_primary))
+            : null;
 
     const { data: creado, error } = await supabase
         .from('tutores')

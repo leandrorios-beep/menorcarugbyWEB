@@ -41,6 +41,9 @@ const {
     tramoDeFicha,
     varianteDeFicha,
     varianteAutomatica,
+    cuentaComoHermano,
+    esLaMismaPersona,
+    identidadDePlayer,
     MESES_DE_CUOTA,
 } = require('./inscripcion');
 
@@ -144,19 +147,40 @@ module.exports = async function accionEnviar(req, res) {
         // ── 2. Los jugadores ─────────────────────────────────────────────
         const precios = await cargarPrecios(supabase, temporada);
 
+        // Quién es el titular, leído de la BASE y no del cuerpo del request.
+        //
+        // Al renovar, el formulario manda sólo lo que cambió (soloConValor), así
+        // que el tutor del cuerpo puede venir sin fecha de nacimiento ni
+        // documento y la comparación de identidad fallaría sola. Y más
+        // importante: accion-estado compara contra esta MISMA fila. Si cada uno
+        // mirara su propia fuente, un día darían números distintos y la familia
+        // vería 40 €/mes en pantalla con 50 guardados.
+        const { data: titular } = await supabase
+            .from('tutores')
+            .select('nombre, apellido, fecha_nacimiento, tipo_documento, numero_documento')
+            .eq('tutor_id', tutorId)
+            .maybeSingle();
+
         // ── La tarifa la decide el club, no el formulario ─────────────────
         //
         // La familia no elige nada: manda a sus hijos y el servidor pone el
         // precio. Dos reglas, las que fijó la comisión el 28/09/2026:
         //
         //   · "con hermano" sale solo, cuando la familia trae más de un
-        //     jugador. Lo cobran únicamente los juveniles y da igual el
-        //     apellido: cuenta la familia, no el parentesco.
+        //     HIJO. Lo cobran únicamente los juveniles y da igual el apellido.
+        //     El padre o la madre que además juega no cuenta: no es hermano de
+        //     su propio hijo. Quién es "el padre" lo decide la IDENTIDAD, no el
+        //     desplegable de parentesco que rellena la familia. Ver
+        //     cuentaComoHermano(), que explica por qué.
         //   · el resto de los descuentos —directivo, hijo de directivo, beca,
         //     colaborador— los pone el club al revisar la inscripción. Acá
         //     sólo se RESPETAN los que ya estaban: si el año pasado el club le
         //     puso la tarifa de hijo de entrenador, renovar no se la quita.
-        const deEsteEnvio = jugadores.filter((j) => !j.no_renueva);
+        // Los HIJOS de este envio: los que renuevan, sin el titular de la
+        // cuenta. El padre que juega no es hermano de su propio hijo.
+        const deEsteEnvio = jugadores.filter(
+            (j) => !j.no_renueva && cuentaComoHermano(j, titular, j.parentesco)
+        );
         // Los IDs son de TODO el envío, también los que este año no juegan: son
         // los que hay que descontar de la búsqueda de hermanos. Si sólo se
         // tomaran los que siguen, el que se da de baja en este mismo envío
@@ -174,11 +198,28 @@ module.exports = async function accionEnviar(req, res) {
         if (!tutorEsNuevo) {
             const { data: delTutor } = await supabase
                 .from('tutor_jugador')
-                .select('player_id')
+                .select('player_id, parentesco')
                 .eq('tutor_id', tutorId);
-            const otros = (delTutor || [])
+            const candidatos = (delTutor || [])
                 .map((v) => v.player_id)
                 .filter((id) => !idsDelEnvio.includes(id));
+
+            // La identidad de los que ya estaban, para aplicarles la MISMA
+            // regla. Sin esto, el padre que se inscribió la semana pasada le
+            // hace el descuento a su hijo hoy: dos respuestas distintas a la
+            // misma pregunta según en cuántas veces se inscribió la familia.
+            let otros = candidatos;
+            if (candidatos.length) {
+                const { data: fichas } = await supabase
+                    .from('players')
+                    .select('player_id, first_name, last_name, dob, tax_type, tax_number')
+                    .in('player_id', candidatos);
+                const fichaDe = new Map((fichas || []).map((f) => [f.player_id, f]));
+                const parentescoDe = new Map((delTutor || []).map((v) => [v.player_id, v.parentesco]));
+                otros = candidatos.filter((id) =>
+                    cuentaComoHermano(identidadDePlayer(fichaDe.get(id)), titular, parentescoDe.get(id))
+                );
+            }
             if (otros.length) {
                 const { data: vivas } = await supabase
                     .from('inscripciones')
@@ -203,7 +244,7 @@ module.exports = async function accionEnviar(req, res) {
                 }
             }
         }
-        const cuantosJugadores = deEsteEnvio.length + hermanosYaInscritos;
+        const cuantosHijos = deEsteEnvio.length + hermanosYaInscritos;
 
         const resultado = [];
 
@@ -228,7 +269,7 @@ module.exports = async function accionEnviar(req, res) {
             // varianteAutomatica() nunca le da "con hermano" a un adulto, que
             // es lo que prohíbe el CHECK inscripciones_sin_hermano_en_adultos.
             j.tarifa_variante =
-                varianteEspecialPrevia[j.player_id || ''] || varianteAutomatica(tramo, cuantosJugadores);
+                varianteEspecialPrevia[j.player_id || ''] || varianteAutomatica(tramo, cuantosHijos);
             // Que la fila EXISTA no alcanza: el estado normal del catálogo es
             // que la fila esté y el importe todavía no. Number(null) es 0, así
             // que sin esto la familia se inscribe sin error y recibe un correo
@@ -849,8 +890,24 @@ function validar(body, tieneToken) {
         const numDoc = limpiar(j.numero_documento, 40);
         if (tipoDoc && !TIPOS_DOC.includes(tipoDoc)) return { error: `${nombre}: tipo de documento no válido.` };
 
-        const parentesco = limpiar(j.parentesco) || 'tutor_legal';
+        let parentesco = limpiar(j.parentesco) || 'tutor_legal';
         if (!PARENTESCOS.includes(parentesco)) return { error: `${nombre}: parentesco no válido.` };
+        // Si esta ficha ES la de quien abrió la cuenta, da igual lo que diga el
+        // desplegable: es 'el_mismo'. El valor por defecto de una ficha nueva es
+        // 'tutor_legal', así que un adulto que rellenaba la suya a mano sin
+        // tildar "Soy yo, el jugador" quedaba registrado como tutor de sí mismo
+        // — y desde que el parentesco decide el precio, eso le regalaba a su
+        // hijo único el descuento por hermano sin que nadie se lo propusiera.
+        const identidadDeEsteJugador = {
+            nombre,
+            apellido,
+            fecha_nacimiento: dob,
+            tipo_documento: tipoDoc,
+            numero_documento: numDoc,
+        };
+        if (esLaMismaPersona(identidadDeEsteJugador, tutor)) {
+            parentesco = 'el_mismo';
+        }
 
         const altura = j.altura_cm === null || j.altura_cm === undefined || j.altura_cm === '' ? null : Number(j.altura_cm);
         const peso = j.peso_kg === null || j.peso_kg === undefined || j.peso_kg === '' ? null : Number(j.peso_kg);

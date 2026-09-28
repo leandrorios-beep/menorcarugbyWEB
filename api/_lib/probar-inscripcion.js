@@ -758,6 +758,250 @@ async function main() {
         await limpiarDoble();
     }
 
+    // ── 15 ──────────────────────────────────────────────────────────────
+    //
+    // El padre que juega NO es hermano de su hijo.
+    //
+    // Antes si contaba, y el efecto era: un padre se apuntaba a jugar y la
+    // cuota de su hijo unico bajaba de 50 a 40 euros. 90 euros por temporada y
+    // por familia, y desbloqueable a voluntad por quien lo notara.
+    //
+    // Se comprueban las TRES puertas por las que se puede llegar al descuento,
+    // porque el numero lo calculan tres trozos de codigo distintos y basta con
+    // que uno no se entere:
+    //   (a) todo en un envio
+    //   (b) en dos envios (primero el padre, despues el hijo)
+    //   (c) la vista previa del navegador, que tiene que decir lo mismo que se
+    //       guarda o la familia ve 40 y se le cobran 50
+    console.log('\n15. El padre que juega no es hermano de su hijo');
+    {
+        const MAIL_PJ = 'prueba.padre.jugador.borrar@menorcarugbyclub.test';
+        const limpiarPJ = async () => {
+            const { data: t } = await db.from('tutores').select('tutor_id').eq('email', MAIL_PJ).maybeSingle();
+            if (!t) return;
+            const { data: v } = await db.from('tutor_jugador').select('player_id').eq('tutor_id', t.tutor_id);
+            await db.from('tutores').delete().eq('tutor_id', t.tutor_id);
+            for (const x of v || []) await db.from('players').delete().eq('player_id', x.player_id);
+        };
+        await limpiarPJ();
+
+        const PADRE = { nombre: 'Padre', apellido: 'Jugador Prueba', fecha_nacimiento: '1985-04-04', genero: 'Masculino', parentesco: 'el_mismo' };
+        const HIJO  = { nombre: 'Hijo',  apellido: 'Jugador Prueba', fecha_nacimiento: '2012-05-05', genero: 'Masculino', parentesco: 'padre' };
+
+        // (a) Los dos en el mismo envio.
+        let r = await llamar('enviar', {
+            body: {
+                acepta_reglamento: true,
+                tutor: { nombre: 'Padre', apellido: 'Jugador Prueba', email: MAIL_PJ },
+                jugadores: [PADRE, HIJO],
+            },
+        });
+        comprobar('acepta al padre jugador y a su hijo', r.status === 200, r.body);
+        {
+            const hijo  = (r.body.jugadores || []).find((j) => j.nombre.startsWith('Hijo'));
+            const padre = (r.body.jugadores || []).find((j) => j.nombre.startsWith('Padre'));
+            comprobar('el hijo unico NO lleva descuento de hermano',
+                hijo && hijo.variante === 'base', hijo);
+            comprobar('y el padre tampoco (en adultos no existe)',
+                padre && padre.variante === 'base', padre);
+        }
+
+        // (b) En dos veces: el padre ya estaba, ahora entra el hijo. Es el
+        //     camino por el que el numero lo calcula la OTRA consulta, la de
+        //     hermanos ya inscritos, y donde la regla se podia quedar a medias.
+        await limpiarPJ();
+        r = await llamar('enviar', {
+            body: {
+                acepta_reglamento: true,
+                tutor: { nombre: 'Padre', apellido: 'Jugador Prueba', email: MAIL_PJ },
+                jugadores: [PADRE],
+            },
+        });
+        comprobar('el padre solo entra', r.status === 200, r.body);
+        // La contrasena se genera y se manda por correo, que aca a proposito no
+        // sale. Se pisa con una conocida para poder seguir, igual que hace la
+        // seccion de renovacion.
+        await db.from('tutores').update({ password_hash: hashPassword('prueba1234') }).eq('email', MAIL_PJ);
+        r = await llamar('acceso', { body: { email: MAIL_PJ, password: 'prueba1234' } });
+        const tokenPJ = r.body && r.body.token;
+        comprobar('y puede entrar a renovar', Boolean(tokenPJ), r.body);
+
+        r = await llamar('enviar', {
+            token: tokenPJ,
+            body: { acepta_reglamento: true, tutor: { nombre: 'Padre', apellido: 'Jugador Prueba', email: MAIL_PJ }, jugadores: [HIJO] },
+        });
+        comprobar('el hijo entra despues', r.status === 200, r.body);
+        {
+            const hijo = (r.body.jugadores || []).find((j) => j.nombre.startsWith('Hijo'));
+            comprobar('y TAMPOCO lleva descuento inscribiendose aparte',
+                hijo && hijo.variante === 'base', hijo);
+        }
+
+        // Lo que quedo guardado de verdad, que es lo unico que se cobra.
+        {
+            const { data: t } = await db.from('tutores').select('tutor_id').eq('email', MAIL_PJ).single();
+            const { data: v } = await db.from('tutor_jugador').select('player_id, parentesco').eq('tutor_id', t.tutor_id);
+            const idHijo = (v || []).find((x) => x.parentesco !== 'el_mismo');
+            const { data: insc } = await db.from('inscripciones')
+                .select('tarifa_variante').eq('player_id', idHijo.player_id).eq('temporada', temporada).single();
+            comprobar('en la base figura base, no con_hermano',
+                insc && insc.tarifa_variante === 'base', insc);
+        }
+
+        // (c) La vista previa tiene que decir lo mismo que se guardo.
+        {
+            const est = await llamar('estado', { method: 'GET', token: tokenPJ });
+            comprobar('la vista previa responde', est.status === 200, est.body);
+            const hijo = (est.body.jugadores || []).find((j) => j.parentesco !== 'el_mismo');
+            const padre = (est.body.jugadores || []).find((j) => j.parentesco === 'el_mismo');
+            comprobar('y le ensena al hijo la MISMA tarifa que se guardo',
+                hijo && hijo.tarifa && hijo.tarifa.variante === 'base', hijo && hijo.tarifa);
+            comprobar('y al padre, base', padre && padre.tarifa && padre.tarifa.variante === 'base',
+                padre && padre.tarifa);
+        }
+
+        // (d) Y que el descuento SIGUE existiendo para dos hijos de verdad: lo
+        //     facil al arreglar esto es apagarlo para todo el mundo.
+        {
+            const HIJO2 = { nombre: 'Hija', apellido: 'Jugador Prueba', fecha_nacimiento: '2014-06-06', genero: 'Femenino', parentesco: 'padre' };
+            r = await llamar('enviar', {
+                token: tokenPJ,
+                body: { acepta_reglamento: true, tutor: { nombre: 'Padre', apellido: 'Jugador Prueba', email: MAIL_PJ }, jugadores: [HIJO2] },
+            });
+            comprobar('entra la segunda hija', r.status === 200, r.body);
+            const hija = (r.body.jugadores || []).find((j) => j.nombre.startsWith('Hija'));
+            comprobar('AHORA si hay descuento: dos hijos son dos hermanos',
+                hija && hija.variante === 'con_hermano', hija);
+            // Y el primero tambien, la proxima vez que se lo mire.
+            const est = await llamar('estado', { method: 'GET', token: tokenPJ });
+            const hijo = (est.body.jugadores || []).find((j) => j.nombre === 'Hijo');
+            comprobar('y al hermano mayor se le muestra tambien',
+                hijo && hijo.tarifa && hijo.tarifa.variante === 'con_hermano', hijo && hijo.tarifa);
+        }
+
+
+        // (e) EL AGUJERO QUE ENCONTRO LA AUDITORIA.
+        //
+        // El parentesco lo elige la familia en un desplegable, y desde que
+        // decide el precio bastaba con dejarlo en "Soy su tutor/a legal" para
+        // que el padre volviera a contar como hermano. Peor: ese es el valor
+        // POR DEFECTO de una ficha nueva, asi que un padre honesto que rellena
+        // la suya sin tildar "Soy yo, el jugador" se llevaba el descuento sin
+        // enterarse, y quedaba sellado en tarifa_variante_origen.
+        //
+        // Ahora el servidor lo DEDUCE comparando identidades. Estas cuatro
+        // comprobaciones son el caso adversario, no el honesto.
+        await limpiarPJ();
+        {
+            const PADRE_MINTIENDO = Object.assign({}, PADRE, { parentesco: 'tutor_legal' });
+            r = await llamar('enviar', {
+                body: {
+                    acepta_reglamento: true,
+                    tutor: { nombre: 'Padre', apellido: 'Jugador Prueba', email: MAIL_PJ, fecha_nacimiento: '1985-04-04' },
+                    jugadores: [PADRE_MINTIENDO, HIJO],
+                },
+            });
+            comprobar('acepta el envio con el parentesco por defecto', r.status === 200, r.body);
+            const hijo = (r.body.jugadores || []).find((j) => j.nombre.startsWith('Hijo'));
+            comprobar('el desplegable NO desbloquea el descuento',
+                hijo && hijo.variante === 'base', hijo);
+
+            const { data: t } = await db.from('tutores').select('tutor_id').eq('email', MAIL_PJ).single();
+            const { data: v } = await db.from('tutor_jugador').select('player_id, parentesco').eq('tutor_id', t.tutor_id);
+            const { data: fichas } = await db.from('players').select('player_id, first_name').in('player_id', (v || []).map((x) => x.player_id));
+            const nombreDe = new Map((fichas || []).map((f) => [f.player_id, f.first_name]));
+            const delPadre = (v || []).find((x) => nombreDe.get(x.player_id) === 'Padre');
+            comprobar('y el vinculo queda corregido a el_mismo',
+                delPadre && delPadre.parentesco === 'el_mismo', delPadre);
+
+            // Y la vista previa tiene que decir lo mismo: es el invariante que
+            // impide que la familia acepte 40 y se le cobren 50.
+            await db.from('tutores').update({ password_hash: hashPassword('prueba1234') }).eq('email', MAIL_PJ);
+            const acc = await llamar('acceso', { body: { email: MAIL_PJ, password: 'prueba1234' } });
+            const est = await llamar('estado', { method: 'GET', token: acc.body.token });
+            const hijoEst = (est.body.jugadores || []).find((j) => j.nombre === 'Hijo');
+            comprobar('la vista previa dice lo mismo que se guardo',
+                hijoEst && hijoEst.tarifa && hijoEst.tarifa.variante === 'base', hijoEst && hijoEst.tarifa);
+        }
+
+        // (f) Y que un DOCUMENTO igual tambien lo delate, aunque el nombre no
+        //     coincida: es el caso de quien se apunta como "Pepe" y su ficha de
+        //     tutor dice "Jose".
+        await limpiarPJ();
+        {
+            r = await llamar('enviar', {
+                body: {
+                    acepta_reglamento: true,
+                    tutor: {
+                        nombre: 'Jose', apellido: 'Distinto Prueba', email: MAIL_PJ,
+                        tipo_documento: 'DNI', numero_documento: '00000001-R',
+                    },
+                    jugadores: [
+                        { nombre: 'Pepe', apellido: 'Distinto Prueba', fecha_nacimiento: '1985-04-04',
+                          genero: 'Masculino', parentesco: 'tutor_legal',
+                          tipo_documento: 'DNI', numero_documento: '00000001R' },
+                        HIJO,
+                    ],
+                },
+            });
+            comprobar('acepta al padre con otro nombre pero su mismo DNI', r.status === 200, r.body);
+            const hijo = (r.body.jugadores || []).find((j) => j.nombre.startsWith('Hijo'));
+            comprobar('el mismo DNI lo delata: el hijo sigue en base',
+                hijo && hijo.variante === 'base', hijo);
+        }
+
+        // (g) Y AL REVES: dos hermanos que se llaman parecido al padre pero son
+        //     dos hijos, siguen teniendo su descuento. Lo facil al arreglar esto
+        //     es apagarselo a gente que si le toca.
+        await limpiarPJ();
+        {
+            r = await llamar('enviar', {
+                body: {
+                    acepta_reglamento: true,
+                    tutor: { nombre: 'Padre', apellido: 'Jugador Prueba', email: MAIL_PJ, fecha_nacimiento: '1985-04-04' },
+                    jugadores: [
+                        // El hijo mayor se llama IGUAL que el padre, pero nacio
+                        // en otra fecha: son dos personas.
+                        { nombre: 'Padre', apellido: 'Jugador Prueba', fecha_nacimiento: '2007-04-04',
+                          genero: 'Masculino', parentesco: 'padre' },
+                        HIJO,
+                    ],
+                },
+            });
+            comprobar('acepta al hijo homonimo del padre', r.status === 200, r.body);
+            const hijo = (r.body.jugadores || []).find((j) => j.nombre === 'Hijo Jugador Prueba');
+            comprobar('el hijo con nombre repetido SI cuenta como hermano',
+                hijo && hijo.variante === 'con_hermano', hijo);
+        }
+
+        // (h) Y que el hijo de 19 que juega senior siga contando para su hermano
+        //     de 15: la regla es el parentesco, no la edad. Es la promesa que
+        //     hace el comentario de cuentaComoHermano y hay que sostenerla.
+        await limpiarPJ();
+        {
+            r = await llamar('enviar', {
+                body: {
+                    acepta_reglamento: true,
+                    tutor: { nombre: 'Madre', apellido: 'Jugador Prueba', email: MAIL_PJ, fecha_nacimiento: '1970-01-01' },
+                    jugadores: [
+                        { nombre: 'Mayor', apellido: 'Jugador Prueba', fecha_nacimiento: '2007-02-02',
+                          genero: 'Masculino', parentesco: 'madre' },
+                        HIJO,
+                    ],
+                },
+            });
+            comprobar('acepta al hijo mayor de edad y a su hermano', r.status === 200, r.body);
+            const chico = (r.body.jugadores || []).find((j) => j.nombre.startsWith('Hijo'));
+            const mayor = (r.body.jugadores || []).find((j) => j.nombre.startsWith('Mayor'));
+            comprobar('el hermano de 15 mantiene su descuento',
+                chico && chico.variante === 'con_hermano', chico);
+            comprobar('y el mayor queda en base por ser adulto, no por no contar',
+                mayor && mayor.variante === 'base', mayor);
+        }
+
+        await limpiarPJ();
+    }
+
     console.log('\nLimpieza');
     await limpiar();
 

@@ -131,6 +131,112 @@ function varianteDeFicha(variante) {
 }
 
 /**
+ * Dos fichas, ¿son la misma persona?
+ *
+ * Hace falta porque un adulto que juega aparece DOS veces en la misma familia:
+ * como titular de la cuenta y como jugador. Y de eso depende un precio.
+ */
+function sinAcentos(texto) {
+    return String(texto || '')
+        .normalize('NFD')
+        .replace(/[̀-ͯ]/g, '')
+        .toLowerCase()
+        .replace(/\s+/g, ' ')
+        .trim();
+}
+
+function soloAlfanumerico(texto) {
+    return String(texto || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+}
+
+/**
+ * La identidad de un jugador tal como la guarda la tabla `players`, con los
+ * mismos nombres de campo que usa el formulario. Sin esto cada handler
+ * compararía con los nombres de SU tabla y un día compararian cosas distintas.
+ */
+function identidadDePlayer(fila) {
+    if (!fila) return null;
+    return {
+        nombre: fila.first_name,
+        apellido: fila.last_name,
+        fecha_nacimiento: fila.dob,
+        tipo_documento: fila.tax_type,
+        numero_documento: fila.tax_number,
+    };
+}
+
+function esLaMismaPersona(a, b) {
+    if (!a || !b) return false;
+
+    // El documento manda: si los dos lo tienen, decide él y no se mira nada más.
+    // Dos personas pueden llamarse igual y haber nacido el mismo día —pasa con
+    // padre e hijo que comparten nombre— pero no comparten el DNI.
+    const docA = soloAlfanumerico(a.numero_documento);
+    const docB = soloAlfanumerico(b.numero_documento);
+    if (docA && docB) return docA === docB;
+
+    const nombreA = sinAcentos(`${a.nombre || ''} ${a.apellido || ''}`);
+    const nombreB = sinAcentos(`${b.nombre || ''} ${b.apellido || ''}`);
+    if (!nombreA || nombreA !== nombreB) return false;
+
+    // El nombre solo no alcanza: padre e hijo con el mismo nombre y apellido son
+    // dos personas, y si el descuento dependiera del nombre el hijo dejaria de
+    // contar como hermano de su propio hermano.
+    const fechaA = String(a.fecha_nacimiento || '').slice(0, 10);
+    const fechaB = String(b.fecha_nacimiento || '').slice(0, 10);
+    return Boolean(fechaA) && fechaA === fechaB;
+}
+
+/**
+ * Si este jugador cuenta como hermano de los demás de su familia.
+ *
+ * LA REGLA: EL PADRE QUE JUEGA NO ES UN HERMANO
+ *
+ * El descuento por hermano existe para las familias que traen varios HIJOS.
+ * Un padre o una madre que además juega —que los hay, treinta y pico— no
+ * convierte a su hijo único en hermano de nadie: sigue siendo un hijo solo.
+ * Decisión del club, 28 de septiembre de 2026.
+ *
+ * Antes sí contaba, y el efecto era concreto: un padre que se apuntaba a jugar
+ * le bajaba la cuota a su hijo de 50 a 40 €. 90 € por temporada y por familia.
+ *
+ * POR QUÉ SE MIRA LA IDENTIDAD Y NO EL PARENTESCO DEL VÍNCULO
+ *
+ * La primera versión de esto miraba `tutor_jugador.parentesco !== 'el_mismo'`.
+ * Parecía lo mismo y no lo era, por tres motivos:
+ *
+ *   1. El parentesco lo rellena la FAMILIA en un desplegable, y con esa regla
+ *      pasaba a decidir un precio. Bastaba con dejarlo en "Soy su tutor/a
+ *      legal" —que además es el valor POR DEFECTO de una ficha nueva— para
+ *      que el padre volviera a contar y el hijo único pagara 40 en vez de 50.
+ *      Y al reves de lo que parece, eso no exigía mala fe: un padre que rellena
+ *      su propia ficha sin tildar "Soy yo, el jugador" se lo llevaba puesto sin
+ *      enterarse, y quedaba sellado en `tarifa_variante_origen`.
+ *
+ *   2. El parentesco es de la pareja (tutor, jugador), no del jugador. Con
+ *      padres separados, el mismo chico valía 40 ó 50 € según cuál de las dos
+ *      cuentas mirara.
+ *
+ *   3. `parentesco` responde a "¿de quién es esta ficha en pantalla?", que NO
+ *      es la misma pregunta que "¿es este jugador un padre o un hijo?".
+ *
+ * La identidad no se puede elegir: o el jugador es la persona que abrió la
+ * cuenta, o no lo es. Se sigue respetando un 'el_mismo' declarado — declararlo
+ * en falso SUBE el precio, así que nadie lo va a hacer para ahorrar.
+ *
+ * QUÉ NO ES: NO es un criterio de edad. Un hijo de 19 que juega en senior SÍ
+ * cuenta para el descuento de su hermano de 15, porque es un hijo de la familia
+ * y no el titular de la cuenta. Con el criterio de la edad, ese hermano pequeño
+ * perdería el descuento el año en que el mayor cumple 18 sin que en la familia
+ * cambie nada.
+ */
+function cuentaComoHermano(jugador, titular, parentesco) {
+    if (parentesco === 'el_mismo') return false;
+    return !esLaMismaPersona(jugador, titular);
+}
+
+
+/**
  * Qué tarifa le toca, SIN preguntárselo a la familia.
  *
  * La familia no elige: todo sale a precio normal. Las tarifas de directivo,
@@ -138,16 +244,17 @@ function varianteDeFicha(variante) {
  * familia pudiera elegirlas, cualquiera se asignaría la de 10 €.
  *
  * Lo único automático es el descuento por hermano, y la regla es la que puso el
- * club: si la familia tiene más de un jugador, los JUVENILES pasan a tarifa de
- * hermano. Da igual el apellido — hay familias con apellidos distintos — y da
- * igual que el hermano sea adulto: lo que cuenta es cuántos jugadores tiene esa
- * familia en el club.
+ * club: si la familia trae más de un HIJO jugando, los JUVENILES pasan a tarifa
+ * de hermano. Da igual el apellido — hay familias con apellidos distintos — y
+ * da igual la edad del hermano; lo que no cuenta es el padre o la madre que
+ * juega, que no es hermano de su propio hijo. Ver cuentaComoHermano().
  *
- * En adultos no existe el descuento, así que se quedan en base.
+ * En adultos no existe el descuento, así que se quedan en base. Lo hace cumplir
+ * además el CHECK inscripciones_sin_hermano_en_adultos.
  */
-function varianteAutomatica(tramo, jugadoresDeLaFamilia) {
+function varianteAutomatica(tramo, hijosDeLaFamilia) {
     if (tramo !== 'juvenil') return 'base';
-    return jugadoresDeLaFamilia > 1 ? 'con_hermano' : 'base';
+    return hijosDeLaFamilia > 1 ? 'con_hermano' : 'base';
 }
 
 // ── Precios ────────────────────────────────────────────────────────────────
@@ -394,6 +501,9 @@ module.exports = {
     tramoDeFicha,
     varianteDeFicha,
     varianteAutomatica,
+    cuentaComoHermano,
+    esLaMismaPersona,
+    identidadDePlayer,
     buscarJugadoresPorEmail,
     temporadaYear,
     temporadaKey,
