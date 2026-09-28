@@ -150,8 +150,9 @@ class ConfigLoader {
                 link.querySelectorAll('i').forEach(ic => ic.remove());
                 link.addEventListener('click', (e) => e.preventDefault());
             });
-            const navStore = document.querySelector('a[href="#tienda"]');
-            if (navStore) navStore.addEventListener('click', (e) => e.preventDefault());
+            // El enlace del menú se deja funcionando: que baje a la sección,
+            // que ahora dice que la tienda está en preparación. Un enlace que no
+            // hace NADA al pulsarlo es peor que uno que te lleva a leer por qué.
             return;
         }
 

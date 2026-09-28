@@ -602,6 +602,37 @@ function fotoUrl(path) {
     return 'https://hvskwugpxtsumesedyvk.supabase.co/storage/v1/object/public/player-photos/' + path;
 }
 
+/**
+ * Copia los datos del responsable a la ficha del jugador.
+ *
+ * Sólo los que son de la persona: nombre, apellido, fecha de nacimiento,
+ * documento y teléfono. La talla, la altura, el peso, las alergias y la foto NO
+ * se copian porque el responsable no los tiene: son del jugador y hay que
+ * pedirlos igual.
+ *
+ * Los campos quedan EDITABLES a propósito. Bloquearlos obligaría a subir hasta
+ * arriba para corregir una errata, y quien se inscribe a sí mismo suele
+ * descubrir el error justo acá abajo.
+ */
+function copiarDelResponsable(i) {
+    var j = estado.jugadores[i];
+    // Arriba sólo el nombre es obligatorio, pero para un JUGADOR el servidor
+    // exige también apellido y fecha de nacimiento. Si se marca "soy yo" con
+    // esos dos en blanco, se copia vacío y el envío se rechaza con un error que
+    // no dice dónde está el problema. Se vuelven obligatorios en el momento.
+    $('t_apellido').required = true;
+    $('t_nacimiento').required = true;
+    j.nombre = $('t_nombre').value.trim();
+    j.apellido = $('t_apellido').value.trim();
+    j.fecha_nacimiento = $('t_nacimiento').value;
+    j.tipo_documento = $('t_tipodoc').value;
+    j.numero_documento = $('t_numdoc').value.trim();
+    j.telefono = $('t_telefono').value.trim();
+    j.email = estado.email;
+    // La cuenta ES el jugador, no su tutor.
+    j.parentesco = 'el_mismo';
+}
+
 function nuevoJugador() {
     return {
         player_id: null, existente: false, yaEnviado: false, foto_url: null,
@@ -664,6 +695,16 @@ function tarjetaJugador(j, i) {
         (j.heredado && !j.no_renueva
             ? '<div class="aviso aviso-info">Lo de abajo es lo que nos diste la temporada pasada. Mirá sobre todo las <strong>tallas</strong> y la <strong>altura</strong>.</div>'
             : '') +
+
+        // "Soy yo, el jugador": en este club hay 32 adultos que juegan y se
+        // pagan su propia cuota. Sin esto tienen que escribir su nombre, su
+        // apellido, su fecha de nacimiento y su documento DOS veces: una arriba
+        // como responsable y otra acá como jugador.
+        (j.no_renueva ? '' :
+        '<div class="check" style="margin:0 0 14px;">' +
+            '<input type="checkbox" data-soyyo="' + i + '"' + (j.soy_yo ? ' checked' : '') + '>' +
+            '<span><strong>Soy yo, el jugador.</strong> Copiamos tus datos de arriba y sólo te pedimos lo que falta.</span>' +
+        '</div>') +
 
         (j.no_renueva ? '' :
 
@@ -795,6 +836,24 @@ $('listaJugadores').addEventListener('click', function (e) {
         dibujarJugadores();
         return;
     }
+    var soyyo = e.target.closest('[data-soyyo]');
+    if (soyyo) {
+        var n = Number(soyyo.getAttribute('data-soyyo'));
+        estado.jugadores.forEach(function (x, k) {
+            // Sólo una ficha puede ser "yo": nadie es dos jugadores.
+            if (k !== n) x.soy_yo = false;
+        });
+        estado.jugadores[n].soy_yo = soyyo.checked;
+        if (soyyo.checked) {
+            copiarDelResponsable(n);
+        } else {
+            estado.jugadores[n].parentesco = 'tutor_legal';
+            $('t_apellido').required = false;
+            $('t_nacimiento').required = false;
+        }
+        dibujarJugadores();
+        return;
+    }
     var salir = e.target.closest('[data-norenueva]');
     if (salir) {
         estado.jugadores[Number(salir.getAttribute('data-norenueva'))].no_renueva = true;
@@ -815,6 +874,22 @@ $('listaJugadores').addEventListener('click', function (e) {
         var input = document.querySelector('[data-archivo="' + i + '"]');
         if (input) input.click();
     }
+});
+
+// Mientras escribe arriba, la ficha marcada como "soy yo" se mantiene al día.
+// Si no, el que marca la casilla ANTES de terminar de escribir sus datos se
+// queda con una ficha a medias y no entiende por qué.
+var temporizadorCopia = null;
+$('bloqueTutor').addEventListener('input', function () {
+    var i = estado.jugadores.findIndex(function (x) { return x.soy_yo; });
+    if (i < 0) return;
+    // Amortiguado: redibujar las fichas en cada tecla hace parpadear la
+    // pantalla entera mientras la persona escribe su nombre.
+    clearTimeout(temporizadorCopia);
+    temporizadorCopia = setTimeout(function () {
+        copiarDelResponsable(i);
+        dibujarJugadores();
+    }, 400);
 });
 
 $('btnAgregar').addEventListener('click', function () {
@@ -891,6 +966,16 @@ $('btnEnviar').addEventListener('click', async function () {
     aviso('');
     if (!$('acepta_reglamento').checked) {
         aviso('Hay que aceptar el reglamento para poder inscribirse.');
+        return;
+    }
+
+    // Si alguien marcó "soy yo", sus datos de arriba tienen que estar completos:
+    // son los del jugador. Mejor decirlo acá que dejar que lo rechace el
+    // servidor con un mensaje que no señala el campo.
+    var yo = estado.jugadores.find(function (x) { return x.soy_yo; });
+    if (yo && (!$('t_apellido').value.trim() || !$('t_nacimiento').value)) {
+        aviso('Marcaste "soy yo, el jugador": completá arriba tus apellidos y tu fecha de nacimiento.');
+        $('t_apellido').focus();
         return;
     }
 
