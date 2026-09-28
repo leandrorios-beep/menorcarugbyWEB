@@ -299,7 +299,7 @@ input:focus, select:focus, textarea:focus {
 
             <div class="check">
                 <input type="checkbox" id="acepta_reglamento">
-                <span data-i18n="inscripcion.reglamento">He leído y acepto el <a href="/reglamento" target="_blank" rel="noopener">reglamento del club</a> y la <a href="/privacidad" target="_blank" rel="noopener">política de privacidad</a>.</span>
+                <span data-i18n="inscripcion.reglamento">He leído y acepto el <a href="/reglamento" target="_blank" rel="noopener">reglamento del club</a> y la <a href="/privacidad" target="_blank" rel="noopener">política de privacidad</a>: cuotas, bajas, uso de instalaciones, tratamiento de mis datos y derechos de imagen.</span>
             </div>
             <button type="button" class="btn btn-primario" id="btnEnviar" data-i18n="inscripcion.enviar">Enviar inscripción</button>
         </section>
@@ -321,6 +321,27 @@ input:focus, select:focus, textarea:focus {
         <p style="color:var(--gris);font-size:.78rem;text-align:center;margin:12px 0 0;line-height:1.5;">
             El pago se hace en Stripe, no acá: el club nunca ve tu tarjeta.
         </p>
+    </section>
+
+    <!--
+        Elegir la propia contrasena.
+
+        Hasta ahora la unica forma de tener una era "mandamela por correo", que
+        genera ocho letras aleatorias y anula la anterior. Con setenta familias
+        eso son setenta contrasenas que nadie recuerda y que se piden otra vez
+        cada temporada.
+    -->
+    <section class="insc-card oculto" id="pasoClave">
+        <h2><i class="fa-solid fa-key"></i> <span>Tu contraseña</span></h2>
+        <p class="sub">
+            Elegí una que te acuerdes. Con ella entrás a ver tus jugadores, tus recibos y tu tarjeta.
+        </p>
+        <div class="campo">
+            <label for="claveNueva">Contraseña nueva <span class="opt">(mínimo 8 caracteres)</span></label>
+            <input type="password" id="claveNueva" autocomplete="new-password" placeholder="La que quieras">
+        </div>
+        <button type="button" class="btn btn-secundario" id="btnClave">Guardar mi contraseña</button>
+        <p id="claveAviso" style="font-size:.82rem;text-align:center;margin:10px 0 0;"></p>
     </section>
 
     <!-- ── Paso 4: listo ─────────────────────────────────────────────── -->
@@ -620,8 +641,15 @@ async function cargarEstado() {
             uso_imagen_anterior: previa.acepta_uso_imagen === true,
             parentesco: j.parentesco || 'tutor_legal',
             observaciones: '',
-            no_renueva: false,
-            motivo_no_renueva: '',
+            // Si ya está de baja esta temporada, la ficha tiene que salir así.
+            //
+            // Antes salía siempre en blanco: quien ya había dicho "este año no
+            // juega" volvía a entrar y se encontraba a su hijo como si fuera a
+            // renovar, con su cuota contando en el total de abajo. En el caso
+            // del presidente eso sumaba 685 € de un hijo al que ya había dado
+            // de baja, y el total decía 1.075 € en vez de 390 €.
+            no_renueva: (j.inscripcion_actual || {}).estado === 'baja',
+            motivo_no_renueva: (j.inscripcion_actual || {}).motivo_baja || '',
             foto: null,
             tarifa: j.tarifa || null
         };
@@ -1092,6 +1120,9 @@ function actualizarResumen() {
         }
     });
 
+    // La contrasena se puede cambiar siempre que haya sesion abierta.
+    mostrar('pasoClave', Boolean(estado.token));
+
     mostrar('resumen', estado.jugadores.length > 0);
     $('resumenLineas').innerHTML = lineas.join('');
     $('resumenTotal').textContent = faltanPrecios && total === 0 ? 'Te lo confirmamos' : euros(total) + (faltanPrecios ? ' + los nuevos' : '');
@@ -1236,6 +1267,28 @@ $('btnEnviar').addEventListener('click', async function () {
     } finally {
         $('btnEnviar').disabled = false;
         cargando(false);
+    }
+});
+
+$('btnClave').addEventListener('click', async function () {
+    var valor = $('claveNueva').value;
+    $('claveAviso').textContent = '';
+    if (!valor || valor.length < 8) {
+        $('claveAviso').style.color = '#ff6b6b';
+        $('claveAviso').textContent = 'Tiene que tener al menos 8 caracteres.';
+        return;
+    }
+    $('btnClave').disabled = true;
+    try {
+        await api('clave', { body: { password: valor } });
+        $('claveNueva').value = '';
+        $('claveAviso').style.color = 'var(--verde, #4ade80)';
+        $('claveAviso').textContent = 'Listo. Ya podés entrar con esa contraseña.';
+    } catch (err) {
+        $('claveAviso').style.color = '#ff6b6b';
+        $('claveAviso').textContent = err.message;
+    } finally {
+        $('btnClave').disabled = false;
     }
 });
 
