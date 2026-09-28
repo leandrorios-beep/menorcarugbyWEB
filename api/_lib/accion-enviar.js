@@ -43,11 +43,35 @@ const {
 const TIPOS_DOC = ['DNI', 'NIE', 'PASAPORTE', 'TARJETA_SANITARIA', 'LIBRO_FAMILIA', 'OTRO'];
 const TALLAS = ['4', '6', '8', '10', '12', '14', '16', 'XS', 'S', 'M', 'L', 'XL', '2XL', '3XL'];
 const GENEROS = ['Masculino', 'Femenino'];
-const PARENTESCOS = ['madre', 'padre', 'tutor_legal', 'abuelo', 'hermano', 'otro'];
+// 'el_mismo' = la cuenta ES el jugador. Son los 32 adultos que juegan y se
+// pagan lo suyo. Sin esto podian crear la cuenta pero el envio les respondia
+// "parentesco no valido": la base ya lo aceptaba y el validador de la web no.
+const PARENTESCOS = ['madre', 'padre', 'tutor_legal', 'abuelo', 'hermano', 'otro', 'el_mismo'];
 // Las otras variantes (con_beca, directivo, familiar_directivo) las pone el
 // club, no la familia. Ofrecerlas sería regalar la cuota de 1 €.
 const VARIANTES = ['base', 'con_hermano'];
 const REGLAMENTO_VERSION = 'web-2026';
+
+/**
+ * Un rechazo con mensaje para la familia, que ademas deshace el alta a medias.
+ *
+ * El problema que arregla: el tutor se crea al principio con activo = false y
+ * se activa recien al final, cuando ya se procesaron todos los hijos. Si el
+ * segundo hijo fallaba —una tarifa que no existe, un hermano de baja— la
+ * funcion salia con un 400 dejando al tutor creado, inactivo y con una
+ * contrasena que nunca se envio.
+ *
+ * A partir de ahi la familia quedaba encerrada: al reintentar le decia "ese
+ * correo ya esta registrado, entra con tu contrasena", y al intentar entrar,
+ * "tu ficha esta archivada". Hacia falta que lo destrabara una persona a mano.
+ */
+class RechazoDelFormulario extends Error {
+    constructor(status, mensaje, extra) {
+        super(mensaje);
+        this.status = status;
+        this.extra = extra || {};
+    }
+}
 
 module.exports = async function accionEnviar(req, res) {
 
@@ -58,6 +82,10 @@ module.exports = async function accionEnviar(req, res) {
     const year = temporadaYear();
     const temporada = temporadaKey(year);
 
+    // Fuera del try: el catch los necesita para poder deshacer.
+    let tutorId = payload && payload.tutor_id ? payload.tutor_id : null;
+    let tutorEsNuevo = false;
+
     try {
         const datos = validar(body, Boolean(payload && payload.tutor_id));
         if (datos.error) return res.status(400).json({ error: datos.error });
@@ -65,9 +93,7 @@ module.exports = async function accionEnviar(req, res) {
         const { tutor: datosTutor, jugadores, acepta_reglamento } = datos;
 
         // ── 1. El tutor ──────────────────────────────────────────────────
-        let tutorId = payload && payload.tutor_id ? payload.tutor_id : null;
         let passwordNueva = null;
-        let tutorEsNuevo = false;
 
         if (tutorId) {
             // Renovación: se actualizan sus datos, pero NO el correo. El correo
@@ -118,14 +144,14 @@ module.exports = async function accionEnviar(req, res) {
             // El CHECK inscripciones_sin_hermano_en_adultos lo rechazaría igual,
             // pero un mensaje claro es mejor que un error de base de datos.
             if (j.tarifa_variante === 'con_hermano' && (tramo === 'senior' || tramo === 'veterano')) {
-                return res.status(400).json({
-                    error: `${j.nombre}: en adultos no existe el descuento por hermano.`,
-                });
+                throw new RechazoDelFormulario(400, `${j.nombre}: en adultos no existe el descuento por hermano.`);
             }
             if (!precios.get(`mensualidad|${j.tarifa_variante}|${tramo}`)) {
-                return res.status(400).json({
-                    error: `${j.nombre}: esa tarifa no existe para ${tramo} esta temporada.`,
-                });
+                throw new RechazoDelFormulario(
+                    400,
+                    `${j.nombre}: todavía no está publicada la cuota de ${tramo} para esta temporada. ` +
+                        'Avisanos a info@menorcarugbyclub.com y la cargamos.'
+                );
             }
 
             let playerId = j.player_id || null;
@@ -142,20 +168,21 @@ module.exports = async function accionEnviar(req, res) {
             // De baja -> es terminal. Volver al club es una inscripcion nueva de
             // la temporada siguiente, y eso lo decide el club.
             let conservarEstado = false;
+            let descuentosPrevios = [];
             if (playerId) {
                 const { data: yaHay } = await supabase
                     .from('inscripciones')
-                    .select('estado')
+                    .select('estado, tarifa_descuentos')
                     .eq('temporada', temporada)
                     .eq('player_id', playerId)
                     .maybeSingle();
+                descuentosPrevios = (yaHay && yaHay.tarifa_descuentos) || [];
 
                 if (yaHay && yaHay.estado === 'baja') {
-                    return res.status(409).json({
-                        error:
-                            `${j.nombre} figura de baja esta temporada. Escribinos a ` +
-                            'info@menorcarugbyclub.com y lo revisamos con vos.',
-                    });
+                    throw new RechazoDelFormulario(
+                        409,
+                        `${j.nombre} figura de baja esta temporada. Escribinos a info@menorcarugbyclub.com y lo revisamos con vos.`
+                    );
                 }
                 if (yaHay && yaHay.estado === 'aprobada') {
                     conservarEstado = true;
@@ -169,7 +196,7 @@ module.exports = async function accionEnviar(req, res) {
                     .select('player_id, first_name, last_name, dob')
                     .eq('player_id', playerId)
                     .maybeSingle();
-                if (!previo) return res.status(400).json({ error: `No encontramos a ${j.nombre} en la base.` });
+                if (!previo) throw new RechazoDelFormulario(400, `No encontramos a ${j.nombre} en la base.`);
 
                 // Que la familia pueda corregir un nombre mal escrito está bien;
                 // que cambie la fecha de nacimiento sin que nadie lo vea, no: la
@@ -222,6 +249,32 @@ module.exports = async function accionEnviar(req, res) {
                 const yaEstaba = await buscarJugadorExistente(supabase, j);
                 if (yaEstaba) {
                     playerId = yaEstaba.player_id;
+
+                    // El mismo control que arriba, ahora que sabemos quien es.
+                    //
+                    // El control de "ya esta aprobada / de baja" corria con el
+                    // player_id que mandaba el NAVEGADOR; este camino lo
+                    // descubre despues, por documento o por nombre y fecha, y se
+                    // lo saltaba entero. Resultado: una familia que entra por la
+                    // puerta de "soy nuevo" y cuyo hijo ya tiene inscripcion
+                    // chocaba contra la maquina de estados y veia un error de
+                    // Postgres crudo, que es justo lo que el control existe para
+                    // evitar.
+                    const { data: suya } = await supabase
+                        .from('inscripciones')
+                        .select('estado, tarifa_descuentos')
+                        .eq('temporada', temporada)
+                        .eq('player_id', playerId)
+                        .maybeSingle();
+                    if (suya && suya.estado === 'baja') {
+                        throw new RechazoDelFormulario(
+                            409,
+                            `${j.nombre} figura de baja esta temporada. Escribinos a info@menorcarugbyclub.com y lo revisamos con vos.`
+                        );
+                    }
+                    if (suya && suya.estado === 'aprobada') conservarEstado = true;
+                    descuentosPrevios = (suya && suya.tarifa_descuentos) || [];
+
                     notas.push(
                         `Ya estaba en la base como "${yaEstaba.first_name} ${yaEstaba.last_name}" ` +
                             '(se reutilizó su ficha en vez de crear una nueva).'
@@ -355,7 +408,13 @@ module.exports = async function accionEnviar(req, res) {
                     talla_chandal: j.talla_chandal,
                     tarifa_tramo: tramo,
                     tarifa_variante: j.tarifa_variante,
-                    tarifa_descuentos: [],
+                    // Los descuentos NO los toca la familia: los concede el club
+                    // y se conservan. Antes se pisaban con [] en cada envio, asi
+                    // que una de las 8 familias con descuento de delegado lo
+                    // perdia —el 50% de la cuota— con solo entrar a corregir un
+                    // telefono. La familia elige la VARIANTE; el descuento es
+                    // del club.
+                    tarifa_descuentos: descuentosPrevios,
                     acepta_reglamento,
                     reglamento_version: REGLAMENTO_VERSION,
                     acepta_reglamento_at: ahora,
@@ -419,6 +478,21 @@ module.exports = async function accionEnviar(req, res) {
             aviso,
         });
     } catch (e) {
+        // Si el tutor se creo en ESTA llamada y quedo a medias, se borra. Asi la
+        // familia puede corregir y volver a intentarlo en vez de quedar
+        // encerrada con una cuenta inactiva y sin contrasena.
+        //
+        // Borrar el tutor cascadea sus vinculos; los jugadores que se hayan
+        // llegado a crear quedan, y los recoge el dedupe en el reintento en vez
+        // de duplicarse.
+        if (tutorEsNuevo && tutorId) {
+            const { error: errBorrar } = await supabase.from('tutores').delete().eq('tutor_id', tutorId);
+            if (errBorrar) console.error('No se pudo deshacer el tutor a medias:', errBorrar.message);
+        }
+
+        if (e instanceof RechazoDelFormulario) {
+            return res.status(e.status).json(Object.assign({ error: e.message }, e.extra));
+        }
         console.error('inscripcion-enviar:', e && e.message);
         return res.status(500).json({ error: (e && e.message) || 'No se pudo guardar la inscripción' });
     }

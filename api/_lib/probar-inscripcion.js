@@ -425,6 +425,53 @@ async function main() {
     }
     await db.from('players').delete().eq('player_id', idViejo);
 
+    console.log('\n13. Un alta que falla a mitad NO deja a la familia encerrada');
+    // El tutor se crea al principio con activo=false y se activa al final. Si
+    // el segundo hijo fallaba, quedaba una cuenta inactiva con una contrasena
+    // que nadie recibio: al reintentar decia 'ese correo ya esta registrado' y
+    // al entrar, 'tu ficha esta archivada'. Encerrada hasta que lo destrabara
+    // una persona.
+    const MAIL_ROTO = 'prueba.alta.que.falla@menorcarugbyclub.test';
+    r = await llamar('enviar', {
+        body: {
+            acepta_reglamento: true,
+            tutor: { nombre: 'Falla', apellido: 'A Medias', email: MAIL_ROTO },
+            jugadores: [
+                { nombre: 'Primero', apellido: 'Falla Prueba', fecha_nacimiento: '2012-01-01', genero: 'Masculino', tarifa_variante: 'base', parentesco: 'padre' },
+                // Este revienta: 'con hermano' no existe en adultos.
+                { nombre: 'Segundo', apellido: 'Falla Prueba', fecha_nacimiento: '1990-01-01', genero: 'Masculino', tarifa_variante: 'con_hermano', parentesco: 'padre' },
+            ],
+        },
+    });
+    comprobar('rechaza con un mensaje, no con un 500', r.status === 400, r.body);
+    comprobar('el mensaje nombra al jugador', r.body && /Segundo/.test(r.body.error || ''), r.body);
+    {
+        const { data: huerfano } = await db.from('tutores').select('tutor_id, activo').eq('email', MAIL_ROTO).maybeSingle();
+        comprobar('NO deja la cuenta a medias', !huerfano, huerfano);
+    }
+    // Y que el reintento corregido funcione.
+    r = await llamar('enviar', {
+        body: {
+            acepta_reglamento: true,
+            tutor: { nombre: 'Falla', apellido: 'A Medias', email: MAIL_ROTO },
+            jugadores: [
+                { nombre: 'Primero', apellido: 'Falla Prueba', fecha_nacimiento: '2012-01-01', genero: 'Masculino', tarifa_variante: 'base', parentesco: 'padre' },
+            ],
+        },
+    });
+    comprobar('el reintento corregido entra', r.status === 200, r.body);
+    {
+        const { data: repes } = await db.from('players').select('player_id').eq('last_name', 'Falla Prueba');
+        comprobar('y no duplico al primer hijo', repes && repes.length === 1, repes);
+        const { data: t } = await db.from('tutores').select('tutor_id').eq('email', MAIL_ROTO).maybeSingle();
+        if (t) {
+            const { data: v } = await db.from('tutor_jugador').select('player_id').eq('tutor_id', t.tutor_id);
+            await db.from('tutores').delete().eq('tutor_id', t.tutor_id);
+            for (const x of v || []) await db.from('players').delete().eq('player_id', x.player_id);
+        }
+        for (const x of repes || []) await db.from('players').delete().eq('player_id', x.player_id);
+    }
+
     console.log('\nLimpieza');
     await limpiar();
 

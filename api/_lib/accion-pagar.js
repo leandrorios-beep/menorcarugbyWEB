@@ -57,14 +57,19 @@ module.exports = async function accionPagar(req, res) {
         // ── Qué inscripciones son suyas y están listas para cobrar ───────
         const { data: inscripciones, error } = await supabase
             .from('inscripciones')
-            .select('inscripcion_id, player_id, estado, estado_cobro, tarifa_tramo, tarifa_variante, tarifa_descuentos, stripe_subscription_id')
-            .eq('tutor_id', payload.tutor_id)
-            .eq('temporada', temporada);
+            .select('inscripcion_id, player_id, temporada, estado, estado_cobro, tarifa_tramo, tarifa_variante, tarifa_descuentos, stripe_customer_id, stripe_subscription_id')
+            .eq('tutor_id', payload.tutor_id);
+        // Sin .eq('temporada'): el cliente de Stripe es de la FAMILIA y vive en
+        // las filas de la temporada ANTERIOR. Filtrando por la temporada en
+        // curso nunca se lo encontraba y se creaba un cliente nuevo en cada
+        // intento, dejando la tarjeta guardada colgando de un cliente huerfano.
+        // El filtro por temporada se aplica mas abajo, sobre lo que se cobra.
         if (error) throw new Error(error.message);
 
-        const listas = (inscripciones || []).filter((i) => i.estado === 'aprobada');
+        const deEstaTemporada = (inscripciones || []).filter((i) => i.temporada === temporada);
+        const listas = deEstaTemporada.filter((i) => i.estado === 'aprobada');
         if (!listas.length) {
-            const enviadas = (inscripciones || []).filter((i) => i.estado === 'enviada').length;
+            const enviadas = deEstaTemporada.filter((i) => i.estado === 'enviada').length;
             return res.status(409).json({
                 error: enviadas
                     ? 'Todavía estamos revisando la inscripción. En cuanto la aprobemos te avisamos para pagar.'
@@ -100,6 +105,9 @@ module.exports = async function accionPagar(req, res) {
             const nombre = nombreDe.get(i.player_id) || 'Jugador';
 
             const mensual = precios.get(`mensualidad|${i.tarifa_variante}|${i.tarifa_tramo}`);
+            // importe === null es una fila del catálogo que existe pero que nadie
+            // decidió todavía. Number(null) es 0, así que sin esta comprobación
+            // se le cobraría 0 € y se le diría por correo que su cuota es 0,00.
             if (!mensual || mensual.importe === null || !mensual.stripe_price_id) {
                 return res.status(503).json({
                     error: `Todavía no está publicado en la pasarela el precio de ${nombre}. Avisanos y lo resolvemos.`,
@@ -137,6 +145,7 @@ module.exports = async function accionPagar(req, res) {
             .eq('tutor_id', payload.tutor_id)
             .single();
 
+        // De cualquier temporada: es el cliente de la familia, no el del año.
         const conCliente = (inscripciones || []).find((i) => i.stripe_customer_id);
         let customerId = conCliente ? conCliente.stripe_customer_id : null;
         if (!customerId) {

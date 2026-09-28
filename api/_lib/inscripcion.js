@@ -73,7 +73,12 @@ function tramoDeCategoria(categoria, dob) {
 async function cargarPrecios(supabase, temporada) {
     const { data, error } = await supabase
         .from('precios')
-        .select('concepto, variante, tramo, importe, periodicidad')
+        // stripe_price_id va SIEMPRE: accion-pagar corta si falta, y sin esta
+        // columna el boton de pagar devolvia 503 para todo el mundo y en toda
+        // temporada. Un caracter de diferencia en un SELECT dejaba muerto el
+        // cobro entero, y la unica prueba que lo tocaba corria sin clave de
+        // Stripe, asi que nunca llegaba a esa linea.
+        .select('concepto, variante, tramo, importe, periodicidad, stripe_price_id')
         .eq('temporada', temporada)
         .eq('activo', true);
     if (error) throw new Error(`No se pudo leer el catálogo de precios: ${error.message}`);
