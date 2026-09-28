@@ -16,7 +16,7 @@
 //
 // LOS 10 MESES
 //
-// El club cobra 10 mensualidades, no 12, pero Checkout no acepta un "cancelar
+// El club cobra 9 mensualidades —del 5 de octubre al 5 de junio— pero Checkout no acepta un "cancelar
 // después de N cobros". El corte se pone al recibir el webhook, cuando la
 // suscripción ya existe. Ver stripe-webhook.js.
 // ---------------------------------------------------------------------------
@@ -197,7 +197,7 @@ module.exports = async function accionPagar(req, res) {
             success: true,
             url: sesion.url,
             detalle,
-            meses: 10,
+            meses: MESES_DE_CUOTA,
             total_mensual: detalle.reduce((n, d) => n + d.mensualidad, 0),
             total_primera_vez: detalle.reduce((n, d) => n + d.mensualidad + (d.ficha_anual || 0), 0),
         });

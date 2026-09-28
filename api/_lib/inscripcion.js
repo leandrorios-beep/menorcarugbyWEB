@@ -20,6 +20,21 @@ const nodemailer = require('nodemailer');
 // lib/season.ts en la app.
 const MES_INICIO_TEMPORADA = 6; // 0-11, o sea julio
 
+/**
+ * Cuántas mensualidades tiene una temporada.
+ *
+ * SON NUEVE, NO DIEZ. El calendario que fijó el club es: primer cobro el 5 de
+ * octubre y último el 5 de junio. Octubre, noviembre, diciembre, enero,
+ * febrero, marzo, abril, mayo y junio: nueve.
+ *
+ * Estuvo puesto en 10 hasta que Leandro lo contó. La diferencia no es
+ * cosmética: son 50 € de más por cada juvenil normal en el total de la
+ * temporada, y es el número que se le enseña a la familia antes de que acepte.
+ */
+const MESES_DE_CUOTA = 9;
+const PRIMER_COBRO = '5 de octubre';
+const ULTIMO_COBRO = '5 de junio';
+
 function temporadaYear(fecha = new Date()) {
     const y = fecha.getFullYear();
     return fecha.getMonth() < MES_INICIO_TEMPORADA ? y - 1 : y;
@@ -54,13 +69,54 @@ async function calcularCategorias(supabase, dob, esFemenino, year = temporadaYea
     return { edad: fila.edad, principal: fila.principal, extra: fila.extra || [] };
 }
 
-/** El tramo de precio que le toca a una categoría. */
+/**
+ * Tramo de la MENSUALIDAD: por la categoría en la que juega.
+ *
+ * FEMENINO ya no tiene tramo propio: este año no hay equipo femenino, así que
+ * las jugadoras que sigan pagan por su edad como el resto. El catálogo conserva
+ * las filas de femenino desactivadas, para reabrirlo cambiando un booleano.
+ */
 function tramoDeCategoria(categoria, dob) {
-    if (categoria === 'FEMENINO') return 'femenino';
-    if (categoria === 'SENIOR') {
+    if (categoria === 'SENIOR' || categoria === 'FEMENINO') {
         return Number(String(dob).slice(0, 4)) < 1990 ? 'veterano' : 'senior';
     }
     return 'juvenil';
+}
+
+/**
+ * Tramo de la FICHA ANUAL: por la EDAD, no por la categoría.
+ *
+ *   17 o 18 este año -> 300 €   (tramo 'senior' del catálogo)
+ *   16 o menos       -> 235 €   (tramo 'juvenil')
+ *
+ * Es la trampa del cuadro nuevo: un chico de 17 paga la cuota de juvenil y la
+ * ficha de los grandes. Usar el mismo tramo para las dos cosas le cobraría 65 €
+ * de menos al club por cada uno de los de 17 y 18.
+ *
+ * Espejo de tramo_de_ficha() en la base (migración 20260928150000).
+ */
+function tramoDeFicha(dob, year = temporadaYear()) {
+    return year - Number(String(dob).slice(0, 4)) >= 17 ? 'senior' : 'juvenil';
+}
+
+/**
+ * Qué tarifa le toca, SIN preguntárselo a la familia.
+ *
+ * La familia no elige: todo sale a precio normal. Las tarifas de directivo,
+ * entrenador y colaborador las aplica el club al revisar la inscripción — si la
+ * familia pudiera elegirlas, cualquiera se asignaría la de 10 €.
+ *
+ * Lo único automático es el descuento por hermano, y la regla es la que puso el
+ * club: si la familia tiene más de un jugador, los JUVENILES pasan a tarifa de
+ * hermano. Da igual el apellido — hay familias con apellidos distintos — y da
+ * igual que el hermano sea adulto: lo que cuenta es cuántos jugadores tiene esa
+ * familia en el club.
+ *
+ * En adultos no existe el descuento, así que se quedan en base.
+ */
+function varianteAutomatica(tramo, jugadoresDeLaFamilia) {
+    if (tramo !== 'juvenil') return 'base';
+    return jugadoresDeLaFamilia > 1 ? 'con_hermano' : 'base';
 }
 
 // ── Precios ────────────────────────────────────────────────────────────────
@@ -297,6 +353,11 @@ function nuevoId() {
 
 module.exports = {
     soloConValor,
+    MESES_DE_CUOTA,
+    PRIMER_COBRO,
+    ULTIMO_COBRO,
+    tramoDeFicha,
+    varianteAutomatica,
     buscarJugadoresPorEmail,
     temporadaYear,
     temporadaKey,

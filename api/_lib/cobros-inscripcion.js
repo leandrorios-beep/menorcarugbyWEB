@@ -19,10 +19,7 @@
 // revisar: antes que cuadrar a la fuerza, que se vea.
 // ---------------------------------------------------------------------------
 
-const { temporadaKey, importeFinal } = require('./inscripcion');
-
-/** Mensualidades por temporada. El club cobra 10, no 12. */
-const MESES_DE_CUOTA = 10;
+const { temporadaKey, importeFinal, MESES_DE_CUOTA } = require('./inscripcion');
 
 /**
  * ¿Este evento es de una cuota de jugador?

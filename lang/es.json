@@ -281,6 +281,9 @@
     "enviar": "Enviar inscripción",
     "cargando": "Un momento…",
     "pie": "¿Algo no cuadra? Escribinos a <a href=\"mailto:info@menorcarugbyclub.com\">info@menorcarugbyclub.com</a>",
-    "reglamento": "He leído y acepto el <a href=\"https://www.menorcarugbyclub.com/privacidad\" target=\"_blank\" rel=\"noopener\">reglamento y la política de privacidad</a> del Menorca Rugby Club."
+    "reglamento": "He leído y acepto el <a href=\"https://www.menorcarugbyclub.com/privacidad\" target=\"_blank\" rel=\"noopener\">reglamento y la política de privacidad</a> del Menorca Rugby Club.",
+    "total_temporada": "Toda la temporada",
+    "pago_anual": "<strong>Quiero pagar el año completo de una vez</strong>, en lugar de las cuotas mensuales. Te preparamos un único recibo con la ficha y todas las cuotas.",
+    "aviso_descuentos": "Si sois familia de un directivo, un entrenador o un colaborador del club, mandá la inscripción igual: el precio con descuento te lo aplicamos nosotros al revisarla."
   }
 }

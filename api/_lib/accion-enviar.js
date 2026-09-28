@@ -38,6 +38,9 @@ const {
     buscarTutorPorEmail,
     nuevoId,
     soloConValor,
+    tramoDeFicha,
+    varianteAutomatica,
+    MESES_DE_CUOTA,
 } = require('./inscripcion');
 
 const TIPOS_DOC = ['DNI', 'NIE', 'PASAPORTE', 'TARJETA_SANITARIA', 'LIBRO_FAMILIA', 'OTRO'];
@@ -47,9 +50,6 @@ const GENEROS = ['Masculino', 'Femenino'];
 // pagan lo suyo. Sin esto podian crear la cuenta pero el envio les respondia
 // "parentesco no valido": la base ya lo aceptaba y el validador de la web no.
 const PARENTESCOS = ['madre', 'padre', 'tutor_legal', 'abuelo', 'hermano', 'otro', 'el_mismo'];
-// Las otras variantes (con_beca, directivo, familiar_directivo) las pone el
-// club, no la familia. Ofrecerlas sería regalar la cuota de 1 €.
-const VARIANTES = ['base', 'con_hermano'];
 const REGLAMENTO_VERSION = 'web-2026';
 
 /**
@@ -91,6 +91,7 @@ module.exports = async function accionEnviar(req, res) {
         if (datos.error) return res.status(400).json({ error: datos.error });
 
         const { tutor: datosTutor, jugadores, acepta_reglamento } = datos;
+        const pagoAnual = body.pago_anual === true;
 
         // ── 1. El tutor ──────────────────────────────────────────────────
         let passwordNueva = null;
@@ -135,6 +136,68 @@ module.exports = async function accionEnviar(req, res) {
 
         // ── 2. Los jugadores ─────────────────────────────────────────────
         const precios = await cargarPrecios(supabase, temporada);
+
+        // ── La tarifa la decide el club, no el formulario ─────────────────
+        //
+        // La familia no elige nada: manda a sus hijos y el servidor pone el
+        // precio. Dos reglas, las que fijó la comisión el 28/09/2026:
+        //
+        //   · "con hermano" sale solo, cuando la familia trae más de un
+        //     jugador. Lo cobran únicamente los juveniles y da igual el
+        //     apellido: cuenta la familia, no el parentesco.
+        //   · el resto de los descuentos —directivo, hijo de directivo, beca,
+        //     colaborador— los pone el club al revisar la inscripción. Acá
+        //     sólo se RESPETAN los que ya estaban: si el año pasado el club le
+        //     puso la tarifa de hijo de entrenador, renovar no se la quita.
+        const deEsteEnvio = jugadores.filter((j) => !j.no_renueva);
+        // Los IDs son de TODO el envío, también los que este año no juegan: son
+        // los que hay que descontar de la búsqueda de hermanos. Si sólo se
+        // tomaran los que siguen, el que se da de baja en este mismo envío
+        // todavía figura con inscripción viva en la base —la baja se escribe
+        // después, dentro del bucle— y el hermano que sí renueva se quedaba con
+        // el descuento de una familia que ya no existe.
+        const idsDelEnvio = jugadores.map((j) => j.player_id).filter(Boolean);
+
+        // Quien se inscribe en dos veces —hoy un hijo, la semana que viene el
+        // otro— también es una familia de dos. Se suman los hermanos que ya
+        // tienen inscripción viva de esta temporada y NO vienen en este envío,
+        // para no contarlos dos veces.
+        let hermanosYaInscritos = 0;
+        const varianteEspecialPrevia = {};
+        if (!tutorEsNuevo) {
+            const { data: delTutor } = await supabase
+                .from('tutor_jugador')
+                .select('player_id')
+                .eq('tutor_id', tutorId);
+            const otros = (delTutor || [])
+                .map((v) => v.player_id)
+                .filter((id) => !idsDelEnvio.includes(id));
+            if (otros.length) {
+                const { data: vivas } = await supabase
+                    .from('inscripciones')
+                    .select('player_id')
+                    .eq('temporada', temporada)
+                    .in('player_id', otros)
+                    .not('estado', 'in', '(baja,rechazada)');
+                hermanosYaInscritos = new Set((vivas || []).map((i) => i.player_id)).size;
+            }
+            if (idsDelEnvio.length) {
+                const { data: previas } = await supabase
+                    .from('inscripciones')
+                    .select('player_id, tarifa_variante, temporada')
+                    .in('player_id', idsDelEnvio)
+                    .order('temporada', { ascending: false });
+                for (const previa of previas || []) {
+                    // La más reciente manda; las anteriores ya no importan.
+                    if (previa.player_id in varianteEspecialPrevia) continue;
+                    const v = previa.tarifa_variante;
+                    varianteEspecialPrevia[previa.player_id] =
+                        v && v !== 'base' && v !== 'con_hermano' ? v : null;
+                }
+            }
+        }
+        const cuantosJugadores = deEsteEnvio.length + hermanosYaInscritos;
+
         const resultado = [];
 
         for (const j of jugadores) {
@@ -153,11 +216,12 @@ module.exports = async function accionEnviar(req, res) {
             const cat = await calcularCategorias(supabase, j.fecha_nacimiento, j.genero === 'Femenino', year);
             const tramo = tramoDeCategoria(cat.principal, j.fecha_nacimiento);
 
-            // El CHECK inscripciones_sin_hermano_en_adultos lo rechazaría igual,
-            // pero un mensaje claro es mejor que un error de base de datos.
-            if (j.tarifa_variante === 'con_hermano' && (tramo === 'senior' || tramo === 'veterano')) {
-                throw new RechazoDelFormulario(400, `${j.nombre}: en adultos no existe el descuento por hermano.`);
-            }
+            // Acá se le pone el precio. Lo que haya llegado del navegador en
+            // este campo se descarta: es un dato del club, no de la familia.
+            // varianteAutomatica() nunca le da "con hermano" a un adulto, que
+            // es lo que prohíbe el CHECK inscripciones_sin_hermano_en_adultos.
+            j.tarifa_variante =
+                varianteEspecialPrevia[j.player_id || ''] || varianteAutomatica(tramo, cuantosJugadores);
             // Que la fila EXISTA no alcanza: el estado normal del catálogo es
             // que la fila esté y el importe todavía no. Number(null) es 0, así
             // que sin esto la familia se inscribe sin error y recibe un correo
@@ -440,6 +504,7 @@ module.exports = async function accionEnviar(req, res) {
                     acepta_uso_imagen_at: j.acepta_uso_imagen ? ahora : null,
                     foto_path: fotoPath,
                     observaciones: [j.observaciones, ...notas].filter(Boolean).join(' ') || null,
+                    pago_anual: pagoAnual,
                     origen: 'web',
                     enviada_at: ahora,
                     recibida_at: ahora,
@@ -448,8 +513,13 @@ module.exports = async function accionEnviar(req, res) {
             );
             if (errInsc) throw new Error(`No se pudo guardar la inscripción de ${j.nombre}: ${errInsc.message}`);
 
-            const mensual = Number(precios.get(`mensualidad|${j.tarifa_variante}|${tramo}`).importe);
-            const ficha = precios.get(`ficha_anual|${j.tarifa_variante}|${tramo}`);
+            const mensual = Number(precioMensual.importe);
+            // La ficha federativa NO va por el tramo de la cuota: va por el año
+            // de nacimiento. El que este año cumple 17 o 18 paga la de senior
+            // (300 €) aunque entrene con los juveniles y pague cuota juvenil.
+            const ficha = precios.get(
+                `ficha_anual|${j.tarifa_variante}|${tramoDeFicha(j.fecha_nacimiento, year)}`
+            );
 
             resultado.push({
                 player_id: playerId,
@@ -459,7 +529,11 @@ module.exports = async function accionEnviar(req, res) {
                 tramo,
                 variante: j.tarifa_variante,
                 mensualidad: mensual,
-                meses: 10,
+                meses: MESES_DE_CUOTA,
+                total_temporada:
+                    ficha && ficha.importe !== null
+                        ? Math.round((mensual * MESES_DE_CUOTA + Number(ficha.importe)) * 100) / 100
+                        : null,
                 ficha_anual: ficha && ficha.importe !== null ? Number(ficha.importe) : null,
             });
         }
@@ -695,17 +769,6 @@ function validar(body, tieneToken) {
     // Los que no renuevan no cuentan como hermanos: si de dos hijos uno se va,
     // el que queda ya no tiene descuento por hermano.
     const siguen = lista.filter((j) => j.no_renueva !== true);
-    const conHermano = siguen.filter((j) => j.tarifa_variante === 'con_hermano').length;
-    // La familia elige la tarifa, pero "con hermano" con un solo hijo en el
-    // envío casi siempre es un error de lectura, no una picardía. Se avisa antes
-    // en vez de dejar que lo descubra el club al revisar.
-    if (conHermano > 0 && siguen.length < 2) {
-        return {
-            error:
-                'Elegiste la cuota "con hermano" pero sólo estás inscribiendo a un jugador. ' +
-                'Agregá al hermano o elegí la cuota normal.',
-        };
-    }
 
     for (const j of lista) {
         const nombre = limpiar(j.nombre, 80);
@@ -736,9 +799,6 @@ function validar(body, tieneToken) {
         if (!nombre || !apellido) return { error: 'Falta el nombre o el apellido de un jugador.' };
         if (!dob) return { error: `${nombre}: la fecha de nacimiento no es válida.` };
         if (!GENEROS.includes(genero)) return { error: `${nombre}: falta el sexo.` };
-
-        const variante = limpiar(j.tarifa_variante);
-        if (!VARIANTES.includes(variante)) return { error: `${nombre}: elegí una cuota.` };
 
         const tipoDoc = limpiar(j.tipo_documento);
         const numDoc = limpiar(j.numero_documento, 40);
@@ -787,7 +847,10 @@ function validar(body, tieneToken) {
             talla_camiseta: limpiar(j.talla_camiseta, 4),
             talla_pantalon: limpiar(j.talla_pantalon, 4),
             talla_chandal: limpiar(j.talla_chandal, 4),
-            tarifa_variante: variante,
+            // La tarifa NO la elige la familia: la calcula el servidor más abajo,
+            // con el año de nacimiento y cuántos jugadores trae la inscripción.
+            // Si llegara desde el navegador, cualquiera se pondría la de 1 €.
+            tarifa_variante: null,
             parentesco,
             es_pagador: j.es_pagador === true,
             foto: typeof j.foto === 'string' && j.foto.startsWith('data:') ? j.foto : null,

@@ -300,6 +300,9 @@
     "enviar": "Invia l'iscrizione",
     "cargando": "Un momento…",
     "pie": "Qualcosa non torna? Scrivici a <a href=\"mailto:info@menorcarugbyclub.com\">info@menorcarugbyclub.com</a>",
-    "reglamento": "Ho letto e accetto il <a href=\"https://www.menorcarugbyclub.com/privacidad\" target=\"_blank\" rel=\"noopener\">regolamento e l'informativa sulla privacy</a> del Menorca Rugby Club."
+    "reglamento": "Ho letto e accetto il <a href=\"https://www.menorcarugbyclub.com/privacidad\" target=\"_blank\" rel=\"noopener\">regolamento e l'informativa sulla privacy</a> del Menorca Rugby Club.",
+    "total_temporada": "Tutta la stagione",
+    "pago_anual": "<strong>Voglio pagare tutto l'anno in una volta</strong>, invece delle rate mensili. Ti prepariamo un'unica fattura con il tesseramento e tutte le quote.",
+    "aviso_descuentos": "Se siete familiari di un dirigente, un allenatore o un collaboratore del club, inviate lo stesso l'iscrizione: il prezzo scontato lo applichiamo noi quando la rivediamo."
   }
 }

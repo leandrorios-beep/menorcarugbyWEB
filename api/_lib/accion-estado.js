@@ -18,6 +18,11 @@ const {
     cargarPrecios,
     cargarDescuentos,
     importeFinal,
+    tramoDeFicha,
+    varianteAutomatica,
+    MESES_DE_CUOTA,
+    PRIMER_COBRO,
+    ULTIMO_COBRO,
 } = require('./inscripcion');
 
 module.exports = async function accionEstado(req, res) {
@@ -77,6 +82,23 @@ module.exports = async function accionEstado(req, res) {
 
                 // Todas de una: es una llamada a la base por jugador, pero la
                 // alternativa es mostrar un precio que después cambia.
+                // Cuántos jugadores tiene la familia: decide si los juveniles
+                // llevan tarifa de hermano.
+                //
+                // No cuenta a los que el club dio de baja esta temporada. Si
+                // una familia de dos renueva a uno solo, el otro ya no es un
+                // hermano que pague: contarlo le enseñaría 40 €/mes en el
+                // formulario y le cobraría 50 al enviarlo. Tiene que dar el
+                // mismo número que la cuenta de accion-enviar.
+                const deBaja = new Set(
+                    (inscs || [])
+                        .filter((i) => i.temporada === temporada && i.estado === 'baja')
+                        .map((i) => i.player_id)
+                );
+                const jugadoresDeLaFamilia = (players || []).filter(
+                    (p) => !deBaja.has(p.player_id)
+                ).length;
+
                 const categoriaDe = new Map();
                 for (const p of players || []) {
                     try {
@@ -147,7 +169,20 @@ module.exports = async function accionEstado(req, res) {
                         // y volver a escribir todo.
                         inscripcion_anterior: delAnterior || null,
                         tramo,
-                        opciones: opcionesDeTarifa(tramo, precios, descuentos),
+                        // Una sola tarifa, no una lista para elegir: la familia
+                        // ya no elige. El descuento por hermano se calcula, y
+                        // las tarifas especiales las pone el club al revisar.
+                        tarifa: tarifaDe(
+                            // `base` es la inscripción de esta temporada o, si no
+                            // hay, la del año pasado: de ahí sale la tarifa especial
+                            // que el club ya hubiera concedido.
+                            base ? base.tarifa_variante : null,
+                            tramo,
+                            tramoDeFicha(p.dob, year),
+                            jugadoresDeLaFamilia,
+                            precios,
+                            descuentos
+                        ),
                     };
                 });
             }
@@ -181,25 +216,41 @@ module.exports = async function accionEstado(req, res) {
  * la familia, las pone el club. Si se ofrecieran, cualquiera se autoasigna la
  * cuota de 1 €.
  */
-const VARIANTES_ELEGIBLES = ['base', 'con_hermano'];
+/**
+ * La tarifa que le toca a un jugador, ya resuelta.
+ *
+ * Devuelve UNA, no una lista: desde el cuadro de la comisión la familia no
+ * elige nada. Todo sale a precio normal, el descuento por hermano se calcula
+ * solo, y las tarifas de directivo, entrenador y colaborador las aplica el club
+ * al revisar la inscripción.
+ *
+ * Si el club ya le concedió una especial, se respeta y se muestra ésa.
+ */
+function tarifaDe(varianteGuardada, tramoCuota, tramoFicha, jugadoresDeLaFamilia, precios, descuentos) {
+    const especial = varianteGuardada && !['base', 'con_hermano'].includes(varianteGuardada);
+    const variante = especial ? varianteGuardada : varianteAutomatica(tramoCuota, jugadoresDeLaFamilia);
 
-function opcionesDeTarifa(tramo, precios, descuentos) {
-    const out = [];
-    for (const variante of VARIANTES_ELEGIBLES) {
-        const mensual = precios.get(`mensualidad|${variante}|${tramo}`);
-        if (!mensual || mensual.importe === null) continue;
+    const mensual = precios.get(`mensualidad|${variante}|${tramoCuota}`);
+    // La ficha va por EDAD, no por la categoría: quien cumple 17 o 18 paga la
+    // de los grandes aunque siga jugando en juveniles.
+    const ficha = precios.get(`ficha_anual|${variante}|${tramoFicha}`);
 
-        const ficha = precios.get(`ficha_anual|${variante}|${tramo}`);
-        out.push({
-            variante,
-            mensualidad: Number(mensual.importe),
-            // La cuota se cobra en 10 meses, no en 12. Decisión del club.
-            meses: 10,
-            ficha_anual: ficha && ficha.importe !== null ? Number(ficha.importe) : null,
-            // Lo que saldría con el descuento de delegado, para que la pantalla
-            // pueda mostrarlo cuando el club se lo haya concedido a esa familia.
-            con_delegado: importeFinal(Number(mensual.importe), 'mensualidad', ['delegado'], descuentos),
-        });
-    }
-    return out;
+    const cuota = mensual && mensual.importe !== null ? Number(mensual.importe) : null;
+    const anual = ficha && ficha.importe !== null ? Number(ficha.importe) : null;
+
+    return {
+        variante,
+        // Para que la pantalla pueda decir "es la tarifa que te puso el club" en
+        // vez de dar a entender que la eligió la familia.
+        la_puso_el_club: Boolean(especial),
+        mensualidad: cuota,
+        meses: MESES_DE_CUOTA,
+        primer_cobro: PRIMER_COBRO,
+        ultimo_cobro: ULTIMO_COBRO,
+        ficha_anual: anual,
+        // Lo que sale la temporada entera. Es el número que la familia quiere
+        // saber y el que hace falta para ofrecer el pago de una vez.
+        total_temporada:
+            cuota === null || anual === null ? null : Math.round((cuota * MESES_DE_CUOTA + anual) * 100) / 100,
+    };
 }

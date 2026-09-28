@@ -265,12 +265,34 @@ input:focus, select:focus, textarea:focus {
         <div class="resumen oculto" id="resumen">
             <div id="resumenLineas"></div>
             <div class="total"><span data-i18n="inscripcion.total_mes">Total al mes</span><strong id="resumenTotal">—</strong></div>
-            <p style="color:#AAB4C2;font-size:.78rem;margin:12px 0 0;line-height:1.5;">
-                La cuota se cobra en 10 mensualidades. La ficha federativa se paga aparte, una vez al año.
+            <div class="total" style="border-top:1px solid rgba(255,255,255,.2);margin-top:8px;padding-top:8px;">
+                <span data-i18n="inscripcion.total_temporada">Toda la temporada</span><strong id="resumenAnual">—</strong>
+            </div>
+            <p id="resumenDetalle" style="color:#AAB4C2;font-size:.78rem;margin:12px 0 0;line-height:1.5;"></p>
+            <!--
+                La familia no elige tarifa y las rebajas de directivos,
+                entrenadores y colaboradores las aplica el club al revisar. Sin
+                esta línea, un hijo de entrenador ve 50 €/mes, cree que le
+                cobraron de más y llama por teléfono.
+            -->
+            <p style="color:#AAB4C2;font-size:.78rem;margin:8px 0 0;line-height:1.5;" data-i18n="inscripcion.aviso_descuentos">
+                Si sois familia de un directivo, un entrenador o un colaborador del club, mandá la inscripción igual:
+                el precio con descuento te lo aplicamos nosotros al revisarla.
             </p>
         </div>
 
         <section class="insc-card">
+            <!--
+                Pagar la temporada entera de una vez. Se guarda como preferencia
+                con la inscripción: el cobro lo prepara el club al aprobarla,
+                porque un pago único y una domiciliación mensual son dos cosas
+                distintas en la pasarela y no se pueden montar a ciegas.
+            -->
+            <div class="check">
+                <input type="checkbox" id="pago_anual">
+                <span data-i18n="inscripcion.pago_anual"><strong>Quiero pagar el año completo de una vez</strong>, en lugar de las cuotas mensuales. Te preparamos un único recibo con la ficha y todas las cuotas.</span>
+            </div>
+
             <div class="check">
                 <input type="checkbox" id="acepta_reglamento">
                 <span data-i18n="inscripcion.reglamento">He leído y acepto el <a href="https://www.menorcarugbyclub.com/privacidad" target="_blank" rel="noopener">reglamento y la política de privacidad</a> del Menorca Rugby Club.</span>
@@ -542,7 +564,6 @@ async function cargarEstado() {
             talla_camiseta: previa.talla_camiseta || '',
             talla_pantalon: previa.talla_pantalon || '',
             talla_chandal: previa.talla_chandal || '',
-            tarifa_variante: previa.tarifa_variante === 'con_hermano' ? 'con_hermano' : 'base',
             // NO se hereda marcado. Es el consentimiento sobre la imagen de un
             // menor: una casilla que aparece ya marcada no es un consentimiento,
             // es un trámite. Se vuelve a pedir en blanco cada temporada, que es
@@ -554,7 +575,7 @@ async function cargarEstado() {
             no_renueva: false,
             motivo_no_renueva: '',
             foto: null,
-            opciones: j.opciones || []
+            tarifa: j.tarifa || null
         };
     });
 
@@ -589,17 +610,20 @@ function prepararPago(jugadores) {
     mostrar('pasoPagar', true);
     $('resumenPago').classList.remove('oculto');
     $('btnPagar').classList.remove('oculto');
-    $('textoPagar').textContent = 'La inscripcion esta aprobada. Se cobran 10 mensualidades, y la ficha anual va en el primer recibo.';
+    var t0 = (aprobados[0] || {}).tarifa || {};
+    $('textoPagar').textContent = 'La inscripción está aprobada. Se cobran ' + (t0.meses || 9) +
+        ' cuotas, del ' + (t0.primer_cobro || '5 de octubre') + ' al ' + (t0.ultimo_cobro || '5 de junio') +
+        ', y la ficha anual va en el primer recibo.';
 
     var total = 0, filas = '';
     aprobados.forEach(function (j) {
-        var o = (j.opciones || []).filter(function (x) { return x.variante === j.inscripcion_actual.tarifa_variante; })[0];
-        var importe = o ? (j.inscripcion_actual.tarifa_descuentos && j.inscripcion_actual.tarifa_descuentos.length ? o.con_delegado : o.mensualidad) : null;
+        var importe = j.tarifa ? j.tarifa.mensualidad : null;
         if (importe) total += importe;
         filas += '<div class="linea"><span>' + escapar(j.nombre + ' ' + j.apellido) + '</span><span>' + euros(importe) + '/mes</span></div>';
     });
     $('resumenPago').innerHTML = filas +
-        '<div class="total"><span>Al mes, 10 meses</span><strong>' + euros(total) + '</strong></div>';
+        '<div class="total"><span>Al mes, ' + (t0.meses || 9) + ' cuotas</span><strong>' +
+        euros(total) + '</strong></div>';
 }
 
 function fotoUrl(path) {
@@ -646,8 +670,9 @@ function nuevoJugador() {
         tipo_documento: '', numero_documento: '', telefono: '', nacionalidad: '',
         direccion: '', codigo_postal: '', ciudad: '', alergias: '',
         altura_cm: '', peso_kg: '', talla_camiseta: '', talla_pantalon: '', talla_chandal: '',
-        tarifa_variante: 'base', acepta_uso_imagen: false, parentesco: 'tutor_legal',
-        observaciones: '', foto: null, no_renueva: false, motivo_no_renueva: '', opciones: []
+        acepta_uso_imagen: false, parentesco: 'tutor_legal',
+        observaciones: '', foto: null, no_renueva: false, motivo_no_renueva: '',
+        soy_yo: false, tarifa: null
     };
 }
 
@@ -795,20 +820,30 @@ function selectCampo(i, nombre, etiqueta, opciones, valor) {
  * depende de la fecha de nacimiento, y la calcula la base al enviar — así que
  * se muestran sin importe y el resumen lo dice.
  */
-function tarifas(i, j) {
-    var opciones = j.opciones && j.opciones.length ? j.opciones : null;
-    var def = [
-        { variante: 'base', nom: 'Normal', det: 'Un solo jugador de la familia' },
-        { variante: 'con_hermano', nom: 'Con hermano', det: 'Dos o más hermanos en el club' }
-    ];
-    return def.map(function (d) {
-        var o = opciones ? opciones.filter(function (x) { return x.variante === d.variante; })[0] : null;
-        if (opciones && !o) return '';
-        var det = o ? euros(o.mensualidad) + '/mes · ' + d.det : d.det;
-        return '<label><input type="radio" name="tarifa' + i + '" value="' + d.variante + '" data-tarifa="' + i + '"' +
-            (j.tarifa_variante === d.variante ? ' checked' : '') + '>' +
-            '<span><span class="t-nom">' + d.nom + '</span><span class="t-det">' + escapar(det) + '</span></span></label>';
-    }).join('');
+var NOMBRES_TARIFA = {
+    base: 'Cuota normal',
+    con_hermano: 'Cuota con hermano',
+    familiar_directivo: 'Hijo/a de directivo o entrenador',
+    directivo: 'Directivo o entrenador',
+    familiar_colaborador: 'Hijo/a de colaborador',
+    colaborador: 'Colaborador',
+    con_beca: 'Con beca',
+};
+
+function nombreDeTarifa(j) {
+    return NOMBRES_TARIFA[(j.tarifa || {}).variante] || 'Cuota normal';
+}
+
+function detalleDeTarifa(j) {
+    var t = j.tarifa || {};
+    if (t.mensualidad === null || t.mensualidad === undefined) {
+        return 'Te confirmamos el importe al revisar la inscripción.';
+    }
+    var txt = euros(t.mensualidad) + '/mes · ' + t.meses + ' cuotas, del ' + t.primer_cobro + ' al ' + t.ultimo_cobro;
+    if (t.ficha_anual !== null && t.ficha_anual !== undefined) txt += ' · ficha ' + euros(t.ficha_anual);
+    if (t.variante === 'con_hermano') txt += ' — aplicada por tener más de un jugador';
+    if (t.la_puso_el_club) txt += ' — tarifa que te asignó el club';
+    return txt;
 }
 
 // ── Eventos delegados: las tarjetas se redibujan, los listeners no ─────────
@@ -823,11 +858,6 @@ $('listaJugadores').addEventListener('input', function (e) {
 
 $('listaJugadores').addEventListener('change', function (e) {
     var el = e.target;
-    if (el.hasAttribute('data-tarifa')) {
-        estado.jugadores[Number(el.getAttribute('data-tarifa'))].tarifa_variante = el.value;
-        actualizarResumen();
-        return;
-    }
     var i = el.getAttribute('data-i');
     if (i !== null && el.getAttribute('data-campo')) {
         estado.jugadores[Number(i)][el.getAttribute('data-campo')] = el.type === 'checkbox' ? el.checked : el.value;
@@ -943,6 +973,7 @@ function elegirFoto(input, i) {
 function actualizarResumen() {
     var lineas = [];
     var total = 0;
+    var totalAnual = 0;
     var faltanPrecios = false;
 
     estado.jugadores.forEach(function (j) {
@@ -952,10 +983,11 @@ function actualizarResumen() {
                 '</span><span style="color:#AAB4C2">este año no juega</span></div>');
             return;
         }
-        var o = (j.opciones || []).filter(function (x) { return x.variante === j.tarifa_variante; })[0];
-        if (o) {
-            total += o.mensualidad;
-            lineas.push('<div class="linea"><span>' + escapar(nombre) + '</span><span>' + euros(o.mensualidad) + '/mes</span></div>');
+        var t = j.tarifa;
+        if (t && t.mensualidad !== null && t.mensualidad !== undefined) {
+            total += t.mensualidad;
+            if (t.total_temporada) totalAnual += t.total_temporada;
+            lineas.push('<div class="linea"><span>' + escapar(nombre) + '</span><span>' + euros(t.mensualidad) + '/mes</span></div>');
         } else {
             faltanPrecios = true;
             lineas.push('<div class="linea"><span>' + escapar(nombre) + '</span><span style="color:#AAB4C2">según categoría</span></div>');
@@ -965,6 +997,15 @@ function actualizarResumen() {
     mostrar('resumen', estado.jugadores.length > 0);
     $('resumenLineas').innerHTML = lineas.join('');
     $('resumenTotal').textContent = faltanPrecios && total === 0 ? 'Te lo confirmamos' : euros(total) + (faltanPrecios ? ' + los nuevos' : '');
+    $('resumenAnual').textContent = totalAnual > 0 ? euros(totalAnual) : (faltanPrecios ? 'Te lo confirmamos' : '—');
+
+    // El detalle, con las fechas de verdad. Son NUEVE cuotas, del 5 de octubre
+    // al 5 de junio: decía diez y no cuadraba con el calendario del club.
+    var t0 = (estado.jugadores.filter(function (x) { return x.tarifa && x.tarifa.mensualidad !== null && x.tarifa.mensualidad !== undefined; })[0] || {}).tarifa;
+    $('resumenDetalle').innerHTML = t0
+        ? t0.meses + ' cuotas, del ' + escapar(t0.primer_cobro) + ' al ' + escapar(t0.ultimo_cobro) +
+          '. La ficha federativa va en el primer recibo.'
+        : 'Te confirmamos los importes al revisar la inscripción.';
 }
 
 // ── Enviar ─────────────────────────────────────────────────────────────────
@@ -987,6 +1028,7 @@ $('btnEnviar').addEventListener('click', async function () {
 
     var cuerpo = {
         acepta_reglamento: true,
+        pago_anual: $('pago_anual').checked,
         tutor: {
             nombre: $('t_nombre').value,
             apellido: $('t_apellido').value,
@@ -1020,7 +1062,6 @@ $('btnEnviar').addEventListener('click', async function () {
                 talla_camiseta: j.talla_camiseta || null,
                 talla_pantalon: j.talla_pantalon || null,
                 talla_chandal: j.talla_chandal || null,
-                tarifa_variante: j.tarifa_variante,
                 parentesco: j.parentesco,
                 acepta_uso_imagen: j.acepta_uso_imagen === true,
                 observaciones: j.observaciones || null,

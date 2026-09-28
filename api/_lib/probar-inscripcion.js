@@ -134,14 +134,53 @@ async function main() {
     });
     comprobar('sin jugadores -> 400', r.status === 400, r.body);
 
+    // La familia ya no elige tarifa: si manda una, se ignora. Un solo hijo tiene
+    // que quedar en 'base' aunque pida "con hermano".
     r = await llamar('enviar', {
         body: {
             acepta_reglamento: true,
-            tutor: { nombre: 'X', email: EMAIL },
-            jugadores: [{ nombre: 'A', apellido: 'B', fecha_nacimiento: '2014-03-02', genero: 'Masculino', tarifa_variante: 'con_hermano' }],
+            tutor: { nombre: 'Uno', apellido: 'Solo Prueba', email: 'prueba.un.solo.hijo@menorcarugbyclub.test' },
+            jugadores: [{ nombre: 'Unico', apellido: 'Hijo Prueba', fecha_nacimiento: '2014-03-02', genero: 'Masculino',
+                          tarifa_variante: 'con_hermano', parentesco: 'padre' }],
         },
     });
-    comprobar('"con hermano" con un solo hijo -> 400', r.status === 400, r.body);
+    comprobar('la tarifa que manda el navegador se ignora', r.status === 200, r.body);
+    comprobar('un solo hijo queda en cuota normal', r.body && r.body.jugadores && r.body.jugadores[0].variante === 'base', r.body && r.body.jugadores);
+    comprobar('y con la ficha de 235 por ser de 2014', r.body && r.body.jugadores && r.body.jugadores[0].ficha_anual === 235, r.body && r.body.jugadores);
+    {
+        const { data: t } = await db.from('tutores').select('tutor_id').eq('email', 'prueba.un.solo.hijo@menorcarugbyclub.test').maybeSingle();
+        if (t) {
+            const { data: v } = await db.from('tutor_jugador').select('player_id').eq('tutor_id', t.tutor_id);
+            await db.from('tutores').delete().eq('tutor_id', t.tutor_id);
+            for (const x of v || []) await db.from('players').delete().eq('player_id', x.player_id);
+        }
+    }
+
+    // La ficha federativa va por el AÑO DE NACIMIENTO, no por la categoría en
+    // la que entrena. El que este año cumple 17 juega de juvenil —cuota de
+    // juvenil— pero su ficha ya es la de 300 €.
+    const MAIL_17 = 'prueba.ficha.de.17@menorcarugbyclub.test';
+    r = await llamar('enviar', {
+        body: {
+            acepta_reglamento: true,
+            tutor: { nombre: 'Uno', apellido: 'De 17 Prueba', email: MAIL_17 },
+            jugadores: [{ nombre: 'Casi', apellido: 'Mayor Prueba17', fecha_nacimiento: '2009-05-10',
+                          genero: 'Masculino', parentesco: 'padre' }],
+        },
+    });
+    {
+        const j = r.body && r.body.jugadores && r.body.jugadores[0];
+        comprobar('el de 17 entrena de juvenil', j && j.tramo === 'juvenil', j);
+        comprobar('paga cuota de juvenil', j && j.mensualidad === 50, j);
+        comprobar('pero la ficha de 300', j && j.ficha_anual === 300, j);
+        comprobar('y el total de la temporada sale bien', j && j.total_temporada === 750, j);
+        const { data: t } = await db.from('tutores').select('tutor_id').eq('email', MAIL_17).maybeSingle();
+        if (t) {
+            const { data: v } = await db.from('tutor_jugador').select('player_id').eq('tutor_id', t.tutor_id);
+            await db.from('tutores').delete().eq('tutor_id', t.tutor_id);
+            for (const x of v || []) await db.from('players').delete().eq('player_id', x.player_id);
+        }
+    }
 
     r = await llamar('enviar', {
         body: {
@@ -256,7 +295,11 @@ async function main() {
     if (r.body && r.body.jugadores) {
         const j = r.body.jugadores[0];
         comprobar('trae la inscripción de esta temporada', Boolean(j.inscripcion_actual), j);
-        comprobar('trae opciones de tarifa con importe', j.opciones && j.opciones.length > 0 && j.opciones[0].mensualidad > 0, j.opciones);
+        // Ya no son "opciones": la familia no elige tarifa. Se comprueba que
+        // venga LA que le toca, con el importe y con las fechas de cobro.
+        comprobar('trae la tarifa que le toca', Boolean(j.tarifa) && j.tarifa.mensualidad > 0, j.tarifa);
+        comprobar('con las 9 cuotas y las fechas', j.tarifa && j.tarifa.meses === 9 && /octubre/.test(j.tarifa.primer_cobro || ''), j.tarifa);
+        comprobar('y con el total de la temporada', j.tarifa && j.tarifa.total_temporada > j.tarifa.mensualidad, j.tarifa);
         comprobar('precarga tallas del año pasado o de este', Boolean(j.inscripcion_actual.talla_camiseta), j.inscripcion_actual);
         comprobar('guardó la foto como path, no como URL', !j.foto || j.foto.indexOf('http') !== 0, j.foto);
     }
@@ -314,8 +357,13 @@ async function main() {
     comprobar('dos inscripciones', inscs.length === 2, inscs);
     comprobar('todas enviadas', inscs.every((i) => i.estado === 'enviada'), inscs);
     comprobar('todas de esta temporada', inscs.every((i) => i.temporada === temporada), inscs);
-    const renovada = inscs.find((i) => i.tarifa_variante === 'base');
-    comprobar('la renovación pisó la anterior (talla L, cuota base)', renovada && renovada.talla_camiseta === 'L', inscs);
+    const renovada = inscs.find((i) => i.talla_camiseta === 'L');
+    comprobar('la renovación pisó la anterior (talla L)', Boolean(renovada), inscs);
+    // La renovación mandó tarifa_variante: 'base' a propósito. Son dos
+    // hermanos, así que el servidor la ignora y los dos siguen con el
+    // descuento. Si esto se pone en 'base', alguien volvió a dejar que el
+    // navegador elija el precio.
+    comprobar('y NO pudo bajarse el precio sola', inscs.every((i) => i.tarifa_variante === 'con_hermano'), inscs);
 
     const { data: dp } = await db.from('player_datos_personales').select('player_id, direccion, autoriza_uso_imagen').in('player_id', ids);
     comprobar('guardó los datos personales', dp.length === 2, dp);
@@ -359,6 +407,19 @@ async function main() {
         const { data: pVa } = await db.from('players').select('estado_club').eq('player_id', seVa.player_id).single();
         comprobar('el entrenador sigue viendo al que juega', pSigue.estado_club !== 'baja', pSigue);
         comprobar('y deja de ver al que se fue', pVa.estado_club === 'baja', pVa);
+
+        // El que queda solo deja de ser hermano. La baja se escribe dentro del
+        // mismo bucle que calcula la tarifa, así que es fácil contar todavía al
+        // que se va y cobrarle al otro 40 € cuando le tocan 50.
+        const { data: tarifaSigue } = await db.from('inscripciones')
+            .select('tarifa_variante').eq('player_id', sigue.player_id).eq('temporada', temporada).single();
+        comprobar('el que se queda solo pierde el descuento de hermano', tarifaSigue.tarifa_variante === 'base', tarifaSigue);
+
+        // Y lo que ve en pantalla tiene que decir lo mismo que se guardó.
+        r = await llamar('estado', { method: 'GET', token });
+        const enPantalla = (r.body.jugadores || []).find((x) => x.player_id === sigue.player_id);
+        comprobar('y el formulario le muestra esa misma tarifa', enPantalla && enPantalla.tarifa && enPantalla.tarifa.variante === 'base', enPantalla && enPantalla.tarifa);
+        comprobar('con la cuota entera de juvenil', enPantalla && enPantalla.tarifa && enPantalla.tarifa.mensualidad === 50, enPantalla && enPantalla.tarifa);
     }
 
     console.log('\n11. Reenviar sobre una inscripcion ya resuelta');
@@ -471,18 +532,24 @@ async function main() {
     // al entrar, 'tu ficha esta archivada'. Encerrada hasta que lo destrabara
     // una persona.
     const MAIL_ROTO = 'prueba.alta.que.falla@menorcarugbyclub.test';
+    // Para que falle a mitad hace falta algo que reviente DENTRO del bucle,
+    // con el primer hijo ya escrito. Desde que la tarifa la calcula el
+    // servidor, una tarifa mal puesta ya no sirve de disparador: el camino
+    // vivo que queda es reclamar a alguien que el club dio de baja.
+    await db.from('inscripciones').update({ estado: 'baja', motivo_baja: 'prueba' })
+        .eq('player_id', idMayor).eq('temporada', temporada);
     r = await llamar('enviar', {
         body: {
             acepta_reglamento: true,
             tutor: { nombre: 'Falla', apellido: 'A Medias', email: MAIL_ROTO },
             jugadores: [
-                { nombre: 'Primero', apellido: 'Falla Prueba', fecha_nacimiento: '2012-01-01', genero: 'Masculino', tarifa_variante: 'base', parentesco: 'padre' },
-                // Este revienta: 'con hermano' no existe en adultos.
-                { nombre: 'Segundo', apellido: 'Falla Prueba', fecha_nacimiento: '1990-01-01', genero: 'Masculino', tarifa_variante: 'con_hermano', parentesco: 'padre' },
+                { nombre: 'Primero', apellido: 'Falla Prueba', fecha_nacimiento: '2012-01-01', genero: 'Masculino', parentesco: 'padre' },
+                // Este revienta: figura de baja esta temporada.
+                { player_id: idMayor, nombre: 'Segundo', apellido: 'Mayor Prueba', fecha_nacimiento: '2011-03-02', genero: 'Masculino', parentesco: 'padre' },
             ],
         },
     });
-    comprobar('rechaza con un mensaje, no con un 500', r.status === 400, r.body);
+    comprobar('rechaza con un mensaje, no con un 500', r.status === 409, r.body);
     comprobar('el mensaje nombra al jugador', r.body && /Segundo/.test(r.body.error || ''), r.body);
     {
         const { data: huerfano } = await db.from('tutores').select('tutor_id, activo').eq('email', MAIL_ROTO).maybeSingle();
@@ -494,7 +561,7 @@ async function main() {
             acepta_reglamento: true,
             tutor: { nombre: 'Falla', apellido: 'A Medias', email: MAIL_ROTO },
             jugadores: [
-                { nombre: 'Primero', apellido: 'Falla Prueba', fecha_nacimiento: '2012-01-01', genero: 'Masculino', tarifa_variante: 'base', parentesco: 'padre' },
+                { nombre: 'Primero', apellido: 'Falla Prueba', fecha_nacimiento: '2012-01-01', genero: 'Masculino', parentesco: 'padre' },
             ],
         },
     });
