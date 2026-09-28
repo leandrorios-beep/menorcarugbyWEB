@@ -150,7 +150,17 @@ input:focus, select:focus, textarea:focus {
 .check { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 14px; }
 .check input { width: 22px; height: 22px; flex-shrink: 0; margin-top: 2px; }
 .check span { font-size: 0.88rem; color: #333; line-height: 1.5; }
-.check a { color: var(--navy); }
+/* Subrayado y negrita, no sólo color.
+   Estaban en navy sobre texto gris oscuro: a tamaño de móvil eran
+   indistinguibles del resto de la frase, así que nadie encontraba el
+   reglamento que se le estaba pidiendo aceptar. */
+.check a { color: var(--navy); font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
+.check a:hover { opacity: .75; }
+
+/* Un enlace suelto y visible a los documentos, para quien quiera leerlos
+   antes de marcar nada. */
+.legales { display: flex; flex-wrap: wrap; gap: 14px; margin: 0 0 16px; font-size: .84rem; }
+.legales a { color: var(--navy); font-weight: 600; text-decoration: underline; text-underline-offset: 3px; display: inline-flex; align-items: center; gap: 6px; }
 
 .resumen { background: var(--navy); border-radius: 14px; padding: 20px; color: #fff; margin-bottom: 16px; }
 .resumen .linea { display: flex; justify-content: space-between; gap: 12px; padding: 8px 0; font-size: 0.92rem; border-bottom: 1px solid rgba(255,255,255,.14); }
@@ -227,6 +237,8 @@ input:focus, select:focus, textarea:focus {
 
     <!-- ── Paso 2b / 3: el formulario ────────────────────────────────── -->
     <div class="oculto" id="pasoFormulario">
+        <!-- Lo que ya esta hecho, dicho arriba del todo. -->
+        <div id="yaEnviada" class="oculto"></div>
 
         <section class="insc-card" id="bloqueTutor">
             <h2><i class="fa-regular fa-address-card"></i> <span data-i18n="inscripcion.tus_datos">Tus datos</span></h2>
@@ -295,6 +307,11 @@ input:focus, select:focus, textarea:focus {
             <div class="check">
                 <input type="checkbox" id="pago_anual">
                 <span data-i18n="inscripcion.pago_anual"><strong>Quiero pagar el año completo de una vez</strong>, en lugar de las cuotas mensuales. Te preparamos un único recibo con la ficha y todas las cuotas.</span>
+            </div>
+
+            <div class="legales">
+                <a href="/reglamento" target="_blank" rel="noopener"><i class="fa-regular fa-file-lines"></i> Leer el reglamento del club</a>
+                <a href="/privacidad" target="_blank" rel="noopener"><i class="fa-solid fa-shield-halved"></i> Política de privacidad</a>
             </div>
 
             <div class="check">
@@ -1143,6 +1160,32 @@ function actualizarResumen() {
 
     // La contrasena se puede cambiar siempre que haya sesion abierta.
     mostrar('pasoClave', Boolean(estado.token));
+
+    // ── Lo que ya esta hecho tiene que parecer hecho ────────────────────
+    //
+    // Al volver de dejar la tarjeta, la pantalla mostraba otra vez el formulario
+    // entero con el boton amarillo "ENVIAR INSCRIPCION" mandando. Quien acababa
+    // de enviarla y de poner su tarjeta se encontraba el mismo boton del
+    // principio y no sabia si le habia quedado algo por hacer.
+    //
+    // La inscripcion SI se puede volver a enviar —es como se corrigen los
+    // datos— pero eso es "guardar cambios", no "enviar". El boton lo dice.
+    var pendientes = estado.jugadores.filter(function (j) {
+        return !j.no_renueva && !j.yaEnviado;
+    });
+    var yaEnviadoTodo = estado.jugadores.length > 0 && pendientes.length === 0;
+
+    $('btnEnviar').textContent = yaEnviadoTodo ? 'Guardar los cambios' : 'Enviar inscripción';
+    if (yaEnviadoTodo) $('btnEnviar').removeAttribute('data-i18n');
+    else $('btnEnviar').setAttribute('data-i18n', 'inscripcion.enviar');
+    $('btnEnviar').className = yaEnviadoTodo ? 'btn btn-secundario' : 'btn btn-primario';
+
+    $('yaEnviada').innerHTML = yaEnviadoTodo
+        ? '<div class="aviso aviso-ok"><strong>Tu inscripción ya está enviada.</strong> ' +
+          'La estamos revisando y te avisamos por correo. Si querés corregir algo, ' +
+          'cambialo acá abajo y guardá.</div>'
+        : '';
+    mostrar('yaEnviada', yaEnviadoTodo);
 
     // Restaurar la eleccion de pago anual. Se perdia al recargar y el siguiente
     // envio la pisaba con "no" sin que la familia se enterara: habia pedido
