@@ -233,6 +233,19 @@ async function tarjetaGuardada(sesion, stripe, supabase) {
 
 async function facturaPagada(event, stripe, supabase) {
     const factura = event.data.object;
+
+    // ── La temporada pagada por adelantado ───────────────────────────────
+    //
+    // No viene de ninguna suscripción: es una factura suelta con la ficha y las
+    // nueve cuotas juntas, que se crea al aprobar cuando la familia eligió
+    // pagar todo de una vez. Se reconoce por su metadata.
+    //
+    // Sin esto caería por el camino de los socios y el dinero entraría en
+    // Stripe sin quedar anotado en el libro del club.
+    if (!suscripcionDeLaFactura(factura) && (factura.metadata || {}).tipo === 'anual') {
+        return await anualPagada(factura, supabase, event);
+    }
+
     // El id NO se lee de `factura.subscription`: en la versión que entrega el
     // webhook ese campo ya no existe. Ver api/_lib/stripe-factura.js.
     const idSuscripcion = suscripcionDeLaFactura(factura);
@@ -254,6 +267,77 @@ async function facturaPagada(event, stripe, supabase) {
         .neq('estado', 'baja');
     if (error) throw new Error(`inscripciones: ${error.message}`);
 
+    return true;
+}
+
+/**
+ * Anota una temporada pagada por adelantado.
+ *
+ * Una fila por cada línea de la factura, con el mismo `linea_clave` que el
+ * resto: es lo que impide que un reintento de Stripe la anote dos veces.
+ */
+async function anualPagada(factura, supabase, event) {
+    const ids = String((factura.metadata || {}).inscripciones || '')
+        .split(',')
+        .map((x) => x.trim())
+        .filter(Boolean);
+    if (!ids.length) return false;
+
+    const { data: inscripciones } = await supabase
+        .from('inscripciones')
+        .select('inscripcion_id, player_id, temporada, estado')
+        .in('inscripcion_id', ids);
+    if (!inscripciones || !inscripciones.length) return false;
+
+    const { data: jugadores } = await supabase
+        .from('players')
+        .select('player_id, first_name, last_name, category_primary')
+        .in('player_id', inscripciones.map((i) => i.player_id));
+    const jugadorDe = new Map((jugadores || []).map((j) => [j.player_id, j]));
+
+    const fecha = new Date((factura.status_transitions?.paid_at || event.created) * 1000);
+    const fechaISO = fecha.toISOString().slice(0, 10);
+    const mes = fecha.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' });
+
+    const filas = [];
+    for (const i of inscripciones) {
+        const j = jugadorDe.get(i.player_id) || {};
+        const nombre = `${j.first_name || ''} ${j.last_name || ''}`.trim() || i.player_id;
+
+        // Se anota lo que la factura cobró de verdad, línea por línea, en vez de
+        // recalcularlo del catálogo: si alguien tocó un precio entre medias, el
+        // libro tiene que decir lo que se cobró.
+        for (const l of (factura.lines && factura.lines.data) || []) {
+            if (!l.amount) continue;
+            const esFicha = /ficha/i.test(l.description || '');
+            filas.push(fila({
+                factura,
+                suscripcion: { id: null },
+                inscripcion: i,
+                jugador: j,
+                nombre,
+                pagada: true,
+                tipo: esFicha ? 'Matrícula' : 'Cuota anual',
+                concepto: l.description || `Temporada ${i.temporada}`,
+                importe: l.amount / 100,
+                fecha: fechaISO,
+                mes,
+                temporada: i.temporada,
+                sufijo: esFicha ? 'ficha' : 'anual',
+            }));
+        }
+    }
+
+    if (filas.length) await anotarFilas(supabase, filas);
+
+    const { error } = await supabase
+        .from('inscripciones')
+        .update({ estado_cobro: 'al_dia' })
+        .in('inscripcion_id', ids)
+        .neq('estado', 'baja');
+    if (error) throw new Error(`inscripciones: ${error.message}`);
+
+    console.log(`Temporada pagada por adelantado: factura ${factura.id}, ${filas.length} línea(s).`);
     return true;
 }
 
@@ -521,17 +605,23 @@ async function anotar(supabase, { factura, suscripcion, ids, pagada, event }) {
     }
 
     if (!filas.length) return;
+    await anotarFilas(supabase, filas);
+    console.log(`Factura ${factura.id}: ${filas.length} línea(s) en ingresos, ${pagada ? 'cobradas' : 'FALLIDAS'}`);
+}
 
-    // Upsert contra linea_clave: si Stripe reintenta el evento —y reintenta el
-    // MISMO evento si no le respondes 200 a tiempo— se reescribe la misma fila
-    // en vez de meter el cobro dos veces. Ya hay 898 € de duplicados en el
-    // historico por algo asi.
+/**
+ * Escribe las filas en el libro de ingresos.
+ *
+ * Upsert contra linea_clave: si Stripe reintenta el evento —y reintenta el
+ * MISMO evento si no se le responde 200 a tiempo— se reescribe la misma fila en
+ * vez de meter el cobro dos veces. Ya hay 898 € de duplicados en el histórico
+ * por algo así.
+ */
+async function anotarFilas(supabase, filas) {
     const { error } = await supabase
         .from('ingresos')
         .upsert(filas, { onConflict: 'linea_clave' });
     if (error) throw new Error(`ingresos: ${error.message}`);
-
-    console.log(`Factura ${factura.id}: ${filas.length} línea(s) en ingresos, ${pagada ? 'cobradas' : 'FALLIDAS'}`);
 }
 
 function fila({ factura, suscripcion, inscripcion, jugador, nombre, pagada, tipo, concepto, importe, fecha, mes, temporada, sufijo }) {

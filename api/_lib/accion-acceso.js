@@ -60,6 +60,26 @@ module.exports = async function accionAcceso(req, res) {
         if (ligado) socio = ligado;
     }
 
+    // Y al revés: entró con el correo de su ficha de SOCIO, pero su cuenta de
+    // tutor está a otro correo.
+    //
+    // Es el mismo caso visto desde la otra puerta, y es el que se sufre de
+    // verdad: el navegador autocompleta en cada pantalla el correo con el que
+    // se entró la última vez. En "Mi cuenta" rellena el del socio, la persona
+    // escribe la contraseña que conoce —la de su cuenta— y recibe "correo o
+    // contraseña incorrectos" teniendo las dos cosas bien.
+    //
+    // Con el enlace puesto, cualquiera de sus dos correos vale y la contraseña
+    // es una sola.
+    if (!tutor && socio) {
+        const { data: suTutor } = await supabase
+            .from('tutores')
+            .select('tutor_id, nombre, apellido, email, activo, password_hash, socio_id')
+            .eq('socio_id', socio.id)
+            .maybeSingle();
+        if (suTutor) tutor = suTutor;
+    }
+
     if (!tutor && !socio) {
         return res.status(401).json({ error: 'Correo o contraseña incorrectos' });
     }
