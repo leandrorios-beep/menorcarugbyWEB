@@ -121,7 +121,13 @@ function tramoDeFicha(dob, year = temporadaYear()) {
  * que viene son los otros 16 de su quinta.
  */
 function varianteDeFicha(variante) {
-    return variante === 'directivo' || variante === 'familiar_directivo' ? variante : 'base';
+    // 'prueba' es la tarifa de 1 € para probar el cobro de punta a punta. Si
+    // cayera en la regla general, su ficha saldría a 300 € y la prueba costaría
+    // justo lo que se quería evitar.
+    if (variante === 'directivo' || variante === 'familiar_directivo' || variante === 'prueba') {
+        return variante;
+    }
+    return 'base';
 }
 
 /**
