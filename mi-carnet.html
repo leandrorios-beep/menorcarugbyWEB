@@ -595,10 +595,22 @@
             loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Entrando...';
 
             try {
-                const resp = await fetch('/api/socio-login', {
+                // UNA SOLA PUERTA para socios y para familias.
+                //
+                // Antes esta pantalla entraba por /api/socio-login, que sólo
+                // mira la tabla de socios. Quien tiene hijos jugando pero no es
+                // socio —52 de las 75 familias— recibía "correo o contrasena
+                // incorrectos" con una contrasena perfectamente valida, porque
+                // sencillamente no existia de este lado.
+                //
+                // /api/inscripcion accion=acceso mira los dos lados y firma un
+                // token que lleva los dos identificadores. socio-profile lee de
+                // ese mismo token, asi que el resto de la pantalla no cambia.
+                const resp = await fetch('/api/inscripcion', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
+                        accion: 'acceso',
                         email: document.getElementById('loginEmail').value.trim(),
                         password: document.getElementById('loginPassword').value,
                     })
@@ -607,10 +619,26 @@
                 if (!resp.ok || !data.success) {
                     throw new Error(data.error || 'Error al iniciar sesion');
                 }
+
+                // Familia sin ficha de socio: no hay carnet que ensenar, pero
+                // tampoco hay que dejarla plantada con un error que no explica
+                // nada.
+                if (!data.es_socio) {
+                    throw new Error(
+                        'Tu cuenta es de familia, no de socio, asi que todavia no tenes carnet. ' +
+                        'Desde menorcarugbyclub.com/inscripcion ves a tus jugadores, sus cuotas y tus recibos.'
+                    );
+                }
+
                 authToken = data.token;
                 localStorage.setItem('mrc_token', authToken);
-                currentSocio = data.socio;
-                showDashboard();
+
+                // El login dice QUIEN sos; los datos del carnet los trae el
+                // perfil. Antes venian juntos porque socio-login devolvia la
+                // ficha entera; ahora se piden aparte, con el mismo camino que
+                // ya usa la vuelta con el token guardado.
+                await loadProfile();
+                if (!currentSocio) throw new Error('No pudimos cargar tu ficha. Proba de nuevo.');
             } catch (err) {
                 loginError.textContent = err.message;
                 loginError.style.display = 'block';

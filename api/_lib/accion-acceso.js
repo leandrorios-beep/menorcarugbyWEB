@@ -27,7 +27,7 @@ module.exports = async function accionAcceso(req, res) {
         tutor = await buscarTutorPorEmail(
             supabase,
             email,
-            'tutor_id, nombre, apellido, email, activo, password_hash'
+            'tutor_id, nombre, apellido, email, activo, password_hash, socio_id'
         );
         socios = await findSociosByEmail(
             supabase,
@@ -39,7 +39,27 @@ module.exports = async function accionAcceso(req, res) {
         return res.status(500).json({ error: 'Error de base de datos' });
     }
 
-    const socio = (socios || [])[0] || null;
+    let socio = (socios || [])[0] || null;
+
+    // ── Una persona, no dos ──────────────────────────────────────────────
+    //
+    // La ficha de socio se busca por el correo, y eso deja fuera a quien se
+    // dio de alta como socio con un correo y como tutor con otro. Le pasa al
+    // propio presidente: socio con @outlook y tutor con @gmail. Para el sistema
+    // eran dos personas por una letra de diferencia en el dominio, y al entrar
+    // sólo veía la mitad de lo suyo.
+    //
+    // `tutores.socio_id` existe justamente para decir "este tutor y este socio
+    // son la misma persona". Si está puesto, manda sobre el correo.
+    if (!socio && tutor && tutor.socio_id) {
+        const { data: ligado } = await supabase
+            .from('socios')
+            .select('id, nombre, apellido, email, numero_socio, tipo_socio, estado_pago, password_hash')
+            .eq('id', tutor.socio_id)
+            .maybeSingle();
+        if (ligado) socio = ligado;
+    }
+
     if (!tutor && !socio) {
         return res.status(401).json({ error: 'Correo o contraseña incorrectos' });
     }
