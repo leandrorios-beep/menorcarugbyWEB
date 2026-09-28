@@ -381,6 +381,31 @@ async function anotar(supabase, { factura, suscripcion, ids, pagada, event }) {
 
     // ¿Esta factura es la primera? La matrícula sólo va en la primera.
     const esPrimera = factura.billing_reason === 'subscription_create';
+
+    // ¿Esta factura lleva cuota mensual, o sólo la matrícula?
+    //
+    // Con período de espera hasta el 5 de octubre, la PRIMERA factura lleva
+    // únicamente la ficha federativa: la línea de la suscripción va a 0 € por
+    // estar en prueba. El código daba por hecho que toda factura trae cuota, así
+    // que anotaba una mensualidad que nadie había pagado y después la tapaba con
+    // una fila de descuadre. El total cuadraba y el detalle mentía: el libro
+    // decía que una familia pagó la cuota de septiembre cuando no existe.
+    //
+    // Se mira la factura, que es lo que pasó de verdad, en vez del catálogo, que
+    // es lo que debería pasar.
+    // OJO al distinguirlas: la línea de la MATRÍCULA también lleva
+    // `subscription`, porque se carga sobre la primera factura de la
+    // suscripción. Lo que las separa es de dónde cuelgan: la matrícula es un
+    // invoice item y la cuota es una línea de la suscripción.
+    const esCuota = (l) => {
+        const padre = l.parent || {};
+        if (padre.invoice_item_details) return false; // matrícula
+        if (padre.subscription_item_details) return true; // cuota (basil)
+        return Boolean(l.subscription) && !l.invoice_item; // cuota (acacia)
+    };
+    const hayCuota = (factura.lines && factura.lines.data ? factura.lines.data : []).some(
+        (l) => l.amount > 0 && esCuota(l)
+    );
     const fecha = new Date((factura.status_transitions?.paid_at || event.created) * 1000);
     const fechaISO = fecha.toISOString().slice(0, 10);
     const mes = fecha.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' });
@@ -391,6 +416,32 @@ async function anotar(supabase, { factura, suscripcion, ids, pagada, event }) {
     for (const i of inscripciones) {
         const j = jugadorDe.get(i.player_id) || {};
         const nombre = `${j.first_name || ''} ${j.last_name || ''}`.trim() || i.player_id;
+
+        // Si la factura no trae cuota —primera factura con espera hasta
+        // octubre— no se anota ninguna: sólo va la matrícula.
+        if (!hayCuota) {
+            if (esPrimera) {
+                const matriculaSola = precio(
+                    'ficha_anual',
+                    varianteDeFicha(i.tarifa_variante),
+                    tramoDeFicha(j.dob, Number(String(i.temporada || temporada).slice(0, 4)))
+                );
+                if (matriculaSola !== null) {
+                    suma += matriculaSola;
+                    filas.push(fila({
+                        factura, suscripcion, inscripcion: i, jugador: j, nombre, pagada,
+                        tipo: 'Matrícula',
+                        concepto: `Ficha anual ${i.temporada || temporada}`,
+                        importe: matriculaSola,
+                        fecha: fechaISO,
+                        mes,
+                        temporada: i.temporada || temporada,
+                        sufijo: 'ficha',
+                    }));
+                }
+            }
+            continue;
+        }
 
         const base = precio('mensualidad', i.tarifa_variante, i.tarifa_tramo);
         if (base === null) {
