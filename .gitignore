@@ -4,3 +4,4 @@ node_modules/
 # Datos financieros / fuentes de contabilidad — NO subir (privados, se sirven via Supabase)
 admin/
 athenas fotos/
+*.tmp
