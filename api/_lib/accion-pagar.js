@@ -23,7 +23,14 @@
 
 const { createClient } = require('@supabase/supabase-js');
 const { getAuthPayload } = require('./auth');
-const { temporadaKey, cargarPrecios, importeFinal, cargarDescuentos } = require('./inscripcion');
+const {
+    temporadaKey,
+    temporadaYear,
+    cargarPrecios,
+    importeFinal,
+    cargarDescuentos,
+    tramoDeFicha,
+} = require('./inscripcion');
 
 const URL_BASE = 'https://www.menorcarugbyclub.com';
 
@@ -87,11 +94,15 @@ module.exports = async function accionPagar(req, res) {
         // chico es peor que no cobrarle.
         const aCobrar = listas.filter((i) => !i.stripe_subscription_id);
 
+        // La fecha de nacimiento también: la ficha federativa NO va por el
+        // tramo de la cuota. Un chico que este año cumple 17 entrena con los
+        // juveniles, paga cuota de juvenil y ficha de senior.
         const { data: jugadores } = await supabase
             .from('players')
-            .select('player_id, first_name, last_name')
+            .select('player_id, first_name, last_name, dob')
             .in('player_id', aCobrar.map((i) => i.player_id));
         const nombreDe = new Map((jugadores || []).map((j) => [j.player_id, `${j.first_name} ${j.last_name}`]));
+        const dobDe = new Map((jugadores || []).map((j) => [j.player_id, j.dob]));
 
         const precios = await cargarPrecios(supabase, temporada);
         const descuentos = await cargarDescuentos(supabase, temporada);
@@ -125,16 +136,27 @@ module.exports = async function accionPagar(req, res) {
 
             lineas.push({ price: mensual.stripe_price_id, quantity: 1 });
 
-            const ficha = precios.get(`ficha_anual|${i.tarifa_variante}|${i.tarifa_tramo}`);
-            if (ficha && ficha.importe !== null && ficha.stripe_price_id) {
-                matriculas.push({ price: ficha.stripe_price_id, quantity: 1 });
+            // La ficha va por el AÑO DE NACIMIENTO, no por el tramo de la
+            // cuota. Buscándola por tarifa_tramo, a un chico de 17 —que entrena
+            // de juvenil— se le cobraban 235 € en vez de 300.
+            const tramoFicha = tramoDeFicha(dobDe.get(i.player_id), temporadaYear());
+            const ficha = precios.get(`ficha_anual|${i.tarifa_variante}|${tramoFicha}`);
+            // Y si no está publicada, se para. Antes se saltaba la línea sin
+            // decir nada: la familia pagaba la cuota mensual, se iba contenta y
+            // el club se quedaba sin cobrar la matrícula entera, que es la
+            // mitad de lo que aporta un jugador en toda la temporada.
+            if (!ficha || ficha.importe === null || !ficha.stripe_price_id) {
+                return res.status(503).json({
+                    error: `Todavía no está publicada en la pasarela la ficha de ${nombre}. Avisanos y lo resolvemos.`,
+                });
             }
+            matriculas.push({ price: ficha.stripe_price_id, quantity: 1 });
 
             detalle.push({
                 jugador: nombre,
                 inscripcion_id: i.inscripcion_id,
                 mensualidad: conDescuento,
-                ficha_anual: ficha && ficha.importe !== null ? Number(ficha.importe) : null,
+                ficha_anual: Number(ficha.importe),
             });
         }
 
