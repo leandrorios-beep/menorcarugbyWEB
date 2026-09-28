@@ -21,6 +21,12 @@
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
+    <!-- El mismo sistema de idiomas que el resto del sitio. Traduce todo lo que
+         lleve data-i18n y crea solo el selector de banderas. Lo que no tenga
+         traducción se queda con el castellano del HTML, así que agregar un
+         idioma a medias no deja huecos en blanco. -->
+    <script src="js/i18n.js" defer></script>
+
 <style>
 /* --------------------------------------------------------------------------
    Estilos propios de esta página. Van acá y no en css/styles.css porque el
@@ -166,12 +172,12 @@ input:focus, select:focus, textarea:focus {
     <div class="nav-container">
         <a href="index.html" class="nav-brand">
             <img src="assets/images/static/logo.png" alt="Menorca Rugby" class="logo">
-            <span class="brand-text">MENORCA RUGBY</span>
+            <span class="brand-text" data-i18n="nav.brand">MENORCA RUGBY</span>
         </a>
         <ul class="nav-menu" id="nav-menu">
-            <li><a href="index.html#inicio" class="nav-link">Inicio</a></li>
-            <li><a href="calendar.html" class="nav-link">Calendario</a></li>
-            <li><a href="socios.html" class="nav-link">Hazte Socio</a></li>
+            <li><a href="index.html#inicio" class="nav-link" data-i18n="nav.home">Inicio</a></li>
+            <li><a href="calendar.html" class="nav-link" data-i18n="nav.calendar">Calendario</a></li>
+            <li><a href="socios.html" class="nav-link" data-i18n="nav.membership">Hazte Socio</a></li>
             <li><a href="inscripcion.html" class="nav-link active">Inscripción</a></li>
         </ul>
         <div class="nav-toggle" id="nav-toggle"><span></span><span></span><span></span></div>
@@ -181,58 +187,58 @@ input:focus, select:focus, textarea:focus {
 <main class="insc-wrap">
 
     <div class="insc-hero">
-        <h1>Inscripción <span id="temporadaTitulo"></span></h1>
-        <p>Da igual si es la primera vez o si venís renovando: empezá poniendo tu correo y nosotros vemos en qué caso estás.</p>
+        <h1 data-i18n="inscripcion.titulo">Inscripción <span id="temporadaTitulo"></span></h1>
+        <p data-i18n="inscripcion.subtitulo">Da igual si es la primera vez o si venís renovando: empezá poniendo tu correo y nosotros vemos en qué caso estás.</p>
     </div>
 
     <div id="avisoGlobal"></div>
 
     <!-- ── Paso 1: el correo ─────────────────────────────────────────── -->
     <section class="insc-card" id="pasoEmail">
-        <h2><i class="fa-regular fa-envelope"></i> Tu correo</h2>
-        <p class="sub">El de la madre, el padre o quien se encargue. Si el jugador es mayor de edad, el suyo.</p>
+        <h2><i data-i18n="inscripcion.tu_correo" class="fa-regular fa-envelope"></i> Tu correo</h2>
+        <p data-i18n="inscripcion.correo_ayuda" class="sub">El de la madre, el padre o quien se encargue. Si el jugador es mayor de edad, el suyo.</p>
         <form id="formEmail">
             <div class="campo">
-                <label for="email">Correo electrónico</label>
+                <label data-i18n="inscripcion.correo_label" for="email">Correo electrónico</label>
                 <input type="email" id="email" name="email" autocomplete="email" required inputmode="email" placeholder="tucorreo@ejemplo.com">
             </div>
-            <button type="submit" class="btn btn-primario" id="btnEmail">Continuar</button>
+            <button type="submit" class="btn btn-primario" id="btnEmail" data-i18n="inscripcion.continuar">Continuar</button>
         </form>
     </section>
 
     <!-- ── Paso 2a: ya está en la base ───────────────────────────────── -->
     <section class="insc-card oculto" id="pasoEntrar">
-        <h2><i class="fa-solid fa-user-check"></i> Ya estás en nuestra base de datos</h2>
+        <h2><i data-i18n="inscripcion.ya_estas" class="fa-solid fa-user-check"></i> Ya estás en nuestra base de datos</h2>
         <p class="sub" id="textoEntrar"></p>
         <form id="formEntrar">
             <div class="campo">
-                <label for="password">Tu contraseña</label>
+                <label data-i18n="inscripcion.password_label" for="password">Tu contraseña</label>
                 <input type="password" id="password" autocomplete="current-password" required>
             </div>
-            <button type="submit" class="btn btn-primario" id="btnEntrar">Entrar</button>
+            <button type="submit" class="btn btn-primario" id="btnEntrar" data-i18n="inscripcion.entrar">Entrar</button>
         </form>
-        <button type="button" class="btn-texto" id="btnRecordar">No me acuerdo, mandámela por correo</button>
-        <button type="button" class="btn-texto" id="btnOtroEmail">Usar otro correo</button>
+        <button type="button" class="btn-texto" id="btnRecordar" data-i18n="inscripcion.recordar">No me acuerdo, mandámela por correo</button>
+        <button type="button" class="btn-texto" id="btnOtroEmail" data-i18n="inscripcion.otro_correo">Usar otro correo</button>
     </section>
 
     <!-- ── Paso 2b / 3: el formulario ────────────────────────────────── -->
     <div class="oculto" id="pasoFormulario">
 
         <section class="insc-card" id="bloqueTutor">
-            <h2><i class="fa-regular fa-address-card"></i> Tus datos</h2>
-            <p class="sub">Los del adulto responsable. Si el jugador es mayor de edad, los suyos.</p>
+            <h2><i data-i18n="inscripcion.tus_datos" class="fa-regular fa-address-card"></i> Tus datos</h2>
+            <p data-i18n="inscripcion.tus_datos_ayuda" class="sub">Los del adulto responsable. Si el jugador es mayor de edad, los suyos.</p>
 
             <div class="fila">
-                <div class="campo"><label for="t_nombre">Nombre</label><input type="text" id="t_nombre" autocomplete="given-name" required></div>
-                <div class="campo"><label for="t_apellido">Apellidos</label><input type="text" id="t_apellido" autocomplete="family-name"></div>
+                <div class="campo"><label data-i18n="inscripcion.nombre" for="t_nombre">Nombre</label><input type="text" id="t_nombre" autocomplete="given-name" required></div>
+                <div class="campo"><label data-i18n="inscripcion.apellidos" for="t_apellido">Apellidos</label><input type="text" id="t_apellido" autocomplete="family-name"></div>
             </div>
             <div class="fila">
-                <div class="campo"><label for="t_nacimiento">Fecha de nacimiento</label><input type="date" id="t_nacimiento"></div>
-                <div class="campo"><label for="t_telefono">Teléfono</label><input type="tel" id="t_telefono" autocomplete="tel" inputmode="tel"></div>
+                <div class="campo"><label data-i18n="inscripcion.nacimiento" for="t_nacimiento">Fecha de nacimiento</label><input type="date" id="t_nacimiento"></div>
+                <div class="campo"><label data-i18n="inscripcion.telefono" for="t_telefono">Teléfono</label><input type="tel" id="t_telefono" autocomplete="tel" inputmode="tel"></div>
             </div>
             <div class="fila">
                 <div class="campo">
-                    <label for="t_tipodoc">Documento</label>
+                    <label data-i18n="inscripcion.documento" for="t_tipodoc">Documento</label>
                     <select id="t_tipodoc">
                         <option value="">Sin especificar</option>
                         <option value="DNI">DNI</option>
@@ -243,10 +249,10 @@ input:focus, select:focus, textarea:focus {
                 </div>
                 <div class="campo"><label for="t_numdoc">Número <span class="opt">(si pusiste tipo)</span></label><input type="text" id="t_numdoc" autocomplete="off"></div>
             </div>
-            <div class="campo"><label for="t_direccion">Dirección</label><input type="text" id="t_direccion" autocomplete="street-address"></div>
+            <div class="campo"><label data-i18n="inscripcion.direccion" for="t_direccion">Dirección</label><input type="text" id="t_direccion" autocomplete="street-address"></div>
             <div class="fila">
-                <div class="campo"><label for="t_cp">Código postal</label><input type="text" id="t_cp" autocomplete="postal-code" inputmode="numeric"></div>
-                <div class="campo"><label for="t_ciudad">Población</label><input type="text" id="t_ciudad" autocomplete="address-level2"></div>
+                <div class="campo"><label data-i18n="inscripcion.cp" for="t_cp">Código postal</label><input type="text" id="t_cp" autocomplete="postal-code" inputmode="numeric"></div>
+                <div class="campo"><label data-i18n="inscripcion.poblacion" for="t_ciudad">Población</label><input type="text" id="t_ciudad" autocomplete="address-level2"></div>
             </div>
         </section>
 
@@ -258,7 +264,7 @@ input:focus, select:focus, textarea:focus {
 
         <div class="resumen oculto" id="resumen">
             <div id="resumenLineas"></div>
-            <div class="total"><span>Total al mes</span><strong id="resumenTotal">—</strong></div>
+            <div class="total"><span data-i18n="inscripcion.total_mes">Total al mes</span><strong id="resumenTotal">—</strong></div>
             <p style="color:#AAB4C2;font-size:.78rem;margin:12px 0 0;line-height:1.5;">
                 La cuota se cobra en 10 mensualidades. La ficha federativa se paga aparte, una vez al año.
             </p>
@@ -267,18 +273,18 @@ input:focus, select:focus, textarea:focus {
         <section class="insc-card">
             <div class="check">
                 <input type="checkbox" id="acepta_reglamento">
-                <span>He leído y acepto el <a href="https://www.menorcarugbyclub.com/privacidad" target="_blank" rel="noopener">reglamento y la política de privacidad</a> del Menorca Rugby Club.</span>
+                <span data-i18n="inscripcion.reglamento">He leído y acepto el <a href="https://www.menorcarugbyclub.com/privacidad" target="_blank" rel="noopener">reglamento y la política de privacidad</a> del Menorca Rugby Club.</span>
             </div>
-            <button type="button" class="btn btn-primario" id="btnEnviar">Enviar inscripción</button>
+            <button type="button" class="btn btn-primario" id="btnEnviar" data-i18n="inscripcion.enviar">Enviar inscripción</button>
         </section>
     </div>
 
     <!-- ── Pagar: solo cuando el club ya aprobo la inscripcion ───────── -->
     <section class="insc-card oculto" id="pasoPagar">
-        <h2><i class="fa-regular fa-credit-card"></i> Domiciliar la cuota</h2>
+        <h2><i data-i18n="inscripcion.domiciliar" class="fa-regular fa-credit-card"></i> Domiciliar la cuota</h2>
         <p class="sub" id="textoPagar"></p>
         <div class="resumen" id="resumenPago"></div>
-        <button type="button" class="btn btn-primario" id="btnPagar">Ir a pagar</button>
+        <button type="button" class="btn btn-primario" id="btnPagar" data-i18n="inscripcion.ir_a_pagar">Ir a pagar</button>
         <p style="color:var(--gris);font-size:.78rem;text-align:center;margin:12px 0 0;line-height:1.5;">
             El pago se hace en Stripe, no acá: el club nunca ve tu tarjeta.
         </p>
@@ -286,13 +292,13 @@ input:focus, select:focus, textarea:focus {
 
     <!-- ── Paso 4: listo ─────────────────────────────────────────────── -->
     <section class="insc-card oculto" id="pasoListo">
-        <h2><i class="fa-solid fa-circle-check" style="color:var(--verde)"></i> Inscripción enviada</h2>
+        <h2><i data-i18n="inscripcion.enviada" class="fa-solid fa-circle-check" style="color:var(--verde)"></i> Inscripción enviada</h2>
         <div id="textoListo"></div>
     </section>
 
-    <div class="cargando oculto" id="cargando"><i class="fa-solid fa-circle-notch fa-spin"></i> Un momento…</div>
+    <div class="cargando oculto" id="cargando"><i class="fa-solid fa-circle-notch fa-spin"></i> <span data-i18n="inscripcion.cargando">Un momento…</span></div>
 
-    <p class="pie">
+    <p class="pie" data-i18n="inscripcion.pie">
         ¿Algo no cuadra? Escribinos a <a href="mailto:info@menorcarugbyclub.com">info@menorcarugbyclub.com</a>
     </p>
 </main>
@@ -1089,6 +1095,12 @@ $('btnPagar').addEventListener('click', async function () {
     } finally {
         cargando(false);
     }
+});
+
+// Al cambiar de idioma hay que repintar las fichas: las construye este
+// JavaScript a mano y translatePage() sólo alcanza lo que está en el HTML.
+document.addEventListener('languageChanged', function () {
+    if (estado.jugadores.length) dibujarJugadores();
 });
 
 // El menú de hamburguesa del resto del sitio.
