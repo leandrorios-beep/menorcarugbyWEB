@@ -242,8 +242,12 @@ async function facturaPagada(event, stripe, supabase) {
     //
     // Sin esto caería por el camino de los socios y el dinero entraría en
     // Stripe sin quedar anotado en el libro del club.
-    if (!suscripcionDeLaFactura(factura) && (factura.metadata || {}).tipo === 'anual') {
-        return await anualPagada(factura, supabase, event);
+    // Cualquier factura SUELTA que hayamos emitido nosotros: la del pago anual y
+    // la de la matrícula del hermano que se suma después. Se reconocen por su
+    // metadata. Antes sólo se miraba la anual, así que la ficha del segundo
+    // hermano se cobraba y no llegaba nunca al libro.
+    if (!suscripcionDeLaFactura(factura) && (factura.metadata || {}).inscripciones) {
+        return await facturaSueltaPagada(factura, supabase, event);
     }
 
     // El id NO se lee de `factura.subscription`: en la versión que entrega el
@@ -271,12 +275,13 @@ async function facturaPagada(event, stripe, supabase) {
 }
 
 /**
- * Anota una temporada pagada por adelantado.
+ * Anota una factura suelta: la temporada pagada por adelantado, o la matrícula
+ * de un hermano que se sumó a una suscripción ya en marcha.
  *
  * Una fila por cada línea de la factura, con el mismo `linea_clave` que el
  * resto: es lo que impide que un reintento de Stripe la anote dos veces.
  */
-async function anualPagada(factura, supabase, event) {
+async function facturaSueltaPagada(factura, supabase, event) {
     const ids = String((factura.metadata || {}).inscripciones || '')
         .split(',')
         .map((x) => x.trim())
@@ -330,19 +335,49 @@ async function anualPagada(factura, supabase, event) {
 
     if (filas.length) await anotarFilas(supabase, filas);
 
+    // Se limpia el motivo del intento anterior: ya no es verdad, y si se
+    // quedara puesto la bandeja seguiría diciendo "por qué no se le cobra"
+    // sobre una familia que acaba de pagar.
     const { error } = await supabase
         .from('inscripciones')
-        .update({ estado_cobro: 'al_dia' })
+        .update({ estado_cobro: 'al_dia', cobro_error: null })
         .in('inscripcion_id', ids)
         .neq('estado', 'baja');
     if (error) throw new Error(`inscripciones: ${error.message}`);
 
-    console.log(`Temporada pagada por adelantado: factura ${factura.id}, ${filas.length} línea(s).`);
+    console.log(`Factura suelta ${factura.id} cobrada: ${filas.length} línea(s).`);
     return true;
 }
 
 async function facturaFallida(event, stripe, supabase) {
     const factura = event.data.object;
+
+    // Las facturas sueltas también fallan, y hasta ahora se caían por el hueco:
+    // facturaPagada las reconocía y ésta no. Consecuencias: el fallo no se
+    // anotaba en ningún sitio, y el evento seguía hasta el camino de SOCIOS,
+    // que busca por correo — así que el rechazo de la cuota de un hijo podía
+    // marcar impagada la ficha de socio de su padre.
+    if (!suscripcionDeLaFactura(factura) && (factura.metadata || {}).inscripciones) {
+        const ids = String(factura.metadata.inscripciones)
+            .split(',')
+            .map((x) => x.trim())
+            .filter(Boolean);
+        if (!ids.length) return false;
+        const { error } = await supabase
+            .from('inscripciones')
+            .update({
+                estado_cobro: 'impago',
+                cobro_error:
+                    'La pasarela rechazó el cobro. Hay que revisar la tarjeta de la familia.',
+                cobro_intentado_at: new Date().toISOString(),
+            })
+            .in('inscripcion_id', ids)
+            .neq('estado', 'baja');
+        if (error) throw new Error(`inscripciones: ${error.message}`);
+        console.warn(`Factura suelta ${factura.id} RECHAZADA para ${ids.length} inscripción(es).`);
+        return true;
+    }
+
     const idSuscripcion = suscripcionDeLaFactura(factura);
     if (!idSuscripcion) return false;
 

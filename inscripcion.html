@@ -666,6 +666,27 @@ async function cargarEstado() {
  * cobrar una tarifa que todavia nadie miro.
  */
 function prepararPago(jugadores) {
+    // Quien pago la temporada entera: no hay cuota mensual ni nada pendiente.
+    // Antes caia en el cubo de "tu tarjeta esta guardada y no se te ha cobrado
+    // nada", que es lo contrario de lo que le paso.
+    var pagoAdelantado = jugadores.filter(function (j) {
+        var i = j.inscripcion_actual;
+        return i && i.pago_anual && i.estado_cobro === 'al_dia';
+    });
+    if (pagoAdelantado.length && pagoAdelantado.length === jugadores.filter(function (j) {
+        var i = j.inscripcion_actual;
+        return i && i.estado !== 'baja' && i.estado !== 'rechazada';
+    }).length) {
+        mostrar('pasoPagar', true);
+        $('textoPagar').textContent =
+            'Ya pagaste la temporada completa. No hay ninguna cuota mensual programada: ' +
+            'no se te va a cobrar nada mas hasta la temporada que viene.';
+        $('resumenPago').classList.add('oculto');
+        $('btnPagar').classList.add('oculto');
+        mostrar('btnPortal', true);
+        return;
+    }
+
     // Los tres estados en los que puede estar una familia que vuelve.
     var cobrando = jugadores.filter(function (j) {
         var i = j.inscripcion_actual;
@@ -1122,6 +1143,14 @@ function actualizarResumen() {
 
     // La contrasena se puede cambiar siempre que haya sesion abierta.
     mostrar('pasoClave', Boolean(estado.token));
+
+    // Restaurar la eleccion de pago anual. Se perdia al recargar y el siguiente
+    // envio la pisaba con "no" sin que la familia se enterara: habia pedido
+    // pagar el ano completo y se le iba a cobrar mes a mes.
+    var algunoAnual = estado.jugadores.some(function (j) {
+        return (j.inscripcion_actual || {}).pago_anual === true;
+    });
+    if (algunoAnual) $('pago_anual').checked = true;
 
     mostrar('resumen', estado.jugadores.length > 0);
     $('resumenLineas').innerHTML = lineas.join('');
