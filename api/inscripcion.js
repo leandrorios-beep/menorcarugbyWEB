@@ -20,6 +20,7 @@
 //   GET  /api/inscripcion?accion=estado          (con Authorization: Bearer)
 //   POST /api/inscripcion  {"accion":"enviar",   "tutor":{...}, "jugadores":[...]}
 //   POST /api/inscripcion  {"accion":"pagar"}            (con Authorization: Bearer)
+//   POST /api/inscripcion  {"accion":"tarjeta"}          (con Authorization: Bearer)
 // ---------------------------------------------------------------------------
 
 const { cors } = require('./_lib/inscripcion');
@@ -31,6 +32,7 @@ const ACCIONES = {
     estado: { metodo: 'GET', handler: require('./_lib/accion-estado') },
     enviar: { metodo: 'POST', handler: require('./_lib/accion-enviar') },
     pagar: { metodo: 'POST', handler: require('./_lib/accion-pagar') },
+    tarjeta: { metodo: 'POST', handler: require('./_lib/accion-tarjeta') },
 };
 
 module.exports = async function handler(req, res) {

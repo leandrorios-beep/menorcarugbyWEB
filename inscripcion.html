@@ -316,6 +316,29 @@ input:focus, select:focus, textarea:focus {
     <section class="insc-card oculto" id="pasoListo">
         <h2><i data-i18n="inscripcion.enviada" class="fa-solid fa-circle-check" style="color:var(--verde)"></i> Inscripción enviada</h2>
         <div id="textoListo"></div>
+
+        <!--
+            El ultimo paso, en la misma sentada.
+
+            Antes habia que volver otro dia a pagar, cuando el club aprobaba. No
+            volvia nadie. Ahora la tarjeta se deja ahora y el cobro lo dispara el
+            club al aprobar, con la tarifa que corresponda: asi no se le cobra a
+            quien todavia no revisaron, ni se le cobra de mas a quien lleva
+            descuento para despues devolverselo.
+        -->
+        <div id="pasoTarjeta" class="oculto" style="margin-top:20px;border-top:1px solid rgba(255,255,255,.14);padding-top:20px;">
+            <h2 style="font-size:1.05rem;"><i class="fa-regular fa-credit-card"></i> Falta un paso: dejá tu tarjeta</h2>
+            <p class="sub">
+                <strong>No se te cobra nada ahora.</strong> Queda guardada y autorizada, y sólo se
+                usa cuando el club apruebe la inscripción. Si te aplican un descuento, se cobra el
+                precio rebajado.
+            </p>
+            <div class="resumen" id="resumenTarjeta"></div>
+            <button type="button" class="btn btn-primario" id="btnTarjeta">Dejar mi tarjeta</button>
+            <p style="color:var(--gris);font-size:.78rem;text-align:center;margin:12px 0 0;line-height:1.5;">
+                La tarjeta la guarda Stripe, no el club: acá no se ve ni se almacena ningún número.
+            </p>
+        </div>
     </section>
 
     <div class="cargando oculto" id="cargando"><i class="fa-solid fa-circle-notch fa-spin"></i> <span data-i18n="inscripcion.cargando">Un momento…</span></div>
@@ -590,28 +613,57 @@ async function cargarEstado() {
  * cobrar una tarifa que todavia nadie miro.
  */
 function prepararPago(jugadores) {
-    var aprobados = jugadores.filter(function (j) {
+    // Los tres estados en los que puede estar una familia que vuelve.
+    var cobrando = jugadores.filter(function (j) {
         var i = j.inscripcion_actual;
-        return i && i.estado === 'aprobada' && i.estado_cobro !== 'al_dia';
+        return i && i.stripe_subscription_id;
     });
-    var alDia = jugadores.filter(function (j) {
-        return j.inscripcion_actual && j.inscripcion_actual.estado_cobro === 'al_dia';
+    var sinTarjeta = jugadores.filter(function (j) {
+        var i = j.inscripcion_actual;
+        return i && !i.stripe_subscription_id && !i.tarjeta_lista_at &&
+            i.estado !== 'baja' && i.estado !== 'rechazada';
+    });
+    var conTarjeta = jugadores.filter(function (j) {
+        var i = j.inscripcion_actual;
+        return i && !i.stripe_subscription_id && i.tarjeta_lista_at &&
+            i.estado !== 'baja' && i.estado !== 'rechazada';
     });
 
-    if (alDia.length && !aprobados.length) {
+    // Ya se le cobra: no hay nada que hacer y hay que decirlo asi, sin botones.
+    if (cobrando.length && !sinTarjeta.length) {
         mostrar('pasoPagar', true);
-        $('textoPagar').textContent = 'Ya tenes la cuota domiciliada. Si necesitas cambiar la tarjeta, escribinos.';
+        $('textoPagar').textContent =
+            'Ya está todo en marcha: la cuota se cobra sola con la tarjeta que dejaste. ' +
+            'Si necesitás cambiarla, escribinos.';
         $('resumenPago').classList.add('oculto');
         $('btnPagar').classList.add('oculto');
         return;
     }
-    if (!aprobados.length) { mostrar('pasoPagar', false); return; }
 
+    // Dejo la tarjeta y espera que el club apruebe: tampoco hay nada que hacer.
+    if (conTarjeta.length && !sinTarjeta.length) {
+        mostrar('pasoPagar', true);
+        $('textoPagar').textContent =
+            'Tu tarjeta ya está guardada y no se te ha cobrado nada. En cuanto el club apruebe la ' +
+            'inscripción se pone en marcha la cuota y te avisamos por correo.';
+        $('resumenPago').classList.add('oculto');
+        $('btnPagar').classList.add('oculto');
+        return;
+    }
+
+    if (!sinTarjeta.length) { mostrar('pasoPagar', false); return; }
+
+    // Falta la tarjeta. Es el unico caso con boton.
+    var aprobados = sinTarjeta;
     mostrar('pasoPagar', true);
     $('resumenPago').classList.remove('oculto');
     $('btnPagar').classList.remove('oculto');
+    $('btnPagar').textContent = 'Dejar mi tarjeta';
+    $('btnPagar').removeAttribute('data-i18n');
     var t0 = (aprobados[0] || {}).tarifa || {};
-    $('textoPagar').textContent = 'La inscripción está aprobada. Se cobran ' + (t0.meses || 9) +
+    $('textoPagar').textContent =
+        'Falta que dejes tu tarjeta. No se te cobra nada ahora: se guarda autorizada y el cobro ' +
+        'lo pone en marcha el club al aprobar la inscripción. Son ' + (t0.meses || 9) +
         ' cuotas, del ' + (t0.primer_cobro || '5 de octubre') + ' al ' + (t0.ultimo_cobro || '5 de junio') +
         ', y la ficha anual va en el primer recibo.';
 
@@ -1126,6 +1178,25 @@ $('btnEnviar').addEventListener('click', async function () {
                 '</div>';
         }
         $('textoListo').innerHTML = html;
+
+        // Sólo si hay alguien a quien cobrarle: una familia que sólo vino a
+        // avisar de que su hijo no juega no tiene que dejar ninguna tarjeta.
+        if (altas.length) {
+            var resumen = altas.map(function (x) {
+                return '<div class="linea"><span>' + escapar(x.nombre) + '</span><span>' +
+                    euros(x.mensualidad) + '/mes' +
+                    (x.ficha_anual ? ' + ' + euros(x.ficha_anual) + ' de ficha' : '') +
+                    '</span></div>';
+            }).join('');
+            var totalAnual = altas.reduce(function (n, x) { return n + (x.total_temporada || 0); }, 0);
+            if (totalAnual > 0) {
+                resumen += '<div class="total"><span>Toda la temporada</span><strong>' +
+                    euros(totalAnual) + '</strong></div>';
+            }
+            $('resumenTarjeta').innerHTML = resumen;
+            mostrar('pasoTarjeta', true);
+        }
+
         window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (err) {
         aviso(err.message);
@@ -1135,13 +1206,29 @@ $('btnEnviar').addEventListener('click', async function () {
     }
 });
 
+$('btnTarjeta').addEventListener('click', async function () {
+    aviso('');
+    $('btnTarjeta').disabled = true;
+    cargando(true);
+    try {
+        var r = await api('tarjeta', { body: {} });
+        // Se sale de la pagina: la tarjeta la pide Stripe, no nosotros.
+        window.location.href = r.url;
+    } catch (err) {
+        aviso(err.message);
+        $('btnTarjeta').disabled = false;
+    } finally {
+        cargando(false);
+    }
+});
+
 $('btnPagar').addEventListener('click', async function () {
     aviso('');
     $('btnPagar').disabled = true;
     cargando(true);
     try {
-        var r = await api('pagar', { body: {} });
-        // Se sale de la pagina: el pago lo cobra Stripe, no nosotros.
+        var r = await api('tarjeta', { body: {} });
+        // Se sale de la pagina: la tarjeta la pide Stripe, no nosotros.
         window.location.href = r.url;
     } catch (err) {
         aviso(err.message);

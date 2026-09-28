@@ -525,6 +525,10 @@ module.exports = async function accionEnviar(req, res) {
                     talla_chandal: j.talla_chandal,
                     tarifa_tramo: tramo,
                     tarifa_variante: j.tarifa_variante,
+                    // La que la familia tiene delante AHORA. El club puede
+                    // cambiar tarifa_variante para abaratar, pero no para
+                    // cobrar mas que esto: el tope se comprueba contra esta.
+                    tarifa_variante_origen: j.tarifa_variante,
                     // Los descuentos NO los toca la familia: los concede el club
                     // y se conservan. Antes se pisaban con [] en cada envio, asi
                     // que una de las 8 familias con descuento de delegado lo

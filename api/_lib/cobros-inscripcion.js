@@ -69,6 +69,20 @@ async function manejar(event, stripe, supabase) {
 
 async function sesionCompletada(event, stripe, supabase) {
     const sesion = event.data.object;
+
+    // ── La familia acaba de guardar la tarjeta ───────────────────────────
+    //
+    // En modo 'setup' no se cobró nada: se validó la tarjeta y se guardó la
+    // autorización. Lo que hay que hacer es dejarla como forma de pago por
+    // defecto del cliente, porque es la que va a usar el club cuando apruebe.
+    //
+    // Sin esto, la tarjeta queda guardada pero "suelta": al crear la
+    // suscripción Stripe no sabría con cuál cobrar y la primera factura
+    // quedaría impagada, con la familia convencida de que ya dejó todo listo.
+    if (sesion.mode === 'setup') {
+        return await tarjetaGuardada(sesion, stripe, supabase);
+    }
+
     const ids = inscripcionesDe(sesion);
     if (!ids || !sesion.subscription) return false;
 
@@ -178,6 +192,44 @@ async function repartirLineas(supabase, suscripcion, ids) {
 }
 
 // ---------------------------------------------------------------------------
+
+/**
+ * Deja la tarjeta recién guardada como la forma de pago por defecto.
+ *
+ * Y marca las inscripciones de la familia como "tarjeta lista", que es lo que
+ * mira la bandeja del club para saber si al aprobar va a poder cobrar o si esa
+ * familia se quedó a medias.
+ */
+async function tarjetaGuardada(sesion, stripe, supabase) {
+    const tutorId = (sesion.metadata || {}).tutor_id;
+    const temporada = (sesion.metadata || {}).temporada;
+    if (!tutorId || !sesion.setup_intent) return false;
+
+    const intento = await stripe.setupIntents.retrieve(
+        typeof sesion.setup_intent === 'string' ? sesion.setup_intent : sesion.setup_intent.id
+    );
+    const metodo = intento.payment_method;
+    if (!metodo) {
+        console.warn(`Sesión de tarjeta ${sesion.id} sin método de pago.`);
+        return false;
+    }
+
+    const customerId = typeof sesion.customer === 'string' ? sesion.customer : sesion.customer?.id;
+    await stripe.customers.update(customerId, {
+        invoice_settings: { default_payment_method: typeof metodo === 'string' ? metodo : metodo.id },
+    });
+
+    const { error } = await supabase
+        .from('inscripciones')
+        .update({ stripe_customer_id: customerId, tarjeta_lista_at: new Date().toISOString() })
+        .eq('tutor_id', tutorId)
+        .eq('temporada', temporada)
+        .not('estado', 'in', '(baja,rechazada)');
+    if (error) throw new Error(`inscripciones: ${error.message}`);
+
+    console.log(`Tarjeta guardada para el tutor ${tutorId} (cliente ${customerId}).`);
+    return true;
+}
 
 async function facturaPagada(event, stripe, supabase) {
     const factura = event.data.object;
