@@ -44,6 +44,7 @@ if (argEnv) {
 }
 
 const DRY = process.argv.includes('--dry-run');
+const BR = String.fromCharCode(10);
 
 const faltan = ['STRIPE_SECRET_KEY', 'SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY'].filter(
     (k) => !process.env[k]
@@ -107,7 +108,30 @@ const VARIANTES = {
     con_beca: 'con beca',
     familiar_directivo: 'hijo/a de directivo',
     directivo: 'directivo',
+    colaborador: 'colaborador',
+    familiar_colaborador: 'hijo/a de colaborador',
 };
+
+/**
+ * Que no falte ningún nombre.
+ *
+ * El nombre es lo ÚNICO que se ve en el panel de Stripe. Una variante sin
+ * traducir no rompe nada —los ids se guardan igual— pero deja cuatro productos
+ * llamados "Ficha anual · Juvenil" a 235 € que nadie puede distinguir nunca más,
+ * en la cuenta de verdad y sin forma cómoda de borrarlos.
+ *
+ * Pasó: cuando la comisión agregó "colaborador" y "familiar_colaborador" al
+ * catálogo, este mapa se quedó viejo y el ensayo los mostró en blanco.
+ */
+function comprobarNombres(precios) {
+    const faltan = new Set();
+    for (const p of precios) {
+        if (!(p.variante in VARIANTES)) faltan.add(`variante "${p.variante}"`);
+        if (!(p.tramo in TRAMOS)) faltan.add(`tramo "${p.tramo}"`);
+        if (!(p.concepto in NOMBRES)) faltan.add(`concepto "${p.concepto}"`);
+    }
+    return [...faltan];
+}
 
 function nombreVisible(p) {
     const partes = [NOMBRES[p.concepto] || p.concepto, TRAMOS[p.tramo], VARIANTES[p.variante]];
@@ -128,15 +152,41 @@ async function main() {
     console.log(`Modo: ${String(process.env.STRIPE_SECRET_KEY).startsWith('sk_live') ? 'PRODUCCIÓN — se cobra de verdad' : 'prueba'}`);
     console.log(`Temporada: ${TEMPORADA}\n`);
 
-    const { data: precios, error } = await db
+    // ── Sólo las cuotas de jugador ───────────────────────────────────────
+    //
+    // Los SOCIOS no se cobran por acá: se cobran con un Payment Link que se hizo
+    // a mano en el panel de Stripe, y el formulario de socios lo recibe en
+    // `stripe_link`. Publicar además estos precios dejaría en la cuenta REAL
+    // cinco productos duplicados —Socio, Socio familiar, Socio jugador, Socio
+    // protector, Gimnasio— que nadie usa y que el día de mañana hacen dudar a
+    // quien mire las cuentas sobre cuál es el bueno.
+    //
+    // Con --todo se publican igual, para el día en que los socios también pasen
+    // por el catálogo.
+    const soloJugador = !process.argv.includes('--todo');
+
+    let consulta = db
         .from('precios')
         .select('*')
         .eq('temporada', TEMPORADA)
-        .eq('activo', true)
+        .eq('activo', true);
+    if (soloJugador) consulta = consulta.eq('ambito', 'jugador');
+
+    const { data: precios, error } = await consulta
         .order('concepto')
         .order('tramo')
         .order('variante');
     if (error) throw new Error(`No se pudo leer el catálogo: ${error.message}`);
+    if (soloJugador) console.log('Sólo cuotas de jugador. Con --todo se incluyen socios y gimnasio.' + BR);
+
+    const sinNombre = comprobarNombres(precios);
+    if (sinNombre.length) {
+        console.error('El catálogo tiene cosas que este script no sabe nombrar:');
+        sinNombre.forEach((x) => console.error(`   ${x}`));
+        console.error(BR + 'Sin nombre quedarían productos indistinguibles en Stripe. Agregalos a');
+        console.error('NOMBRES / TRAMOS / VARIANTES y volvé a correr.');
+        process.exit(1);
+    }
 
     const conImporte = precios.filter((p) => p.importe !== null);
     const sinImporte = precios.filter((p) => p.importe === null);
