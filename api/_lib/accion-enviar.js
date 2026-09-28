@@ -138,6 +138,18 @@ module.exports = async function accionEnviar(req, res) {
         const resultado = [];
 
         for (const j of jugadores) {
+            // ── "Este año no juega" ──────────────────────────────────────
+            if (j.no_renueva) {
+                const yaTiene = await bajaDeLaTemporada(supabase, temporada, j, tutorId);
+                resultado.push({
+                    player_id: j.player_id,
+                    nombre: `${j.nombre} ${j.apellido || ''}`.trim(),
+                    no_renueva: true,
+                    aviso: yaTiene,
+                });
+                continue;
+            }
+
             const cat = await calcularCategorias(supabase, j.fecha_nacimiento, j.genero === 'Femenino', year);
             const tramo = tramoDeCategoria(cat.principal, j.fecha_nacimiento);
 
@@ -146,7 +158,13 @@ module.exports = async function accionEnviar(req, res) {
             if (j.tarifa_variante === 'con_hermano' && (tramo === 'senior' || tramo === 'veterano')) {
                 throw new RechazoDelFormulario(400, `${j.nombre}: en adultos no existe el descuento por hermano.`);
             }
-            if (!precios.get(`mensualidad|${j.tarifa_variante}|${tramo}`)) {
+            // Que la fila EXISTA no alcanza: el estado normal del catálogo es
+            // que la fila esté y el importe todavía no. Number(null) es 0, así
+            // que sin esto la familia se inscribe sin error y recibe un correo
+            // diciendo que su cuota es 0,00 €/mes. Un compromiso por escrito
+            // con un número inventado.
+            const precioMensual = precios.get(`mensualidad|${j.tarifa_variante}|${tramo}`);
+            if (!precioMensual || precioMensual.importe === null) {
                 throw new RechazoDelFormulario(
                     400,
                     `${j.nombre}: todavía no está publicada la cuota de ${tramo} para esta temporada. ` +
@@ -473,7 +491,7 @@ module.exports = async function accionEnviar(req, res) {
             success: true,
             temporada,
             jugadores: resultado,
-            total_mensual: resultado.reduce((n, r) => n + r.mensualidad, 0),
+            total_mensual: resultado.reduce((n, r) => n + (r.mensualidad || 0), 0),
             cuenta_creada: Boolean(passwordNueva),
             aviso,
         });
@@ -499,6 +517,64 @@ module.exports = async function accionEnviar(req, res) {
 };
 
 // ---------------------------------------------------------------------------
+
+/**
+ * Deja constancia de que ese jugador NO se inscribe esta temporada.
+ *
+ * Se crea la inscripción en estado 'baja', no se omite la fila. La diferencia
+ * importa: omitirla deja al club adivinando en septiembre si la familia se
+ * olvidó o si el chico se fue. Una baja con fecha y motivo se ve en la bandeja
+ * el mismo día.
+ *
+ * Nacer en 'baja' está permitido: la máquina de estados es un trigger de UPDATE,
+ * no de INSERT. Y 'baja' está exenta del reglamento obligatorio, que es lo
+ * correcto — no se le puede pedir que acepte el reglamento a quien se va.
+ *
+ * SI YA ESTABA COBRANDO, NO LO TOCA LA FAMILIA. Cortar una suscripción viva es
+ * una decisión de dinero: puede haber meses pagados por delante y, si tiene
+ * hermanos, la suscripción es de toda la familia. Eso lo resuelve el club desde
+ * la bandeja, que sí sabe hacerlo.
+ */
+async function bajaDeLaTemporada(supabase, temporada, j, tutorId) {
+    const { data: yaHay } = await supabase
+        .from('inscripciones')
+        .select('inscripcion_id, estado, stripe_subscription_id')
+        .eq('temporada', temporada)
+        .eq('player_id', j.player_id)
+        .maybeSingle();
+
+    if (yaHay && yaHay.estado === 'baja') return null; // ya estaba dicho
+
+    if (yaHay && yaHay.stripe_subscription_id) {
+        return (
+            `${j.nombre} ya tiene la cuota domiciliada, así que la baja la tiene que hacer el club ` +
+            'para no cobrarte de más ni cortarle el cobro a un hermano. Ya quedamos avisados.'
+        );
+    }
+
+    const ahora = new Date().toISOString();
+    if (yaHay) {
+        const { error } = await supabase
+            .from('inscripciones')
+            .update({ estado: 'baja', motivo_baja: j.motivo_no_renueva })
+            .eq('inscripcion_id', yaHay.inscripcion_id);
+        if (error) throw new Error(`No se pudo registrar la baja de ${j.nombre}: ${error.message}`);
+        return null;
+    }
+
+    const { error } = await supabase.from('inscripciones').insert({
+        temporada,
+        player_id: j.player_id,
+        tutor_id: tutorId,
+        estado: 'baja',
+        motivo_baja: j.motivo_no_renueva,
+        origen: 'web',
+        recibida_at: ahora,
+        baja_at: ahora,
+    });
+    if (error) throw new Error(`No se pudo registrar la baja de ${j.nombre}: ${error.message}`);
+    return null;
+}
 
 /**
  * Busca si ese chico ya está en la base, aunque venga por un correo nuevo.
@@ -616,11 +692,14 @@ function validar(body, tieneToken) {
     };
 
     const jugadores = [];
-    const conHermano = lista.filter((j) => j.tarifa_variante === 'con_hermano').length;
+    // Los que no renuevan no cuentan como hermanos: si de dos hijos uno se va,
+    // el que queda ya no tiene descuento por hermano.
+    const siguen = lista.filter((j) => j.no_renueva !== true);
+    const conHermano = siguen.filter((j) => j.tarifa_variante === 'con_hermano').length;
     // La familia elige la tarifa, pero "con hermano" con un solo hijo en el
     // envío casi siempre es un error de lectura, no una picardía. Se avisa antes
     // en vez de dejar que lo descubra el club al revisar.
-    if (conHermano > 0 && lista.length < 2) {
+    if (conHermano > 0 && siguen.length < 2) {
         return {
             error:
                 'Elegiste la cuota "con hermano" pero sólo estás inscribiendo a un jugador. ' +
@@ -630,6 +709,26 @@ function validar(body, tieneToken) {
 
     for (const j of lista) {
         const nombre = limpiar(j.nombre, 80);
+
+        // "Este año no juega": la familia lo dice explícitamente en vez de
+        // simplemente no mandarlo. Es mejor para todos — el club se entera en
+        // el momento en vez de descubrirlo en septiembre llamando por teléfono,
+        // y queda con fecha y motivo.
+        //
+        // A este no se le pide tarifa, ni tallas, ni nada: no se va a inscribir.
+        if (j.no_renueva === true) {
+            if (!j.player_id) {
+                return { error: `${nombre || 'Ese jugador'} no está en el club, así que no hay nada que dar de baja.` };
+            }
+            jugadores.push({
+                player_id: limpiar(j.player_id, 60),
+                nombre,
+                apellido: limpiar(j.apellido, 120),
+                no_renueva: true,
+                motivo_no_renueva: limpiar(j.motivo_no_renueva, 500) || 'La familia avisó que este año no juega.',
+            });
+            continue;
+        }
         const apellido = limpiar(j.apellido, 120);
         const dob = fechaValida(j.fecha_nacimiento);
         const genero = limpiar(j.genero);

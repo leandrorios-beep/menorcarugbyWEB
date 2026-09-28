@@ -515,6 +515,8 @@ async function cargarEstado() {
             player_id: j.player_id,
             existente: true,
             yaEnviado: Boolean(j.inscripcion_actual),
+            // Los datos vienen de la temporada pasada: hay que decirlo.
+            heredado: !j.inscripcion_actual && Boolean(j.inscripcion_anterior),
             foto_url: j.foto ? fotoUrl(j.foto) : null,
             nombre: j.nombre || '',
             apellido: j.apellido || '',
@@ -535,9 +537,16 @@ async function cargarEstado() {
             talla_pantalon: previa.talla_pantalon || '',
             talla_chandal: previa.talla_chandal || '',
             tarifa_variante: previa.tarifa_variante === 'con_hermano' ? 'con_hermano' : 'base',
-            acepta_uso_imagen: previa.acepta_uso_imagen === true,
+            // NO se hereda marcado. Es el consentimiento sobre la imagen de un
+            // menor: una casilla que aparece ya marcada no es un consentimiento,
+            // es un trámite. Se vuelve a pedir en blanco cada temporada, que es
+            // lo que dice la propia base en crear_inscripcion_renovando.
+            acepta_uso_imagen: false,
+            uso_imagen_anterior: previa.acepta_uso_imagen === true,
             parentesco: j.parentesco || 'tutor_legal',
             observaciones: '',
+            no_renueva: false,
+            motivo_no_renueva: '',
             foto: null,
             opciones: j.opciones || []
         };
@@ -601,7 +610,7 @@ function nuevoJugador() {
         direccion: '', codigo_postal: '', ciudad: '', alergias: '',
         altura_cm: '', peso_kg: '', talla_camiseta: '', talla_pantalon: '', talla_chandal: '',
         tarifa_variante: 'base', acepta_uso_imagen: false, parentesco: 'tutor_legal',
-        observaciones: '', foto: null, opciones: []
+        observaciones: '', foto: null, no_renueva: false, motivo_no_renueva: '', opciones: []
     };
 }
 
@@ -637,9 +646,26 @@ function tarjetaJugador(j, i) {
                 : '') +
         '</header>' +
 
-        (j.yaEnviado
-            ? '<div class="aviso aviso-ok">Ya nos llegó su inscripción de esta temporada. Si querés cambiar algo, volvé a enviarla y pisamos la anterior.</div>'
+        (j.no_renueva
+            ? '<div class="aviso aviso-info"><strong>Este año no juega.</strong> Lo damos de baja de la temporada. ' +
+                'Su ficha y su historial se conservan: si el año que viene vuelve, no hay que cargar nada de cero.</div>' +
+              '<div class="campo"><label>¿Por qué? <span class="opt">(nos ayuda a mejorar)</span></label>' +
+                '<input type="text" data-campo="motivo_no_renueva" data-i="' + i + '" value="' + escapar(j.motivo_no_renueva) + '" placeholder="Se mudó, cambió de deporte, horarios…"></div>' +
+              '<button type="button" class="btn-texto" data-renueva="' + i + '">Me equivoqué, sí va a jugar</button>'
             : '') +
+
+        (j.no_renueva ? '' : (j.yaEnviado
+            ? '<div class="aviso aviso-ok">Ya nos llegó su inscripción de esta temporada. Si querés cambiar algo, volvé a enviarla y pisamos la anterior.</div>'
+            : '')) +
+
+        // Un chico de diez años crece dos tallas en una temporada. Si lo del año
+        // pasado aparece como si fuera de hoy, la familia confirma sin mirar y
+        // el club pide la equipación con las tallas viejas.
+        (j.heredado && !j.no_renueva
+            ? '<div class="aviso aviso-info">Lo de abajo es lo que nos diste la temporada pasada. Mirá sobre todo las <strong>tallas</strong> y la <strong>altura</strong>.</div>'
+            : '') +
+
+        (j.no_renueva ? '' :
 
         '<div class="fila">' +
             campo(i, 'nombre', 'Nombre', 'text', j.nombre) +
@@ -691,8 +717,15 @@ function tarjetaJugador(j, i) {
 
         '<div class="check" style="margin-top:14px;">' +
             '<input type="checkbox" data-campo="acepta_uso_imagen" data-i="' + i + '"' + (j.acepta_uso_imagen ? ' checked' : '') + '>' +
-            '<span>Autorizo que el club publique fotos y vídeos donde aparezca en sus redes y en la web. <strong>Es opcional</strong> y podés cambiarlo cuando quieras.</span>' +
-        '</div>';
+            '<span>Autorizo que el club publique fotos y vídeos donde aparezca en sus redes y en la web. <strong>Es opcional</strong> y podés cambiarlo cuando quieras.' +
+            (j.uso_imagen_anterior ? ' <em>La temporada pasada lo autorizaste.</em>' : '') + '</span>' +
+        '</div>') +
+
+        // La salida, abajo y discreta: es una decisión, no un botón que se
+        // aprieta sin querer. Sólo para los que ya están en el club.
+        (j.existente && !j.no_renueva
+            ? '<button type="button" class="btn-texto" data-norenueva="' + i + '" style="color:var(--gris);">Este año no juega</button>'
+            : '');
 
     return el;
 }
@@ -762,6 +795,20 @@ $('listaJugadores').addEventListener('click', function (e) {
         dibujarJugadores();
         return;
     }
+    var salir = e.target.closest('[data-norenueva]');
+    if (salir) {
+        estado.jugadores[Number(salir.getAttribute('data-norenueva'))].no_renueva = true;
+        dibujarJugadores();
+        return;
+    }
+    var vuelve = e.target.closest('[data-renueva]');
+    if (vuelve) {
+        var k = Number(vuelve.getAttribute('data-renueva'));
+        estado.jugadores[k].no_renueva = false;
+        estado.jugadores[k].motivo_no_renueva = '';
+        dibujarJugadores();
+        return;
+    }
     var foto = e.target.closest('[data-foto]');
     if (foto) {
         var i = foto.getAttribute('data-foto');
@@ -818,8 +865,13 @@ function actualizarResumen() {
     var faltanPrecios = false;
 
     estado.jugadores.forEach(function (j) {
-        var o = (j.opciones || []).filter(function (x) { return x.variante === j.tarifa_variante; })[0];
         var nombre = j.nombre ? j.nombre + ' ' + j.apellido : 'Jugador sin nombre';
+        if (j.no_renueva) {
+            lineas.push('<div class="linea"><span style="opacity:.6;text-decoration:line-through">' + escapar(nombre) +
+                '</span><span style="color:#AAB4C2">este año no juega</span></div>');
+            return;
+        }
+        var o = (j.opciones || []).filter(function (x) { return x.variante === j.tarifa_variante; })[0];
         if (o) {
             total += o.mensualidad;
             lineas.push('<div class="linea"><span>' + escapar(nombre) + '</span><span>' + euros(o.mensualidad) + '/mes</span></div>');
@@ -859,6 +911,12 @@ $('btnEnviar').addEventListener('click', async function () {
             pais: 'España'
         },
         jugadores: estado.jugadores.map(function (j) {
+            if (j.no_renueva) {
+                return {
+                    player_id: j.player_id, nombre: j.nombre, apellido: j.apellido,
+                    no_renueva: true, motivo_no_renueva: j.motivo_no_renueva,
+                };
+            }
             return {
                 player_id: j.player_id,
                 nombre: j.nombre, apellido: j.apellido,
@@ -887,15 +945,35 @@ $('btnEnviar').addEventListener('click', async function () {
         mostrar('pasoFormulario', false);
         mostrar('pasoListo', true);
 
-        var html = '<p class="sub">Recibimos la inscripción de ' +
-            r.jugadores.map(function (x) { return '<strong>' + escapar(x.nombre) + '</strong> (' + escapar(x.categoria) + ')'; }).join(', ') +
+        var bajas = (r.jugadores || []).filter(function (x) { return x.no_renueva; });
+        var altas = (r.jugadores || []).filter(function (x) { return !x.no_renueva; });
+
+        var html = altas.length === 0
+            ? '<p class="sub">Anotamos que ' + bajas.map(function (x) { return '<strong>' + escapar(x.nombre) + '</strong>'; }).join(' y ') +
+              ' no juega' + (bajas.length > 1 ? 'n' : '') + ' esta temporada. Gracias por avisar.</p>'
+            : '<p class="sub">Recibimos la inscripción de ' +
+            altas.map(function (x) { return '<strong>' + escapar(x.nombre) + '</strong> (' + escapar(x.categoria) + ')'; }).join(', ') +
             ' para la temporada ' + escapar(r.temporada) + '. La revisamos y te avisamos.</p>';
 
-        html += '<div class="resumen" style="margin-top:8px;">' +
-            r.jugadores.map(function (x) {
-                return '<div class="linea"><span>' + escapar(x.nombre) + '</span><span>' + euros(x.mensualidad) + '/mes</span></div>';
-            }).join('') +
-            '<div class="total"><span>Total al mes</span><strong>' + euros(r.total_mensual) + '</strong></div></div>';
+        // Las bajas se listan aparte y sin importe: no se les cobra nada.
+        if (bajas.length && altas.length) {
+            html += '<p class="sub">Y anotamos que ' +
+                bajas.map(function (x) { return '<strong>' + escapar(x.nombre) + '</strong>'; }).join(' y ') +
+                ' no juega' + (bajas.length > 1 ? 'n' : '') + ' esta temporada.</p>';
+        }
+        // Si alguna baja no se pudo hacer sola —porque ya estaba cobrando— hay
+        // que decirlo, no dejar que la familia crea que quedó resuelto.
+        bajas.filter(function (x) { return x.aviso; }).forEach(function (x) {
+            html += '<div class="aviso aviso-info">' + escapar(x.aviso) + '</div>';
+        });
+
+        if (altas.length) {
+            html += '<div class="resumen" style="margin-top:8px;">' +
+                altas.map(function (x) {
+                    return '<div class="linea"><span>' + escapar(x.nombre) + '</span><span>' + euros(x.mensualidad) + '/mes</span></div>';
+                }).join('') +
+                '<div class="total"><span>Total al mes</span><strong>' + euros(r.total_mensual) + '</strong></div></div>';
+        }
 
         if (r.cuenta_creada) {
             html += '<div class="aviso aviso-' + (r.aviso ? 'error' : 'ok') + '">' +

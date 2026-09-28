@@ -322,7 +322,46 @@ async function main() {
     comprobar('hereda la dirección del tutor', dp.every((d) => d.direccion), dp);
     comprobar('respeta el "no" al uso de imagen', dp.some((d) => d.autoriza_uso_imagen === false), dp);
 
-    console.log('\n10. Reenviar sobre una inscripcion ya resuelta');
+    console.log('\n10. Renovar a uno y dar de baja a otro, en el mismo envio');
+    // El caso literal del presidente: dos hijos, uno sigue y el otro no.
+    {
+        const { data: t } = await db.from('tutores').select('tutor_id').eq('email', EMAIL).single();
+        const { data: v } = await db.from('tutor_jugador').select('player_id').eq('tutor_id', t.tutor_id);
+        const { data: ps } = await db.from('players').select('player_id, first_name, last_name, dob, gender').in('player_id', v.map((x) => x.player_id));
+        const sigue = ps.find((x) => x.last_name === 'Mayor Prueba');
+        const seVa = ps.find((x) => x.last_name === 'Menor Prueba');
+
+        r = await llamar('enviar', {
+            token,
+            body: {
+                acepta_reglamento: true,
+                tutor: { nombre: 'Prueba', email: EMAIL },
+                jugadores: [
+                    { player_id: sigue.player_id, nombre: sigue.first_name, apellido: sigue.last_name,
+                      fecha_nacimiento: sigue.dob, genero: sigue.gender, tarifa_variante: 'base', parentesco: 'padre' },
+                    { player_id: seVa.player_id, nombre: seVa.first_name, apellido: seVa.last_name,
+                      no_renueva: true, motivo_no_renueva: 'este anio no juega' },
+                ],
+            },
+        });
+        comprobar('lo acepta', r.status === 200, r.body);
+        comprobar('devuelve uno que sigue y uno que no', r.body && r.body.jugadores.filter((x) => x.no_renueva).length === 1, r.body && r.body.jugadores);
+        comprobar('el total no cuenta al que se va', r.body && r.body.total_mensual > 0, r.body && r.body.total_mensual);
+
+        const { data: iSigue } = await db.from('inscripciones').select('estado').eq('player_id', sigue.player_id).eq('temporada', temporada).single();
+        const { data: iVa } = await db.from('inscripciones').select('estado, motivo_baja, baja_at').eq('player_id', seVa.player_id).eq('temporada', temporada).single();
+        comprobar('el que sigue queda enviada', iSigue.estado === 'enviada', iSigue);
+        comprobar('el que se va queda de baja', iVa.estado === 'baja', iVa);
+        comprobar('con el motivo que puso la familia', /no juega/.test(iVa.motivo_baja || ''), iVa);
+        comprobar('y con fecha de baja', Boolean(iVa.baja_at), iVa);
+
+        const { data: pSigue } = await db.from('players').select('estado_club').eq('player_id', sigue.player_id).single();
+        const { data: pVa } = await db.from('players').select('estado_club').eq('player_id', seVa.player_id).single();
+        comprobar('el entrenador sigue viendo al que juega', pSigue.estado_club !== 'baja', pSigue);
+        comprobar('y deja de ver al que se fue', pVa.estado_club === 'baja', pVa);
+    }
+
+    console.log('\n11. Reenviar sobre una inscripcion ya resuelta');
     // La maquina de estados prohibe aprobada->enviada y no deja salir de baja.
     // Antes el upsert chocaba con eso y le mostraba a la familia el error crudo
     // de Postgres.

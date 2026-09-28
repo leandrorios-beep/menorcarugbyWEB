@@ -14,6 +14,7 @@ const {
     temporadaKey,
     temporadaYear,
     tramoDeCategoria,
+    calcularCategorias,
     cargarPrecios,
     cargarDescuentos,
     importeFinal,
@@ -74,6 +75,22 @@ module.exports = async function accionEstado(req, res) {
                     .in('player_id', ids)
                     .in('temporada', [temporada, anterior]);
 
+                // Todas de una: es una llamada a la base por jugador, pero la
+                // alternativa es mostrar un precio que después cambia.
+                const categoriaDe = new Map();
+                for (const p of players || []) {
+                    try {
+                        categoriaDe.set(
+                            p.player_id,
+                            await calcularCategorias(supabase, p.dob, p.gender === 'Femenino', year)
+                        );
+                    } catch (e) {
+                        // Si falla, se sigue con la categoría que tiene: es mejor
+                        // mostrar la vieja que no mostrar nada.
+                        console.error(`No se pudo recalcular la categoría de ${p.player_id}:`, e && e.message);
+                    }
+                }
+
                 const porId = (lista, campo) => {
                     const m = new Map();
                     (lista || []).forEach((x) => m.set(x[campo], x));
@@ -90,7 +107,18 @@ module.exports = async function accionEstado(req, res) {
                         (i) => i.player_id === p.player_id && i.temporada === anterior
                     );
                     const base = deEsteAnio || delAnterior || null;
-                    const tramo = tramoDeCategoria(p.category_primary, p.dob);
+
+                    // La categoría se recalcula con el año de la temporada NUEVA,
+                    // no se lee de players.
+                    //
+                    // El 1 de julio, players.category_primary todavía dice la
+                    // categoría de la temporada que terminó. Como el guardado sí
+                    // la recalcula, la familia veía en pantalla la cuota juvenil
+                    // y se le guardaba la senior: el importe le cambiaba DESPUÉS
+                    // de haber aceptado.
+                    const catNueva = categoriaDe.get(p.player_id);
+                    const categoria = catNueva ? catNueva.principal : p.category_primary;
+                    const tramo = tramoDeCategoria(categoria, p.dob);
 
                     return {
                         player_id: p.player_id,
@@ -98,8 +126,11 @@ module.exports = async function accionEstado(req, res) {
                         apellido: p.last_name,
                         fecha_nacimiento: p.dob,
                         genero: p.gender,
-                        categoria: p.category_primary,
-                        categorias_extra: p.categories_extra || [],
+                        categoria,
+                        // La que tiene hoy en la ficha, por si difiere: sirve
+                        // para poder decirle "este año le toca SUB16".
+                        categoria_actual: p.category_primary,
+                        categorias_extra: (catNueva ? catNueva.extra : p.categories_extra) || [],
                         email: p.email,
                         telefono: p.phone,
                         foto: p.photo,
