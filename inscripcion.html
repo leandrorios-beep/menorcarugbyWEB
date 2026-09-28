@@ -194,8 +194,11 @@ input:focus, select:focus, textarea:focus {
     <div id="avisoGlobal"></div>
 
     <!-- ── Paso 1: el correo ─────────────────────────────────────────── -->
+    <!-- Lo que le contamos a quien vuelve de poner la tarjeta. -->
+    <div id="avisoVuelta" class="oculto"></div>
+
     <section class="insc-card" id="pasoEmail">
-        <h2><i data-i18n="inscripcion.tu_correo" class="fa-regular fa-envelope"></i> Tu correo</h2>
+        <h2><i class="fa-regular fa-envelope"></i> <span data-i18n="inscripcion.tu_correo">Tu correo</span></h2>
         <p data-i18n="inscripcion.correo_ayuda" class="sub">El de la madre, el padre o quien se encargue. Si el jugador es mayor de edad, el suyo.</p>
         <form id="formEmail">
             <div class="campo">
@@ -208,7 +211,7 @@ input:focus, select:focus, textarea:focus {
 
     <!-- ── Paso 2a: ya está en la base ───────────────────────────────── -->
     <section class="insc-card oculto" id="pasoEntrar">
-        <h2><i data-i18n="inscripcion.ya_estas" class="fa-solid fa-user-check"></i> Ya estás en nuestra base de datos</h2>
+        <h2><i class="fa-solid fa-user-check"></i> <span data-i18n="inscripcion.ya_estas">Ya estás en nuestra base de datos</span></h2>
         <p class="sub" id="textoEntrar"></p>
         <form id="formEntrar">
             <div class="campo">
@@ -225,7 +228,7 @@ input:focus, select:focus, textarea:focus {
     <div class="oculto" id="pasoFormulario">
 
         <section class="insc-card" id="bloqueTutor">
-            <h2><i data-i18n="inscripcion.tus_datos" class="fa-regular fa-address-card"></i> Tus datos</h2>
+            <h2><i class="fa-regular fa-address-card"></i> <span data-i18n="inscripcion.tus_datos">Tus datos</span></h2>
             <p data-i18n="inscripcion.tus_datos_ayuda" class="sub">Los del adulto responsable. Si el jugador es mayor de edad, los suyos.</p>
 
             <div class="fila">
@@ -303,7 +306,7 @@ input:focus, select:focus, textarea:focus {
 
     <!-- ── Pagar: solo cuando el club ya aprobo la inscripcion ───────── -->
     <section class="insc-card oculto" id="pasoPagar">
-        <h2><i data-i18n="inscripcion.domiciliar" class="fa-regular fa-credit-card"></i> Domiciliar la cuota</h2>
+        <h2><i class="fa-regular fa-credit-card"></i> <span data-i18n="inscripcion.domiciliar">Domiciliar la cuota</span></h2>
         <p class="sub" id="textoPagar"></p>
         <div class="resumen" id="resumenPago"></div>
         <button type="button" class="btn btn-primario" id="btnPagar" data-i18n="inscripcion.ir_a_pagar">Ir a pagar</button>
@@ -314,7 +317,7 @@ input:focus, select:focus, textarea:focus {
 
     <!-- ── Paso 4: listo ─────────────────────────────────────────────── -->
     <section class="insc-card oculto" id="pasoListo">
-        <h2><i data-i18n="inscripcion.enviada" class="fa-solid fa-circle-check" style="color:var(--verde)"></i> Inscripción enviada</h2>
+        <h2><i class="fa-solid fa-circle-check" style="color:var(--verde)"></i> <span data-i18n="inscripcion.enviada">Inscripción enviada</span></h2>
         <div id="textoListo"></div>
 
         <!--
@@ -526,7 +529,7 @@ $('formEntrar').addEventListener('submit', async function (e) {
         var r = await api('acceso', {
             body: { email: estado.email, password: $('password').value }
         });
-        estado.token = r.token;
+        recordarSesion(r.token);
         estado.esRenovacion = true;
         await cargarEstado();
         mostrar('pasoEntrar', false);
@@ -633,10 +636,14 @@ function prepararPago(jugadores) {
     if (cobrando.length && !sinTarjeta.length) {
         mostrar('pasoPagar', true);
         $('textoPagar').textContent =
-            'Ya está todo en marcha: la cuota se cobra sola con la tarjeta que dejaste. ' +
-            'Si necesitás cambiarla, escribinos.';
+            'Ya está todo en marcha: la cuota se cobra sola con la tarjeta que dejaste.';
         $('resumenPago').classList.add('oculto');
-        $('btnPagar').classList.add('oculto');
+        // Cambiar la tarjeta tiene que poder hacerse SIEMPRE. Antes el botón
+        // sólo salía si todavía no habías dejado ninguna, así que a quien se le
+        // caducaba la tarjeta no le quedaba más remedio que escribir al club.
+        $('btnPagar').classList.remove('oculto');
+        $('btnPagar').textContent = 'Cambiar mi tarjeta';
+        $('btnPagar').removeAttribute('data-i18n');
         return;
     }
 
@@ -647,7 +654,9 @@ function prepararPago(jugadores) {
             'Tu tarjeta ya está guardada y no se te ha cobrado nada. En cuanto el club apruebe la ' +
             'inscripción se pone en marcha la cuota y te avisamos por correo.';
         $('resumenPago').classList.add('oculto');
-        $('btnPagar').classList.add('oculto');
+        $('btnPagar').classList.remove('oculto');
+        $('btnPagar').textContent = 'Cambiar mi tarjeta';
+        $('btnPagar').removeAttribute('data-i18n');
         return;
     }
 
@@ -1243,6 +1252,69 @@ $('btnPagar').addEventListener('click', async function () {
 document.addEventListener('languageChanged', function () {
     if (estado.jugadores.length) dibujarJugadores();
 });
+
+// ── La sesión tiene que sobrevivir al viaje a Stripe ───────────────────────
+//
+// Para poner la tarjeta se sale de esta página y se vuelve. El token vivía sólo
+// en memoria, así que al volver la familia se encontraba la pantalla del
+// principio, pidiéndole el correo otra vez y sin decirle si su tarjeta había
+// quedado guardada. Guardarlo en sessionStorage lo hace sobrevivir a la ida y
+// vuelta, y morir al cerrar la pestaña, que es lo que tiene que durar.
+function recordarSesion(token) {
+    estado.token = token;
+    try { sessionStorage.setItem('inscripcion_token', token); } catch (e) { /* modo privado */ }
+}
+
+function olvidarSesion() {
+    estado.token = null;
+    try { sessionStorage.removeItem('inscripcion_token'); } catch (e) { /* modo privado */ }
+}
+
+async function volviendoDeStripe() {
+    var params = new URLSearchParams(window.location.search);
+    var resultado = params.get('tarjeta');
+    if (!resultado) return false;
+
+    // Se limpia la URL para que recargar no vuelva a enseñar el cartel.
+    window.history.replaceState({}, '', window.location.pathname);
+
+    var guardado = null;
+    try { guardado = sessionStorage.getItem('inscripcion_token'); } catch (e) { /* nada */ }
+    if (!guardado) {
+        // Sin sesión no se puede enseñar el estado, pero sí decirle qué pasó.
+        aviso(resultado === 'ok'
+            ? 'Tu tarjeta quedó guardada. Entrá con tu correo para ver cómo va tu inscripción.'
+            : 'No se guardó ninguna tarjeta. Entrá con tu correo y volvé a intentarlo.');
+        return true;
+    }
+
+    estado.token = guardado;
+    cargando(true);
+    try {
+        await cargarEstado();
+        mostrar('pasoEmail', false);
+        mostrar('pasoFormulario', true);
+        if (resultado === 'ok') {
+            $('avisoVuelta').innerHTML =
+                '<div class="aviso aviso-ok"><strong>Tu tarjeta quedó guardada.</strong> ' +
+                'No se te cobró nada. En cuanto el club apruebe la inscripción se pone en marcha ' +
+                'la cuota y te avisamos por correo.</div>';
+        } else {
+            $('avisoVuelta').innerHTML =
+                '<div class="aviso aviso-info">No llegaste a guardar la tarjeta. ' +
+                'Podés hacerlo cuando quieras desde acá abajo.</div>';
+        }
+        mostrar('avisoVuelta', true);
+    } catch (err) {
+        olvidarSesion();
+        aviso('Tu sesión caducó. Entrá con tu correo para ver cómo va tu inscripción.');
+    } finally {
+        cargando(false);
+    }
+    return true;
+}
+
+volviendoDeStripe();
 
 // El menú de hamburguesa del resto del sitio.
 var toggle = $('nav-toggle');
