@@ -125,6 +125,23 @@ async function main() {
     r = await llamar('estado', { body: {} });
     comprobar('accion de GET pedida por POST -> 405', r.status === 405, r.body);
 
+    // La forma de la factura cambia con la version de API. La que entrega el
+    // webhook es basil, donde `subscription` ya no esta arriba. Leerlo del sitio
+    // viejo hizo que durante siete semanas no se anotara ni una renovacion.
+    console.log('\n1c. La suscripcion de una factura, venga como venga');
+    {
+        const { suscripcionDeLaFactura } = require('./stripe-factura');
+        comprobar('la forma vieja (acacia)',
+            suscripcionDeLaFactura({ subscription: 'sub_viejo' }) === 'sub_viejo');
+        comprobar('la forma nueva (basil)',
+            suscripcionDeLaFactura({ parent: { subscription_details: { subscription: 'sub_nuevo' } } }) === 'sub_nuevo');
+        comprobar('cuando viene el objeto entero y no el id',
+            suscripcionDeLaFactura({ parent: { subscription_details: { subscription: { id: 'sub_obj' } } } }) === 'sub_obj');
+        comprobar('una factura que no es de suscripcion da null',
+            suscripcionDeLaFactura({ parent: { quote_details: null, type: 'quote_details' } }) === null);
+        comprobar('y una factura vacia no revienta', suscripcionDeLaFactura(null) === null);
+    }
+
     console.log('\n2. Rechaza lo que tiene que rechazar');
     r = await llamar('enviar', { body: { tutor: { nombre: 'X', email: EMAIL }, jugadores: [] } });
     comprobar('sin reglamento -> 400', r.status === 400, r.body);

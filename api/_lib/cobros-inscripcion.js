@@ -26,6 +26,7 @@ const {
     tramoDeFicha,
     varianteDeFicha,
 } = require('./inscripcion');
+const { suscripcionDeLaFactura } = require('./stripe-factura');
 
 /**
  * ¿Este evento es de una cuota de jugador?
@@ -180,9 +181,12 @@ async function repartirLineas(supabase, suscripcion, ids) {
 
 async function facturaPagada(event, stripe, supabase) {
     const factura = event.data.object;
-    if (!factura.subscription) return false;
+    // El id NO se lee de `factura.subscription`: en la versión que entrega el
+    // webhook ese campo ya no existe. Ver api/_lib/stripe-factura.js.
+    const idSuscripcion = suscripcionDeLaFactura(factura);
+    if (!idSuscripcion) return false;
 
-    const suscripcion = await stripe.subscriptions.retrieve(factura.subscription);
+    const suscripcion = await stripe.subscriptions.retrieve(idSuscripcion);
     const ids = inscripcionesDe(suscripcion);
     if (!ids) return false;
 
@@ -203,9 +207,10 @@ async function facturaPagada(event, stripe, supabase) {
 
 async function facturaFallida(event, stripe, supabase) {
     const factura = event.data.object;
-    if (!factura.subscription) return false;
+    const idSuscripcion = suscripcionDeLaFactura(factura);
+    if (!idSuscripcion) return false;
 
-    const suscripcion = await stripe.subscriptions.retrieve(factura.subscription);
+    const suscripcion = await stripe.subscriptions.retrieve(idSuscripcion);
     const ids = inscripcionesDe(suscripcion);
     if (!ids) return false;
 

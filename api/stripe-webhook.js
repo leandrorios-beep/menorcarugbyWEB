@@ -1,4 +1,5 @@
 const { createClient } = require('@supabase/supabase-js');
+const { suscripcionDeLaFactura } = require('./_lib/stripe-factura');
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
 // Disable body parsing — we need the raw body to verify the Stripe signature
@@ -143,11 +144,16 @@ module.exports = async function handler(req, res) {
         const invoice = event.data.object;
         const customerEmail = invoice.customer_email || await getCustomerEmail(invoice.customer);
 
-        if (!customerEmail || !invoice.subscription) {
+        // OJO: NO es `invoice.subscription`. En la version que entrega el
+        // webhook ese campo ya no existe y este bloque salia por aca con un 200
+        // silencioso: las renovaciones de socio llevaban siete semanas
+        // cobrandose sin que se anotara ninguna. Ver api/_lib/stripe-factura.js.
+        const subscriptionId = suscripcionDeLaFactura(invoice);
+        if (!customerEmail || !subscriptionId) {
             return res.status(200).json({ received: true });
         }
 
-        const subscription = await stripe.subscriptions.retrieve(invoice.subscription);
+        const subscription = await stripe.subscriptions.retrieve(subscriptionId);
         const fechaPago = new Date(event.created * 1000).toISOString();
         const fechaProximoPago = subscription.current_period_end
             ? new Date(subscription.current_period_end * 1000).toISOString()
