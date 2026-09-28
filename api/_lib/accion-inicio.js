@@ -85,15 +85,32 @@ module.exports = async function accionInicio(req, res) {
         });
     }
 
-    // Cuántos hijos tiene vinculados, para que la pantalla siguiente pueda decir
-    // "tenés 2 jugadores" antes de que entre.
+    // QUIÉNES tiene a su cargo, no sólo cuántos.
+    //
+    // Decir "tenés 2 jugadores" no le sirve a nadie para confirmar que la ficha
+    // que encontramos es la suya. Decir "Unai y Martina" sí: si esos no son sus
+    // hijos, sabe en el acto que se equivocó de correo, y si lo son, entra
+    // tranquilo sabiendo que no va a cargar a nadie dos veces.
     let hijos = 0;
+    let nombresDeLosHijos = [];
     if (tutor) {
-        const { count } = await supabase
+        const { data: vinculos } = await supabase
             .from('tutor_jugador')
-            .select('*', { count: 'exact', head: true })
+            .select('player_id')
             .eq('tutor_id', tutor.tutor_id);
-        hijos = count || 0;
+        const ids = (vinculos || []).map((v) => v.player_id);
+        hijos = ids.length;
+        if (ids.length) {
+            const { data: suyos } = await supabase
+                .from('players')
+                .select('first_name, last_name, estado_club')
+                .in('player_id', ids);
+            // A los que se fueron no se los nombra: sería recordarle una baja a
+            // quien viene a inscribir a otro hijo.
+            nombresDeLosHijos = (suyos || [])
+                .filter((j) => j.estado_club !== 'baja')
+                .map((j) => `${j.first_name} ${j.last_name}`);
+        }
     }
 
     return res.status(200).json({
@@ -103,6 +120,8 @@ module.exports = async function accionInicio(req, res) {
         tipo: tutor ? 'tutor' : 'socio',
         nombre: (tutor ? tutor.nombre : socio.nombre) || '',
         hijos,
+        encontrados: nombresDeLosHijos,
+        es_socio: Boolean(socio),
         // Si nunca se le generó contraseña, no tiene sentido pedírsela: la
         // pantalla manda directo a "te la mando por mail".
         tiene_password: Boolean(tutor ? tutor.password_hash : socio.password_hash),

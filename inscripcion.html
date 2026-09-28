@@ -475,12 +475,26 @@ $('formEmail').addEventListener('submit', async function (e) {
                 $('formEntrar').classList.add('oculto');
             } else {
                 $('formEntrar').classList.remove('oculto');
-                $('textoEntrar').textContent = r.hijos
-                    ? 'Hola ' + r.nombre + '. Tenés ' + r.hijos + (r.hijos === 1 ? ' jugador' : ' jugadores') + ' a tu cargo. Entrá y renovás en dos toques.'
-                    : 'Hola ' + r.nombre + '. Entrá con tu contraseña y seguimos desde ahí.';
-                if (!r.tiene_password) {
-                    $('textoEntrar').textContent += ' Todavía no tenés contraseña: pedí que te la enviemos.';
+
+                // Decirle A QUIÉN tiene a su cargo, no cuántos. Un número no le
+                // sirve para confirmar que la ficha es la suya; un nombre sí.
+                var quienes = (r.encontrados || []).map(escapar);
+                var texto;
+                if (quienes.length) {
+                    texto = 'Hola ' + escapar(r.nombre) + '. Ya estás en el club y tenés a <strong>' +
+                        quienes.join('</strong> y <strong>') + '</strong> a tu cargo. ' +
+                        'Entrá y renovás sin volver a cargar nada.';
+                } else if (r.es_socio) {
+                    texto = 'Hola ' + escapar(r.nombre) + '. Ya estás en el club como socio. ' +
+                        'Entrá con tu contraseña y desde ahí inscribís a quien quieras.';
+                } else {
+                    texto = 'Hola ' + escapar(r.nombre) + '. Ya estás en nuestra base. ' +
+                        'Entrá con tu contraseña y seguimos desde ahí.';
                 }
+                if (!r.tiene_password) {
+                    texto += '<br><br>Todavía no tenés contraseña: pedila y te la mandamos por correo.';
+                }
+                $('textoEntrar').innerHTML = texto;
             }
             mostrar('pasoEmail', false);
             mostrar('pasoEntrar', true);
