@@ -131,6 +131,38 @@ module.exports = async function accionEnviar(req, res) {
             let playerId = j.player_id || null;
             const notas = [];
 
+            // Una inscripcion ya aprobada, o dada de baja, NO se puede volver a
+            // poner en 'enviada': la maquina de estados de la base lo prohibe y
+            // el upsert de mas abajo se comia esa excepcion en forma de error de
+            // Postgres crudo en la cara de la familia.
+            //
+            // Aprobada -> es una modificacion de datos, no un reenvio: se deja
+            // la inscripcion como esta y se anota lo que cambio para que lo mire
+            // quien revisa.
+            // De baja -> es terminal. Volver al club es una inscripcion nueva de
+            // la temporada siguiente, y eso lo decide el club.
+            let conservarEstado = false;
+            if (playerId) {
+                const { data: yaHay } = await supabase
+                    .from('inscripciones')
+                    .select('estado')
+                    .eq('temporada', temporada)
+                    .eq('player_id', playerId)
+                    .maybeSingle();
+
+                if (yaHay && yaHay.estado === 'baja') {
+                    return res.status(409).json({
+                        error:
+                            `${j.nombre} figura de baja esta temporada. Escribinos a ` +
+                            'info@menorcarugbyclub.com y lo revisamos con vos.',
+                    });
+                }
+                if (yaHay && yaHay.estado === 'aprobada') {
+                    conservarEstado = true;
+                    notas.push('La familia mando cambios sobre una inscripcion ya aprobada.');
+                }
+            }
+
             if (playerId) {
                 const { data: previo } = await supabase
                     .from('players')
@@ -273,7 +305,9 @@ module.exports = async function accionEnviar(req, res) {
                     temporada,
                     player_id: playerId,
                     tutor_id: tutorId,
-                    estado: 'enviada',
+                    // Ver el control de mas arriba: si ya estaba aprobada, esto
+                    // es una correccion de datos y no vuelve a la cola.
+                    estado: conservarEstado ? 'aprobada' : 'enviada',
                     altura_cm: j.altura_cm,
                     peso_kg: j.peso_kg,
                     talla_camiseta: j.talla_camiseta,

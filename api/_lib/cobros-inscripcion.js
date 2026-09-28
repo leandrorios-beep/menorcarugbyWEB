@@ -93,18 +93,75 @@ async function sesionCompletada(event, stripe, supabase) {
         }
     }
 
-    const { error } = await supabase
-        .from('inscripciones')
-        .update({
-            stripe_customer_id: typeof sesion.customer === 'string' ? sesion.customer : sesion.customer?.id,
-            stripe_subscription_id: suscripcion.id,
-            estado_cobro: 'al_dia',
-        })
-        .in('inscripcion_id', ids);
-    if (error) throw new Error(`inscripciones: ${error.message}`);
+    const customerId = typeof sesion.customer === 'string' ? sesion.customer : sesion.customer?.id;
 
-    console.log(`Cuotas domiciliadas: ${ids.length} inscripción(es), suscripción ${suscripcion.id}`);
+    // A cada inscripción se le guarda SU línea de la suscripción, no sólo la
+    // suscripción. Es lo único que permite después dar de baja a un hermano sin
+    // cortarle el cobro al otro: sin esto, la única forma de dejar de cobrarle a
+    // uno es cancelar la suscripción de toda la familia.
+    //
+    // Ojo: cuando dos hermanos tienen la MISMA tarifa, Stripe los junta en una
+    // sola línea con cantidad 2. Por eso el item puede repetirse y por eso la
+    // columna no es única.
+    const lineaDe = await repartirLineas(supabase, suscripcion, ids);
+
+    for (const id of ids) {
+        const { error } = await supabase
+            .from('inscripciones')
+            .update({
+                stripe_customer_id: customerId,
+                stripe_subscription_id: suscripcion.id,
+                stripe_subscription_item_id: lineaDe.get(id) || null,
+                estado_cobro: 'al_dia',
+            })
+            .eq('inscripcion_id', id);
+        if (error) throw new Error(`inscripciones: ${error.message}`);
+    }
+
+    const sinLinea = ids.filter((id) => !lineaDe.get(id)).length;
+    console.log(
+        `Cuotas domiciliadas: ${ids.length} inscripción(es), suscripción ${suscripcion.id}` +
+            (sinLinea ? ` — OJO: ${sinLinea} sin línea identificada` : '')
+    );
     return true;
+}
+
+/**
+ * Qué línea de la suscripción paga a cada inscripción.
+ *
+ * Se cruza por precio: cada inscripción tiene su tramo y su variante, de ahí
+ * sale el stripe_price_id del catálogo, y se busca la línea con ese precio.
+ * Dos hermanos con la misma tarifa caen en la misma línea, que es exactamente
+ * lo que hizo Stripe al juntarlos con cantidad 2.
+ *
+ * Si algo no cruza se deja en null y se avisa por log en vez de adivinar:
+ * asignar la línea equivocada haría que dar de baja a uno le quite la cuota al
+ * otro, que es peor que no poder darlo de baja automáticamente.
+ */
+async function repartirLineas(supabase, suscripcion, ids) {
+    const mapa = new Map();
+    const items = (suscripcion.items && suscripcion.items.data) || [];
+    if (!items.length) return mapa;
+
+    const { data: inscripciones } = await supabase
+        .from('inscripciones')
+        .select('inscripcion_id, temporada, tarifa_tramo, tarifa_variante')
+        .in('inscripcion_id', ids);
+
+    const { data: precios } = await supabase
+        .from('precios')
+        .select('concepto, variante, tramo, stripe_price_id')
+        .eq('concepto', 'mensualidad');
+
+    for (const i of inscripciones || []) {
+        const precio = (precios || []).find(
+            (p) => p.variante === i.tarifa_variante && p.tramo === i.tarifa_tramo
+        );
+        if (!precio || !precio.stripe_price_id) continue;
+        const item = items.find((it) => it.price && it.price.id === precio.stripe_price_id);
+        if (item) mapa.set(i.inscripcion_id, item.id);
+    }
+    return mapa;
 }
 
 // ---------------------------------------------------------------------------
@@ -119,10 +176,14 @@ async function facturaPagada(event, stripe, supabase) {
 
     await anotar(supabase, { factura, suscripcion, ids, pagada: true, event });
 
+    // .neq('estado','baja'): sin esto, la factura del mes siguiente le devolvía
+    // el estado de cobro a alguien que ya se había dado de baja, y la baja no
+    // aguantaba ni un ciclo.
     const { error } = await supabase
         .from('inscripciones')
         .update({ estado_cobro: 'al_dia' })
-        .in('inscripcion_id', ids);
+        .in('inscripcion_id', ids)
+        .neq('estado', 'baja');
     if (error) throw new Error(`inscripciones: ${error.message}`);
 
     return true;
@@ -138,10 +199,14 @@ async function facturaFallida(event, stripe, supabase) {
 
     await anotar(supabase, { factura, suscripcion, ids, pagada: false, event });
 
+    // .neq('estado','baja'): sin esto, la factura del mes siguiente le devolvía
+    // el estado de cobro a alguien que ya se había dado de baja, y la baja no
+    // aguantaba ni un ciclo.
     const { error } = await supabase
         .from('inscripciones')
         .update({ estado_cobro: 'impago' })
-        .in('inscripcion_id', ids);
+        .in('inscripcion_id', ids)
+        .neq('estado', 'baja');
     if (error) throw new Error(`inscripciones: ${error.message}`);
 
     console.warn(`Cuota IMPAGA: factura ${factura.id}, ${ids.length} inscripción(es)`);
@@ -170,15 +235,33 @@ async function suscripcionCancelada(event, stripe, supabase) {
 async function anotar(supabase, { factura, suscripcion, ids, pagada, event }) {
     const temporada = temporadaKey();
 
-    const { data: inscripciones, error: errInsc } = await supabase
+    const { data: todas, error: errInsc } = await supabase
         .from('inscripciones')
-        .select('inscripcion_id, player_id, temporada, tarifa_tramo, tarifa_variante, tarifa_descuentos')
+        .select('inscripcion_id, player_id, temporada, estado, tarifa_tramo, tarifa_variante, tarifa_descuentos')
         .in('inscripcion_id', ids);
     if (errInsc) throw new Error(`inscripciones: ${errInsc.message}`);
-    if (!inscripciones || !inscripciones.length) {
+    if (!todas || !todas.length) {
         console.warn(`Factura ${factura.id} apunta a inscripciones que ya no existen: ${ids.join(',')}`);
         return;
     }
+
+    // A los dados de baja NO se les imputa la cuota, aunque Stripe la haya
+    // cobrado. Los ids vienen de la metadata de la SUSCRIPCIÓN, que no se entera
+    // de las bajas; sin este filtro, al chico que se fue se le anotaba una cuota
+    // nueva cada mes, a su nombre y a su categoría, ensuciando los informes.
+    //
+    // Lo que se cobró de más aparece solo en la fila de DESCUADRE de abajo, que
+    // es justamente donde tiene que verse: que Stripe siga cobrando a alguien de
+    // baja es un problema, no algo que haya que cuadrar en silencio.
+    const inscripciones = todas.filter((i) => i.estado !== 'baja');
+    const deBaja = todas.length - inscripciones.length;
+    if (deBaja) {
+        console.warn(
+            `Factura ${factura.id}: ${deBaja} inscripción(es) de baja siguen en la suscripción ${suscripcion.id}. ` +
+                'Hay que quitarles la línea en Stripe.'
+        );
+    }
+    if (!inscripciones.length) return;
 
     const { data: jugadores } = await supabase
         .from('players')

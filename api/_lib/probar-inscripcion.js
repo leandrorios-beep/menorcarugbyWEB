@@ -322,6 +322,43 @@ async function main() {
     comprobar('hereda la dirección del tutor', dp.every((d) => d.direccion), dp);
     comprobar('respeta el "no" al uso de imagen', dp.some((d) => d.autoriza_uso_imagen === false), dp);
 
+    console.log('\n10. Reenviar sobre una inscripcion ya resuelta');
+    // La maquina de estados prohibe aprobada->enviada y no deja salir de baja.
+    // Antes el upsert chocaba con eso y le mostraba a la familia el error crudo
+    // de Postgres.
+    const idMayor = (await db.from('players').select('player_id').eq('last_name', 'Mayor Prueba').single()).data.player_id;
+    await db.from('inscripciones').update({ estado: 'aprobada' }).eq('player_id', idMayor).eq('temporada', temporada);
+
+    const reenvio = {
+        acepta_reglamento: true,
+        tutor: { nombre: 'Prueba', email: EMAIL },
+        jugadores: [{
+            player_id: idMayor, nombre: 'Hermano', apellido: 'Mayor Prueba',
+            fecha_nacimiento: '2011-03-02', genero: 'Masculino',
+            tarifa_variante: 'base', parentesco: 'padre', talla_camiseta: 'XL',
+        }],
+    };
+    r = await llamar('enviar', { token, body: reenvio });
+    comprobar('sobre una aprobada -> 200, no error de base', r.status === 200, r.body);
+    {
+        const { data } = await db.from('inscripciones').select('estado, talla_camiseta, observaciones')
+            .eq('player_id', idMayor).eq('temporada', temporada).single();
+        comprobar('sigue aprobada, no vuelve a la cola', data.estado === 'aprobada', data);
+        comprobar('igual guarda el cambio de talla', data.talla_camiseta === 'XL', data);
+        comprobar('lo anota para quien revise', /ya aprobada/i.test(data.observaciones || ''), data);
+    }
+
+    await db.from('inscripciones').update({ estado: 'baja', motivo_baja: 'prueba' })
+        .eq('player_id', idMayor).eq('temporada', temporada);
+    r = await llamar('enviar', { token, body: reenvio });
+    comprobar('sobre una baja -> 409 con mensaje para la familia', r.status === 409, r.body);
+    comprobar('el mensaje no es jerga de Postgres', r.body && /de baja/i.test(r.body.error || ''), r.body);
+
+    {
+        const { data } = await db.from('players').select('estado_club').eq('player_id', idMayor).single();
+        comprobar('la baja marca al jugador, el entrenador deja de verlo', data.estado_club === 'baja', data);
+    }
+
     console.log('\nLimpieza');
     await limpiar();
 
