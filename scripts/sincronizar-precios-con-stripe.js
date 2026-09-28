@@ -57,6 +57,19 @@ if (faltan.length) {
 }
 
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+
+/**
+ * En qué mundo estamos y, por lo tanto, en qué columnas se guarda.
+ *
+ * El sandbox de Stripe es una cuenta paralela: sus identificadores no valen en
+ * producción y los de producción no valen ahí. Si los dos mundos escribieran en
+ * la misma columna, ensayar dejaría el catálogo de verdad apuntando a productos
+ * que no existen, y la corrida siguiente crearía 28 productos nuevos en la
+ * cuenta real sin que nadie supiera cuáles son los buenos.
+ */
+const ES_PRUEBA = String(process.env.STRIPE_SECRET_KEY).startsWith('sk_test');
+const COL_PRODUCTO = ES_PRUEBA ? 'stripe_product_id_test' : 'stripe_product_id';
+const COL_PRECIO = ES_PRUEBA ? 'stripe_price_id_test' : 'stripe_price_id';
 const { createClient } = require('@supabase/supabase-js');
 const db = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY, {
     auth: { persistSession: false },
@@ -150,7 +163,8 @@ async function main() {
 
     const cuenta = await stripe.accounts.retrieve().catch(() => null);
     console.log(`Cuenta de Stripe: ${cuenta ? `${cuenta.id} (${cuenta.business_profile?.name || cuenta.email || 'sin nombre'})` : 'no se pudo leer'}`);
-    console.log(`Modo: ${String(process.env.STRIPE_SECRET_KEY).startsWith('sk_live') ? 'PRODUCCIÓN — se cobra de verdad' : 'prueba'}`);
+    console.log(`Modo: ${ES_PRUEBA ? 'SANDBOX — no se cobra nada de verdad' : 'PRODUCCIÓN — se cobra de verdad'}`);
+    console.log(`Guarda en: ${COL_PRODUCTO} / ${COL_PRECIO}`);
     console.log(`Temporada: ${TEMPORADA}\n`);
 
     // ── Sólo las cuotas de jugador ───────────────────────────────────────
@@ -248,7 +262,7 @@ async function main() {
 
         try {
             // ── El producto ──────────────────────────────────────────────
-            let productId = p.stripe_product_id || null;
+            let productId = p[COL_PRODUCTO] || null;
             if (productId) {
                 const existe = await stripe.products.retrieve(productId).catch(() => null);
                 // `active` además de `deleted`: un producto archivado se
@@ -277,7 +291,7 @@ async function main() {
             }
 
             // ── El precio ────────────────────────────────────────────────
-            let priceId = p.stripe_price_id || null;
+            let priceId = p[COL_PRECIO] || null;
             let precioActual = null;
             if (priceId) {
                 precioActual = await stripe.prices.retrieve(priceId).catch(() => null);
@@ -348,7 +362,7 @@ async function main() {
 
             const { error: errGuardar } = await db
                 .from('precios')
-                .update({ stripe_product_id: productId, stripe_price_id: nuevo.id })
+                .update({ [COL_PRODUCTO]: productId, [COL_PRECIO]: nuevo.id })
                 .eq('precio_id', p.precio_id);
             if (errGuardar) throw new Error(`no se pudo guardar el id: ${errGuardar.message}`);
 
