@@ -778,7 +778,12 @@ function tarjetaJugador(j, i) {
             '</div></div>' +
 
         '<label style="margin-top:6px;">Cuota</label>' +
-        '<div class="tarifa">' + tarifas(i, j) + '</div>' +
+        '<div class="tarifa">' +
+            '<strong>' + escapar(nombreDeTarifa(j)) + '</strong>' +
+            '<div style="color:var(--gris);font-size:.82rem;margin-top:2px;">' +
+                escapar(detalleDeTarifa(j)) +
+            '</div>' +
+        '</div>' +
 
         '<div class="check" style="margin-top:14px;">' +
             '<input type="checkbox" data-campo="acepta_uso_imagen" data-i="' + i + '"' + (j.acepta_uso_imagen ? ' checked' : '') + '>' +
@@ -802,10 +807,12 @@ function campo(i, nombre, etiqueta, tipo, valor) {
 }
 
 /**
- * Las opciones de cuota. Para un jugador que ya está, vienen del servidor con
- * el importe de su tramo. Para uno nuevo todavía no sabemos la categoría —
- * depende de la fecha de nacimiento, y la calcula la base al enviar — así que
- * se muestran sin importe y el resumen lo dice.
+ * La cuota que le toca, sólo para mirarla: la familia ya no elige.
+ *
+ * Para un jugador que ya está, viene del servidor con el importe de su tramo.
+ * Para uno nuevo todavía no sabemos la categoría —depende de la fecha de
+ * nacimiento, y la calcula la base al enviar— así que se muestra sin importe y
+ * se le dice que se lo confirmamos al revisar.
  */
 var NOMBRES_TARIFA = {
     base: 'Cuota normal',
