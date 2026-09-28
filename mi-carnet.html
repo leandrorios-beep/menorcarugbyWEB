@@ -312,15 +312,10 @@
         </div>
     </nav>
 
-    <!-- Cartel colgante de inscripciones. Hermano del de FRIDAS pero a la
-         izquierda, para que no se pisen. Los textos llevan data-i18n: sin
-         traducción cargada se quedan con el castellano de aquí. -->
-    <a href="inscripcion.html" class="inscripcion-hanging-tag" id="inscripcionTag">
-        <div class="inscripcion-tag-body">
-            <strong data-i18n="inscripcion.tag_title">Inscripciones</strong>
-            <span data-i18n="inscripcion.tag_season">Temporada 2026/2027</span>
-        </div>
-    </a>
+    <!-- Acá NO va el cartel colgante de inscripciones.
+         Es un reclamo para quien todavía no se inscribió; a quien ya está
+         dentro de su propia cuenta no le dice nada, y encima tapaba el
+         título "Mi Carnet". Sigue en las páginas públicas. -->
 
 
 
@@ -469,6 +464,22 @@
                             Al pagar, usa el mismo email con el que te registraste para vincular el pago.
                         </div>
                     </div>
+                </div>
+
+                <!--
+                    Mis jugadores.
+
+                    Una misma persona puede ser socia Y tener hijos jugando —o
+                    jugar ella—, y esta pantalla sólo enseñaba la mitad socia.
+                    Quien entraba veía su carnet y ni rastro de la inscripcion
+                    que acababa de hacer ni de lo que le van a cobrar.
+                -->
+                <div class="services-section" id="jugadoresSection" style="display:none;">
+                    <h3 class="services-title"><i class="fas fa-user-group"></i> Mis jugadores</h3>
+                    <div class="services-grid" id="jugadoresList"></div>
+                    <button class="pwd-toggle" id="btnPortalCarnet" style="display:none;margin-top:10px;">
+                        <i class="fas fa-credit-card"></i> Cambiar mi tarjeta y ver mis recibos
+                    </button>
                 </div>
 
                 <!-- Services -->
@@ -660,6 +671,88 @@
             loginForm.reset();
         });
 
+        // ── Mis jugadores, con el mismo token ─────────────────────────────
+        //
+        // accion=estado devuelve el tutor, sus jugadores, la inscripcion de
+        // cada uno y lo que le toca pagar. Es el mismo endpoint que usa la
+        // pantalla de inscripcion: si dijeran cosas distintas, una de las dos
+        // estaria mintiendo.
+        async function cargarJugadores() {
+            try {
+                const resp = await fetch('/api/inscripcion?accion=estado', {
+                    headers: { 'Authorization': 'Bearer ' + authToken }
+                });
+                if (!resp.ok) return;
+                const d = await resp.json();
+                const jugadores = (d.jugadores || []).filter(j => j.inscripcion_actual);
+                if (!jugadores.length) return;
+
+                const euros = n => (n === null || n === undefined)
+                    ? '—'
+                    : new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(n);
+
+                const ESTADOS = {
+                    enviada:   ['Esperando revisión del club', '#F59E0B'],
+                    aprobada:  ['Inscripción aprobada', '#10B981'],
+                    rechazada: ['Rechazada', '#EF4444'],
+                    baja:      ['Este año no juega', '#9CA3AF'],
+                    borrador:  ['Sin terminar', '#9CA3AF'],
+                };
+
+                let hayTarjeta = false;
+                document.getElementById('jugadoresList').innerHTML = jugadores.map(j => {
+                    const i = j.inscripcion_actual || {};
+                    const t = j.tarifa || {};
+                    const [texto, color] = ESTADOS[i.estado] || [i.estado, '#9CA3AF'];
+                    if (i.stripe_customer_id) hayTarjeta = true;
+
+                    let cobro = '';
+                    if (i.estado !== 'baja' && i.estado !== 'rechazada') {
+                        if (i.pago_anual && i.estado_cobro === 'al_dia') {
+                            cobro = 'Temporada pagada por adelantado. No hay cuotas mensuales.';
+                        } else if (i.stripe_subscription_id) {
+                            cobro = 'Cuota domiciliada: ' + euros(t.mensualidad) + '/mes.';
+                        } else if (i.tarjeta_lista_at) {
+                            cobro = 'Tarjeta guardada. El cobro empieza cuando el club apruebe.';
+                        } else if (t.mensualidad !== null && t.mensualidad !== undefined) {
+                            cobro = 'Te tocaría ' + euros(t.mensualidad) + '/mes' +
+                                (t.total_temporada ? ' · ' + euros(t.total_temporada) + ' la temporada' : '') + '.';
+                        }
+                    }
+
+                    return '<div class="service-card">' +
+                        '<div class="service-head">' +
+                            '<span class="service-name">' + (j.nombre || '') + ' ' + (j.apellido || '') + '</span>' +
+                            '<span class="service-price" style="color:' + color + '">' + texto + '</span>' +
+                        '</div>' +
+                        '<p class="service-desc">' + (j.categoria || '') + (cobro ? ' — ' + cobro : '') + '</p>' +
+                    '</div>';
+                }).join('');
+
+                document.getElementById('jugadoresSection').style.display = '';
+                if (hayTarjeta) document.getElementById('btnPortalCarnet').style.display = '';
+            } catch (e) {
+                // Que falle esto no puede tumbar el carnet, que es lo que la
+                // persona vino a ver.
+                console.error('no se pudieron cargar los jugadores', e);
+            }
+        }
+
+        document.getElementById('btnPortalCarnet').addEventListener('click', async () => {
+            try {
+                const r = await fetch('/api/inscripcion', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + authToken },
+                    body: JSON.stringify({ accion: 'portal' })
+                });
+                const d = await r.json();
+                if (!r.ok) throw new Error(d.error || 'No se pudo abrir');
+                window.location.href = d.url;
+            } catch (e) {
+                alert(e.message);
+            }
+        });
+
         // ── Load profile from token ──
         async function loadProfile() {
             try {
@@ -670,6 +763,7 @@
                 if (!resp.ok || !data.success) throw new Error('Session expired');
                 currentSocio = data.socio;
                 showDashboard();
+                cargarJugadores();
             } catch {
                 localStorage.removeItem('mrc_token');
                 authToken = null;
