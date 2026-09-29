@@ -116,6 +116,23 @@ input:focus, select:focus, textarea:focus {
     font-size: 0.88rem; padding: 12px 0; width: 100%;
 }
 
+/* «Este año no va a jugar».
+   Era .btn-texto con un borde de 1px: texto gris subrayado de 0.88rem dentro
+   de un recuadro casi invisible. En un móvil eso se lee como una nota al pie,
+   no como algo que se pueda tocar — y la primera familia que vino justamente a
+   sacar a un hijo no lo encontró y acabó inscribiendo a los dos.
+   Ahora es un botón ámbar, del tamaño del dedo, que empieza por la acción. */
+.btn-quitar {
+    display: block; width: 100%; text-align: left; cursor: pointer;
+    font-family: inherit; font-size: 0.92rem; line-height: 1.35;
+    margin: 0 0 14px; padding: 12px 14px; min-height: 48px;
+    background: rgba(255, 199, 44, .10);
+    border: 1px solid rgba(255, 199, 44, .55);
+    border-radius: 10px; color: var(--amarillo, #FFC72C);
+}
+.btn-quitar:hover { background: rgba(255, 199, 44, .18); }
+.btn-quitar small { display: block; color: var(--gris); font-size: 0.82rem; margin-top: 2px; }
+
 .aviso { border-radius: 10px; padding: 12px 14px; font-size: 0.88rem; line-height: 1.5; margin-bottom: 14px; }
 .aviso-error { background: #FEF3F2; color: var(--rojo); border: 1px solid #FDA29B; }
 .aviso-ok { background: #ECFDF3; color: var(--verde); border: 1px solid #ABEFC6; }
@@ -990,10 +1007,10 @@ function tarjetaJugador(j, i) {
         // Equivocarse no cuesta nada —se deshace con un botón— y no encontrarla
         // sí, así que se ve.
         (j.existente && !j.no_renueva
-            ? '<button type="button" class="btn-texto" data-norenueva="' + i + '" ' +
-                'style="display:block;width:100%;text-align:left;margin:0 0 14px;padding:10px 12px;' +
-                'border:1px solid rgba(255,255,255,.18);border-radius:8px;color:var(--gris);">' +
-                '<i class="fa-solid fa-circle-minus"></i> Este año <strong>no</strong> va a jugar' +
+            ? '<button type="button" class="btn-quitar" data-norenueva="' + i + '">' +
+                '<i class="fa-solid fa-circle-minus"></i> <strong>Quitar a ' +
+                escapar(j.nombre || 'este jugador') + ' de la inscripción</strong>' +
+                '<small>Este año no va a jugar. Su ficha se conserva.</small>' +
               '</button>'
             : '') +
 
