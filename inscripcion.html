@@ -25,6 +25,7 @@
          lleve data-i18n y crea solo el selector de banderas. Lo que no tenga
          traducción se queda con el castellano del HTML, así que agregar un
          idioma a medias no deja huecos en blanco. -->
+    <script src="js/hermanos.js"></script>
     <script src="js/i18n.js" defer></script>
 
 <style>
@@ -727,7 +728,11 @@ async function cargarEstado() {
             no_renueva: (j.inscripcion_actual || {}).estado === 'baja',
             motivo_no_renueva: (j.inscripcion_actual || {}).motivo_baja || '',
             foto: null,
-            tarifa: j.tarifa || null
+            tarifa: j.tarifa || null,
+            // La respuesta del servidor, intacta. `tarifa` se recalcula en
+            // pantalla cuando la familia toca algo que cambia la cuenta de
+            // hermanos; ésta es de dónde se sacan las dos opciones.
+            tarifa_servidor: j.tarifa || null
         };
     });
 
@@ -887,7 +892,69 @@ function nuevoJugador() {
 }
 
 // ── Dibujar los jugadores ──────────────────────────────────────────────────
+/**
+ * Quién abrió la cuenta, leído del formulario tal como está AHORA.
+ *
+ * Del formulario y no de lo guardado: si alguien acaba de escribir su fecha de
+ * nacimiento o su DNI, eso ya cambia si su ficha de jugador es la suya.
+ */
+function identidadDelResponsable() {
+    return {
+        nombre: $('t_nombre').value.trim(),
+        apellido: $('t_apellido').value.trim(),
+        fecha_nacimiento: $('t_nacimiento').value,
+        tipo_documento: $('t_tipodoc').value,
+        numero_documento: $('t_numdoc').value.trim()
+    };
+}
+
+/**
+ * Poner el precio que toca AHORA, con lo que hay en pantalla.
+ *
+ * EL PROBLEMA QUE CIERRA
+ *
+ * El importe llegaba del servidor al abrir y se quedaba congelado. Hay tres
+ * cosas que la familia puede tocar después y que lo cambian:
+ *
+ *   · marcar «este año no va a jugar» a un hermano
+ *   · deshacer esa marca
+ *   · marcar o desmarcar «Soy yo, el jugador»
+ *
+ * Con dos hijos y uno marcado como que no juega, la pantalla seguía diciendo
+ * 40 €/mes y el total de la temporada seguía contando al que se iba. La familia
+ * apretaba enviar sobre ese número y se le guardaban 50: 90 € de diferencia
+ * entre lo que aceptó y lo que quedó escrito.
+ *
+ * No se decide nada nuevo acá: el servidor manda las DOS tarifas posibles y
+ * esto elige entre ellas con la misma función que él usa (js/hermanos.js, que
+ * scripts/verificar-hermanos.js compara con la del servidor). Y al enviar se le
+ * dice al servidor cuál estaba en pantalla, para que no pueda cobrar más.
+ */
+function recalcularTarifas() {
+    if (typeof MRCHermanos === 'undefined') return;
+    var titular = identidadDelResponsable();
+    var hijos = MRCHermanos.contarHijos(estado.jugadores, titular);
+
+    estado.jugadores.forEach(function (j) {
+        var del = j.tarifa_servidor;
+        // Sin tarifa del servidor no hay nada que elegir: es un jugador nuevo,
+        // del que todavía no se sabe la categoría. Y si la puso el club a mano,
+        // manda esa y no la automática.
+        if (!del || del.la_puso_el_club) return;
+
+        var quiere = MRCHermanos.varianteAutomatica(del.tramo_cuota, hijos);
+        if (del.variante === quiere) { j.tarifa = del; return; }
+        if (del.alternativa && del.alternativa.variante === quiere) { j.tarifa = del.alternativa; return; }
+        // No tenemos precio para lo que toca. Mejor no decir nada que decir un
+        // número que después no se va a cumplir.
+        j.tarifa = null;
+    });
+}
+
 function dibujarJugadores() {
+    // Antes de pintar, no después: los tres botones que cambian la cuenta de
+    // hermanos —no renueva, sí renueva y "soy yo"— terminan todos acá.
+    recalcularTarifas();
     var cont = $('listaJugadores');
     cont.innerHTML = '';
     estado.jugadores.forEach(function (j, i) { cont.appendChild(tarjetaJugador(j, i)); });
@@ -1079,11 +1146,33 @@ $('listaJugadores').addEventListener('input', function (e) {
     estado.jugadores[Number(i)][campo] = el.type === 'checkbox' ? el.checked : el.value;
 });
 
+/**
+ * Los campos de una ficha que cambian el PRECIO, no sólo el dato.
+ *
+ * Desde que el descuento por hermano se decide comparando identidades, escribir
+ * el nombre o la fecha de un jugador —o mover el desplegable de parentesco—
+ * puede convertirlo en el titular de la cuenta y quitarle el descuento a sus
+ * hermanos. El resto de los campos no mueven nada.
+ */
+var CAMPOS_QUE_MUEVEN_EL_PRECIO = [
+    'parentesco', 'nombre', 'apellido', 'fecha_nacimiento',
+    'tipo_documento', 'numero_documento'
+];
+
 $('listaJugadores').addEventListener('change', function (e) {
     var el = e.target;
     var i = el.getAttribute('data-i');
     if (i !== null && el.getAttribute('data-campo')) {
-        estado.jugadores[Number(i)][el.getAttribute('data-campo')] = el.type === 'checkbox' ? el.checked : el.value;
+        var campo = el.getAttribute('data-campo');
+        estado.jugadores[Number(i)][campo] = el.type === 'checkbox' ? el.checked : el.value;
+        // Redibujar en 'change' y no en 'input': 'input' salta en cada tecla y
+        // redibujar la tarjeta le roba el foco a quien está escribiendo su
+        // nombre. 'change' salta al salir del campo, y de inmediato en los
+        // desplegables, que es donde está el parentesco.
+        if (CAMPOS_QUE_MUEVEN_EL_PRECIO.indexOf(campo) >= 0) {
+            dibujarJugadores();
+            return;
+        }
     }
     if (el.hasAttribute('data-archivo')) elegirFoto(el, Number(el.getAttribute('data-archivo')));
 });
@@ -1140,13 +1229,17 @@ $('listaJugadores').addEventListener('click', function (e) {
 // queda con una ficha a medias y no entiende por qué.
 var temporizadorCopia = null;
 $('bloqueTutor').addEventListener('input', function () {
+    // Y aunque NADIE haya marcado la casilla, hay que redibujar igual: el
+    // nombre, la fecha de nacimiento y el documento de arriba son lo que
+    // decide si una de las fichas de abajo es la de esta misma persona, y de
+    // eso depende el descuento por hermano. Un padre que rellena su propia
+    // ficha a mano, sin marcar nada, tiene que ver el precio correcto.
     var i = estado.jugadores.findIndex(function (x) { return x.soy_yo; });
-    if (i < 0) return;
     // Amortiguado: redibujar las fichas en cada tecla hace parpadear la
     // pantalla entera mientras la persona escribe su nombre.
     clearTimeout(temporizadorCopia);
     temporizadorCopia = setTimeout(function () {
-        copiarDelResponsable(i);
+        if (i >= 0) copiarDelResponsable(i);
         dibujarJugadores();
     }, 400);
 });
@@ -1323,6 +1416,10 @@ $('btnEnviar').addEventListener('click', async function () {
                 talla_pantalon: j.talla_pantalon || null,
                 talla_chandal: j.talla_chandal || null,
                 parentesco: j.parentesco,
+                // La variante que la familia tenía DELANTE. No elige el precio
+                // —eso lo hace el servidor— sino el TOPE: no se le puede cobrar
+                // más de lo que vio en esta pantalla.
+                tarifa_variante_vista: (j.tarifa || {}).variante || null,
                 acepta_uso_imagen: j.acepta_uso_imagen === true,
                 observaciones: j.observaciones || null,
                 foto: j.foto

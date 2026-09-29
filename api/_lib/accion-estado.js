@@ -246,27 +246,57 @@ function tarifaDe(varianteGuardada, tramoCuota, tramoFicha, hijosDeLaFamilia, pr
     const especial = varianteGuardada && !['base', 'con_hermano'].includes(varianteGuardada);
     const variante = especial ? varianteGuardada : varianteAutomatica(tramoCuota, hijosDeLaFamilia);
 
-    const mensual = precios.get(`mensualidad|${variante}|${tramoCuota}`);
-    // La ficha va por EDAD, no por la categoría: quien cumple 17 o 18 paga la
-    // de los grandes aunque siga jugando en juveniles.
-    const ficha = precios.get(`ficha_anual|${varianteDeFicha(variante)}|${tramoFicha}`);
+    const resolver = (v) => {
+        const mensual = precios.get(`mensualidad|${v}|${tramoCuota}`);
+        // La ficha va por EDAD, no por la categoría: quien cumple 17 o 18 paga
+        // la de los grandes aunque siga jugando en juveniles.
+        const ficha = precios.get(`ficha_anual|${varianteDeFicha(v)}|${tramoFicha}`);
 
-    const cuota = mensual && mensual.importe !== null ? Number(mensual.importe) : null;
-    const anual = ficha && ficha.importe !== null ? Number(ficha.importe) : null;
+        const cuota = mensual && mensual.importe !== null ? Number(mensual.importe) : null;
+        const anual = ficha && ficha.importe !== null ? Number(ficha.importe) : null;
 
-    return {
-        variante,
-        // Para que la pantalla pueda decir "es la tarifa que te puso el club" en
-        // vez de dar a entender que la eligió la familia.
-        la_puso_el_club: Boolean(especial),
-        mensualidad: cuota,
-        meses: MESES_DE_CUOTA,
-        primer_cobro: PRIMER_COBRO,
-        ultimo_cobro: ULTIMO_COBRO,
-        ficha_anual: anual,
-        // Lo que sale la temporada entera. Es el número que la familia quiere
-        // saber y el que hace falta para ofrecer el pago de una vez.
-        total_temporada:
-            cuota === null || anual === null ? null : Math.round((cuota * MESES_DE_CUOTA + anual) * 100) / 100,
+        return {
+            variante: v,
+            // Para que la pantalla pueda decir "es la tarifa que te puso el
+            // club" en vez de dar a entender que la eligió la familia.
+            la_puso_el_club: Boolean(especial),
+            // De qué tramo es esta cuota. Lo necesita la pantalla para aplicar
+            // la misma regla que el servidor cuando la familia toca una casilla
+            // que cambia la cuenta de hermanos.
+            tramo_cuota: tramoCuota,
+            mensualidad: cuota,
+            meses: MESES_DE_CUOTA,
+            primer_cobro: PRIMER_COBRO,
+            ultimo_cobro: ULTIMO_COBRO,
+            ficha_anual: anual,
+            // Lo que sale la temporada entera. Es el número que la familia
+            // quiere saber y el que hace falta para ofrecer el pago de una vez.
+            total_temporada:
+                cuota === null || anual === null ? null : Math.round((cuota * MESES_DE_CUOTA + anual) * 100) / 100,
+        };
     };
+
+    const elegida = resolver(variante);
+
+    // ── Y la OTRA, la que le tocaría si cambiara la cuenta de hermanos ───
+    //
+    // Hay tres cosas que la familia puede tocar y que cambian el precio antes de
+    // enviar nada: marcar que un hermano este año no juega, deshacerlo, y marcar
+    // o desmarcar "Soy yo, el jugador". El servidor todavía no se ha enterado de
+    // ninguna de las tres cuando se pide este precio.
+    //
+    // Antes la pantalla no podía hacer nada con eso: el importe llegaba de acá y
+    // se quedaba congelado. Una familia con dos hijos que marcaba que uno no
+    // juega seguía leyendo 40 €/mes, apretaba enviar, y se le guardaban 50.
+    //
+    // Mandando las DOS, la pantalla elige sin tener que inventarse un precio ni
+    // volver a preguntar. No se le ofrece nada a la familia: la elección la hace
+    // la misma regla que corre en el servidor (js/hermanos.js es su espejo, y
+    // scripts/verificar-hermanos.js comprueba que no se separaron).
+    if (!especial) {
+        const otra = varianteAutomatica(tramoCuota, hijosDeLaFamilia > 1 ? 1 : 2);
+        if (otra !== variante) elegida.alternativa = resolver(otra);
+    }
+
+    return elegida;
 }

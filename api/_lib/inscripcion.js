@@ -184,7 +184,23 @@ function esLaMismaPersona(a, b) {
     // contar como hermano de su propio hermano.
     const fechaA = String(a.fecha_nacimiento || '').slice(0, 10);
     const fechaB = String(b.fecha_nacimiento || '').slice(0, 10);
-    return Boolean(fechaA) && fechaA === fechaB;
+    if (fechaA && fechaB) return fechaA === fechaB;
+
+    // Uno de los dos no tiene ni fecha ni documento con que distinguirse.
+    //
+    // Pasa de verdad: la ficha de jugador SIEMPRE lleva fecha de nacimiento (el
+    // formulario la exige) pero la del responsable no, y los dos campos de
+    // documento son opcionales. Con la regla estricta, un padre que juega y no
+    // rellenó su propia fecha dejaba de ser reconocido como el titular y volvía
+    // a contar como hermano de su hijo: el agujero de los 90 €, reabierto por
+    // un campo vacío.
+    //
+    // Con el nombre completo igual y nada con que separarlos, se da por hecho
+    // que es la misma persona. Se equivoca sólo con un padre y un hijo que se
+    // llamen exactamente igual Y en cuya cuenta no haya ni una fecha ni un DNI,
+    // y ese error cuesta un descuento que la familia puede reclamar — al revés
+    // cuesta 90 € que nadie reclama nunca.
+    return !(fechaA || docA) || !(fechaB || docB);
 }
 
 /**

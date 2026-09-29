@@ -1002,6 +1002,230 @@ async function main() {
         await limpiarPJ();
     }
 
+    // ── 16 ──────────────────────────────────────────────────────────────
+    //
+    // Lo que la familia VE es lo que se le guarda, y nunca se le cobra mas.
+    //
+    // Es el cruce que ninguna prueba miraba: la seccion 15 comprueba `estado` y
+    // `enviar` por separado, y los 90 euros se escapaban justo en el medio. El
+    // precio llegaba del servidor al abrir la pantalla y se quedaba congelado;
+    // marcar "este ano no va a jugar" a un hermano no lo recalculaba. La familia
+    // seguia leyendo 40 EUR/mes, apretaba enviar, y se guardaban 50.
+    //
+    // Aca se simula el navegador de verdad: se pide estado, se aplica el MISMO
+    // espejo de la regla que corre en el browser (js/hermanos.js), y se exige
+    // que lo que quede escrito sea lo que ese navegador habria mostrado.
+    console.log('\n16. Lo que se ve es lo que se guarda');
+    {
+        const espejo = require(path.join(__dirname, '..', '..', 'js', 'hermanos.js'));
+        const MAIL_VE = 'prueba.ve.guarda.borrar@menorcarugbyclub.test';
+        const limpiarVE = async () => {
+            const { data: t } = await db.from('tutores').select('tutor_id').eq('email', MAIL_VE).maybeSingle();
+            if (!t) return;
+            const { data: v } = await db.from('tutor_jugador').select('player_id').eq('tutor_id', t.tutor_id);
+            await db.from('tutores').delete().eq('tutor_id', t.tutor_id);
+            for (const x of v || []) await db.from('players').delete().eq('player_id', x.player_id);
+        };
+        await limpiarVE();
+
+        const TUTOR = { nombre: 'Madre', apellido: 'Ve Guarda', email: MAIL_VE, fecha_nacimiento: '1980-03-03' };
+        const UNO = { nombre: 'Uno', apellido: 'Ve Guarda', fecha_nacimiento: '2011-01-01', genero: 'Masculino', parentesco: 'madre' };
+        const DOS = { nombre: 'Dos', apellido: 'Ve Guarda', fecha_nacimiento: '2013-01-01', genero: 'Femenino', parentesco: 'madre' };
+
+        let r = await llamar('enviar', {
+            body: { acepta_reglamento: true, tutor: TUTOR, jugadores: [UNO, DOS] },
+        });
+        comprobar('entran los dos hermanos', r.status === 200, r.body);
+        comprobar('y los dos con descuento de hermano',
+            (r.body.jugadores || []).every((j) => j.variante === 'con_hermano'), r.body.jugadores);
+
+        await db.from('tutores').update({ password_hash: hashPassword('prueba1234') }).eq('email', MAIL_VE);
+        const acc = await llamar('acceso', { body: { email: MAIL_VE, password: 'prueba1234' } });
+        const tokenVE = acc.body.token;
+
+        // ── Lo que el navegador tiene al abrir ──────────────────────────
+        const est = await llamar('estado', { method: 'GET', token: tokenVE });
+        comprobar('la vista previa responde', est.status === 200, est.body);
+        const enPantalla = (est.body.jugadores || []).map((j) => ({
+            nombre: j.nombre,
+            apellido: j.apellido,
+            fecha_nacimiento: j.fecha_nacimiento,
+            genero: j.genero,
+            player_id: j.player_id,
+            parentesco: j.parentesco,
+            tarifa_servidor: j.tarifa,
+            tarifa: j.tarifa,
+            no_renueva: false,
+        }));
+        comprobar('el servidor manda tambien la tarifa alternativa',
+            enPantalla.every((j) => j.tarifa_servidor && j.tarifa_servidor.alternativa),
+            enPantalla.map((j) => (j.tarifa_servidor || {}).alternativa));
+
+        // ── La familia marca que la segunda este ano no juega ───────────
+        //
+        // Por NOMBRE, no por posicion: accion-estado trae a los jugadores de un
+        // .in() y el orden no esta garantizado. Buscando por indice, la prueba
+        // marcaba de baja a cualquiera de los dos segun el dia, y pasaba o
+        // fallaba sin que cambiara ni una linea de codigo.
+        const laQueSeVa = enPantalla.find((j) => j.nombre === 'Dos');
+        const elQueSeQueda = enPantalla.find((j) => j.nombre === 'Uno');
+        comprobar('la vista previa trae a los dos', Boolean(laQueSeVa && elQueSeQueda),
+            enPantalla.map((j) => j.nombre));
+        laQueSeVa.no_renueva = true;
+
+        // Y el navegador recalcula, con el espejo de la regla.
+        const titular = { nombre: TUTOR.nombre, apellido: TUTOR.apellido, fecha_nacimiento: TUTOR.fecha_nacimiento };
+        const hijos = espejo.contarHijos(enPantalla, titular);
+        comprobar('el navegador cuenta UN hijo', hijos === 1, hijos);
+        for (const j of enPantalla) {
+            const del = j.tarifa_servidor;
+            if (!del || del.la_puso_el_club) continue;
+            const quiere = espejo.varianteAutomatica(del.tramo_cuota, hijos);
+            j.tarifa = del.variante === quiere ? del
+                : (del.alternativa && del.alternativa.variante === quiere ? del.alternativa : null);
+        }
+        const queSeVe = elQueSeQueda.tarifa;
+        comprobar('y le ensena al que se queda la cuota SIN hermano',
+            queSeVe && queSeVe.variante === 'base', queSeVe);
+
+        // ── Y se envia exactamente eso ──────────────────────────────────
+        r = await llamar('enviar', {
+            token: tokenVE,
+            body: {
+                acepta_reglamento: true,
+                tutor: TUTOR,
+                jugadores: enPantalla.map((j) => (j.no_renueva
+                    ? { player_id: j.player_id, nombre: j.nombre, apellido: j.apellido, no_renueva: true }
+                    : {
+                        player_id: j.player_id, nombre: j.nombre, apellido: j.apellido,
+                        fecha_nacimiento: j.fecha_nacimiento, genero: j.genero,
+                        parentesco: j.parentesco,
+                        tarifa_variante_vista: (j.tarifa || {}).variante || null,
+                    })),
+            },
+        });
+        comprobar('el envio con un hermano de baja entra', r.status === 200, r.body);
+
+        {
+            const { data: t } = await db.from('tutores').select('tutor_id').eq('email', MAIL_VE).single();
+            const { data: v } = await db.from('tutor_jugador').select('player_id').eq('tutor_id', t.tutor_id);
+            const { data: fichas } = await db.from('players').select('player_id, first_name').in('player_id', (v || []).map((x) => x.player_id));
+            const idUno = (fichas || []).find((f) => f.first_name === 'Uno').player_id;
+            const { data: insc } = await db.from('inscripciones')
+                .select('tarifa_variante, tarifa_variante_origen')
+                .eq('player_id', idUno).eq('temporada', temporada).single();
+
+            // LA INVARIANTE: lo guardado es lo que la pantalla decia.
+            comprobar('se guarda lo mismo que la pantalla mostraba',
+                insc && insc.tarifa_variante === queSeVe.variante, insc);
+            comprobar('y el tope es esa misma tarifa',
+                insc && insc.tarifa_variante_origen === queSeVe.variante, insc);
+        }
+
+        // ── El tope, con un navegador que se quedo viejo ────────────────
+        //
+        // Si por lo que sea la pantalla enseno la tarifa barata y el servidor
+        // calcula la cara, el tope tiene que quedarse con la BARATA: es lo que
+        // la familia acepto. Asi cobrar_al_aprobar se niega a cobrar de mas en
+        // vez de hacerlo en silencio.
+        r = await llamar('enviar', {
+            token: tokenVE,
+            body: {
+                acepta_reglamento: true,
+                tutor: TUTOR,
+                jugadores: [{
+                    player_id: elQueSeQueda.player_id,
+                    nombre: 'Uno', apellido: 'Ve Guarda',
+                    fecha_nacimiento: '2011-01-01', genero: 'Masculino', parentesco: 'madre',
+                    // La pantalla se quedo vieja y todavia decia 40 EUR.
+                    tarifa_variante_vista: 'con_hermano',
+                }],
+            },
+        });
+        comprobar('acepta el envio de una pantalla vieja', r.status === 200, r.body);
+        {
+            const { data: t } = await db.from('tutores').select('tutor_id').eq('email', MAIL_VE).single();
+            const { data: v } = await db.from('tutor_jugador').select('player_id').eq('tutor_id', t.tutor_id);
+            const { data: fichas } = await db.from('players').select('player_id, first_name').in('player_id', (v || []).map((x) => x.player_id));
+            const idUno = (fichas || []).find((f) => f.first_name === 'Uno').player_id;
+            const { data: insc } = await db.from('inscripciones')
+                .select('tarifa_variante, tarifa_variante_origen')
+                .eq('player_id', idUno).eq('temporada', temporada).single();
+            comprobar('el precio real sigue siendo el que calcula el servidor',
+                insc && insc.tarifa_variante === 'base', insc);
+            comprobar('pero el TOPE es lo que la familia vio, no lo calculado',
+                insc && insc.tarifa_variante_origen === 'con_hermano', insc);
+        }
+
+        // ── Y una palabra inventada no deja a nadie bloqueado ───────────
+        r = await llamar('enviar', {
+            token: tokenVE,
+            body: {
+                acepta_reglamento: true,
+                tutor: TUTOR,
+                jugadores: [{
+                    player_id: elQueSeQueda.player_id,
+                    nombre: 'Uno', apellido: 'Ve Guarda',
+                    fecha_nacimiento: '2011-01-01', genero: 'Masculino', parentesco: 'madre',
+                    tarifa_variante_vista: 'gratis_total',
+                }],
+            },
+        });
+        comprobar('acepta un envio con una tarifa inventada', r.status === 200, r.body);
+        {
+            const { data: t } = await db.from('tutores').select('tutor_id').eq('email', MAIL_VE).single();
+            const { data: v } = await db.from('tutor_jugador').select('player_id').eq('tutor_id', t.tutor_id);
+            const { data: fichas } = await db.from('players').select('player_id, first_name').in('player_id', (v || []).map((x) => x.player_id));
+            const idUno = (fichas || []).find((f) => f.first_name === 'Uno').player_id;
+            const { data: insc } = await db.from('inscripciones')
+                .select('tarifa_variante_origen').eq('player_id', idUno).eq('temporada', temporada).single();
+            comprobar('y la descarta en vez de dejar la ficha bloqueada',
+                insc && insc.tarifa_variante_origen === 'base', insc);
+        }
+
+        // ── A quien ya se le cobra, no se le toca la tarifa ─────────────
+        //
+        // Reenviar el formulario es como se corrigen los datos. Recalculaba la
+        // tarifa igual, y pisaba el tope: una familia que entraba a cambiar un
+        // telefono se llevaba el precio de hoy encima del que tiene contratado.
+        {
+            const { data: t } = await db.from('tutores').select('tutor_id').eq('email', MAIL_VE).single();
+            const { data: v } = await db.from('tutor_jugador').select('player_id').eq('tutor_id', t.tutor_id);
+            const { data: fichas } = await db.from('players').select('player_id, first_name').in('player_id', (v || []).map((x) => x.player_id));
+            const idUno = (fichas || []).find((f) => f.first_name === 'Uno').player_id;
+
+            await db.from('inscripciones').update({
+                estado: 'aprobada',
+                tarifa_variante: 'con_beca',
+                tarifa_variante_origen: 'con_beca',
+                stripe_subscription_id: 'sub_de_prueba_no_existe',
+            }).eq('player_id', idUno).eq('temporada', temporada);
+
+            r = await llamar('enviar', {
+                token: tokenVE,
+                body: {
+                    acepta_reglamento: true,
+                    tutor: TUTOR,
+                    jugadores: [{
+                        player_id: idUno, nombre: 'Uno', apellido: 'Ve Guarda',
+                        fecha_nacimiento: '2011-01-01', genero: 'Masculino', parentesco: 'madre',
+                        telefono: '600111222',
+                    }],
+                },
+            });
+            comprobar('la familia puede corregir sus datos igual', r.status === 200, r.body);
+            const { data: insc } = await db.from('inscripciones')
+                .select('tarifa_variante, tarifa_variante_origen')
+                .eq('player_id', idUno).eq('temporada', temporada).single();
+            comprobar('y NO se le toca la tarifa que ya se le cobra',
+                insc && insc.tarifa_variante === 'con_beca', insc);
+            comprobar('ni el tope',
+                insc && insc.tarifa_variante_origen === 'con_beca', insc);
+        }
+
+        await limpiarVE();
+    }
+
     console.log('\nLimpieza');
     await limpiar();
 

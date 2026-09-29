@@ -54,6 +54,42 @@ const GENEROS = ['Masculino', 'Femenino'];
 // pagan lo suyo. Sin esto podian crear la cuenta pero el envio les respondia
 // "parentesco no valido": la base ya lo aceptaba y el validador de la web no.
 const PARENTESCOS = ['madre', 'padre', 'tutor_legal', 'abuelo', 'hermano', 'otro', 'el_mismo'];
+
+/**
+ * El TOPE de precio: la variante que la familia tenía DELANTE al aceptar.
+ *
+ * No decide lo que se cobra —eso lo calcula el servidor— sino el máximo:
+ * cobrar_al_aprobar se niega a cobrar más de lo que dice esta columna.
+ *
+ * POR QUÉ SE LE CREE AL NAVEGADOR EN ESTE CAMPO Y EN NINGÚN OTRO
+ *
+ * Porque mentir acá no puede abaratar nada. El tope sólo BLOQUEA: si el
+ * importe real supera al del tope, la inscripción queda aprobada y sin cobrar,
+ * con el motivo escrito. Un navegador que declare una tarifa que no vio
+ * consigue, como mucho, que no se le cobre y que alguien lo mire — nunca pagar
+ * menos.
+ *
+ * Y es la única forma de saberlo: lo que la familia tenía en pantalla depende
+ * de cosas que todavía no están guardadas —qué hermano acaba de marcar como
+ * que no juega, qué ficha acaba de marcar como suya— y el servidor no puede
+ * reconstruirlo después.
+ *
+ * Antes esta columna se escribía con la variante recién calculada, o sea que el
+ * tope se comparaba contra sí mismo y no frenaba nunca. El caso real: la
+ * pantalla decía 40 €/mes y se guardaban 50 en las DOS columnas.
+ *
+ * Se descarta lo que no exista en el catálogo de esta temporada, para que una
+ * palabra inventada no deje una inscripción bloqueada para siempre.
+ */
+function topeDeLaPantalla(j, tramo, precios) {
+    const calculada = j.tarifa_variante;
+    const vista = j.tarifa_variante_vista;
+    if (!vista || vista === calculada) return calculada;
+
+    const cuota = precios.get(`mensualidad|${vista}|${tramo}`);
+    if (!cuota || cuota.importe === null) return calculada;
+    return vista;
+}
 // La version del texto que la familia acepta al enviar. Se guarda en cada
 // inscripcion, asi que cambiarla aca y en /reglamento a la vez es lo que
 // permite saber, dentro de dos anos, que decia lo que alguien firmo.
@@ -299,14 +335,41 @@ module.exports = async function accionEnviar(req, res) {
             // la temporada siguiente, y eso lo decide el club.
             let conservarEstado = false;
             let descuentosPrevios = [];
+            // La tarifa que NO se puede tocar porque ya se está cobrando.
+            let tarifaCongelada = null;
             if (playerId) {
                 const { data: yaHay } = await supabase
                     .from('inscripciones')
-                    .select('estado, tarifa_descuentos')
+                    .select(
+                        'estado, tarifa_descuentos, tarifa_tramo, tarifa_variante, ' +
+                            'tarifa_variante_origen, stripe_subscription_id, stripe_invoice_id'
+                    )
                     .eq('temporada', temporada)
                     .eq('player_id', playerId)
                     .maybeSingle();
                 descuentosPrevios = (yaHay && yaHay.tarifa_descuentos) || [];
+
+                // ── A quién ya se le está cobrando, no se le toca la tarifa ──
+                //
+                // Reenviar el formulario es un camino DISEÑADO: así se corrigen
+                // los datos, y el botón dice "Guardar los cambios". Pero el
+                // cálculo de la tarifa corre SIEMPRE y antes de mirar el estado,
+                // así que una familia que entraba a cambiar un teléfono se llevaba
+                // la tarifa recalculada con las reglas de hoy encima de la que ya
+                // tiene contratada en Stripe.
+                //
+                // Y lo peor no es `tarifa_variante`: es que se reescribía
+                // `tarifa_variante_origen`, que es el TOPE de lo que se le puede
+                // cobrar. Pisándolo con el importe nuevo, el tope pasaba a
+                // autorizar justo lo que tenía que frenar.
+                //
+                // Una vez que hay suscripción o factura, el precio ya no es un
+                // cálculo: es un contrato con una pasarela. Cambiarlo acá no
+                // cambiaría lo que Stripe cobra — sólo haría mentir a la ficha.
+                if (yaHay && (yaHay.stripe_subscription_id || yaHay.stripe_invoice_id)) {
+                    tarifaCongelada = yaHay;
+                    notas.push('Se le conservó la tarifa: ya se le está cobrando.');
+                }
 
                 if (yaHay && yaHay.estado === 'baja') {
                     throw new RechazoDelFormulario(
@@ -570,12 +633,25 @@ module.exports = async function accionEnviar(req, res) {
                     talla_camiseta: j.talla_camiseta,
                     talla_pantalon: j.talla_pantalon,
                     talla_chandal: j.talla_chandal,
-                    tarifa_tramo: tramo,
-                    tarifa_variante: j.tarifa_variante,
-                    // La que la familia tiene delante AHORA. El club puede
-                    // cambiar tarifa_variante para abaratar, pero no para
-                    // cobrar mas que esto: el tope se comprueba contra esta.
-                    tarifa_variante_origen: j.tarifa_variante,
+                    tarifa_tramo: tarifaCongelada ? tarifaCongelada.tarifa_tramo : tramo,
+                    tarifa_variante: tarifaCongelada
+                        ? tarifaCongelada.tarifa_variante
+                        : j.tarifa_variante,
+                    // EL TOPE: lo que la familia tenia DELANTE al aceptar.
+                    //
+                    // Antes se escribía con la variante recién calculada, o sea
+                    // que el tope se comparaba contra sí mismo y no frenaba nada.
+                    // El caso real: la pantalla decía 40 €/mes —porque el precio
+                    // se pidió antes de marcar que un hermano no juega— y se
+                    // guardaban 50 en las DOS columnas. La familia aceptaba 40 y
+                    // se le cobraban 50, sin que nada lo detectara.
+                    //
+                    // Se toma la MÁS CARA de las dos: la que vio y la calculada.
+                    // Un navegador que mienta sólo puede subir el tope, y subirlo
+                    // BLOQUEA el cobro — nunca lo abarata.
+                    tarifa_variante_origen: tarifaCongelada
+                        ? tarifaCongelada.tarifa_variante_origen
+                        : topeDeLaPantalla(j, tramo, precios),
                     // Los descuentos NO los toca la familia: los concede el club
                     // y se conservan. Antes se pisaban con [] en cada envio, asi
                     // que una de las 8 familias con descuento de delegado lo
@@ -953,6 +1029,11 @@ function validar(body, tieneToken) {
             // con el año de nacimiento y cuántos jugadores trae la inscripción.
             // Si llegara desde el navegador, cualquiera se pondría la de 1 €.
             tarifa_variante: null,
+            // La que la familia tenía DELANTE al apretar enviar. No decide el
+            // precio —eso lo hace el servidor— sino el TOPE: no se le puede
+            // cobrar más de lo que vio. Mentir acá sólo puede BLOQUEAR el cobro,
+            // nunca abaratarlo, así que se puede aceptar del navegador.
+            tarifa_variante_vista: limpiar(j.tarifa_variante_vista, 40),
             parentesco,
             es_pagador: j.es_pagador === true,
             foto: typeof j.foto === 'string' && j.foto.startsWith('data:') ? j.foto : null,
