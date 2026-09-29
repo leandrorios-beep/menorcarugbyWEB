@@ -83,7 +83,11 @@ for (const [cp, ok] of [
 
 comprobar('los ocho municipios de Menorca', F.POBLACIONES.length === 8, F.POBLACIONES.length);
 comprobar('están Maó y Ciutadella', F.POBLACIONES.includes('Maó') && F.POBLACIONES.includes('Ciutadella de Menorca'));
-comprobar('el prefijo de España va primero', F.PREFIJOS[0].codigo === '+34', F.PREFIJOS[0]);
+// No hay lista de paises: se escribe el numero y ya. Lo que se comprueba es
+// que asumir Espana no pise a quien pone el suyo.
+comprobar('un numero suelto se asume de Espana', F.normalizarTelefono('612345678', '+34') === '+34612345678');
+comprobar('un numero de Japon se respeta', F.normalizarTelefono('+81312345678', '+34') === '+81312345678');
+comprobar('un 00 se convierte en +', F.normalizarTelefono('0081312345678', '+34') === '+81312345678');
 
 // ── Y la pantalla lo carga ─────────────────────────────────────────────────
 {

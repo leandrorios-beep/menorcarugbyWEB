@@ -67,20 +67,6 @@
 
     // ── Teléfono ───────────────────────────────────────────────────────────
 
-    /** Los prefijos que se ofrecen. España primero: es donde está el club. */
-    var PREFIJOS = [
-        { codigo: '+34', pais: 'España' },
-        { codigo: '+44', pais: 'Reino Unido' },
-        { codigo: '+33', pais: 'Francia' },
-        { codigo: '+39', pais: 'Italia' },
-        { codigo: '+49', pais: 'Alemania' },
-        { codigo: '+351', pais: 'Portugal' },
-        { codigo: '+31', pais: 'Países Bajos' },
-        { codigo: '+1', pais: 'EE. UU. / Canadá' },
-        { codigo: '+54', pais: 'Argentina' },
-        { codigo: '+212', pais: 'Marruecos' }
-    ];
-
     /**
      * Un teléfono guardado es un teléfono al que se puede llamar sin pensar.
      *
@@ -88,6 +74,14 @@
      * marcar de un toque desde el móvil y construir el enlace de WhatsApp sin
      * limpiar nada. Antes entraba tal cual se escribiera —«971 36 12 34», «971
      * 36-12-34»— y cada pantalla tenía que limpiarlo a su manera.
+     *
+     * NO HAY LISTA DE PAÍSES, A PROPÓSITO
+     *
+     * Hubo un desplegable con diez prefijos y era una lista arbitraria: el
+     * undécimo país no existía. Se escribe el número y ya: si empieza por + o
+     * por 00, manda lo que la persona puso; si no, se asume España, que es
+     * donde vive casi todo el club. Así caben los 195 países sin mantener
+     * ninguna lista.
      */
     function normalizarTelefono(valor, prefijo) {
         var crudo = String(valor || '').replace(/[\s\-().]/g, '');
@@ -157,7 +151,6 @@
     var api = {
         pareceCorreo: pareceCorreo,
         sugerirCorreo: sugerirCorreo,
-        PREFIJOS: PREFIJOS,
         normalizarTelefono: normalizarTelefono,
         telefonoValido: telefonoValido,
         normalizarDocumento: normalizarDocumento,

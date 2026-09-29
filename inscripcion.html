@@ -137,11 +137,6 @@ input[type="date"] {
     appearance: none;
 }
 
-/* El teléfono: prefijo estrecho y número ancho, sin que ninguno se desborde. */
-.tel-grupo { display: flex; gap: 8px; }
-.tel-grupo select { flex: 0 0 7.5rem; min-width: 0; }
-.tel-grupo input { flex: 1 1 auto; min-width: 0; }
-
 /* «Este año no va a jugar».
    Era .btn-texto con un borde de 1px: texto gris subrayado de 0.88rem dentro
    de un recuadro casi invisible. En un móvil eso se lee como una nota al pie,
@@ -333,14 +328,12 @@ body { background: #F1F4F8; }
                 <div class="campo"><label data-i18n="inscripcion.nacimiento" for="t_nacimiento">Fecha de nacimiento</label><input type="date" id="t_nacimiento"></div>
                 <div class="campo">
                     <label data-i18n="inscripcion.telefono" for="t_telefono">Teléfono <span class="req">*</span></label>
-                    <!-- Prefijo aparte y número sin espacios ni guiones: así se
-                         puede marcar de un toque y armar el enlace de WhatsApp
-                         sin limpiar nada. Antes entraba como se escribiera. -->
-                    <div class="tel-grupo">
-                        <select id="t_prefijo" aria-label="Prefijo del país"></select>
-                        <input type="tel" id="t_telefono" autocomplete="tel" inputmode="tel" placeholder="612345678" required>
-                    </div>
-                    <span class="pista">Sin espacios ni guiones.</span>
+                    <!-- Un solo campo y sin lista de países: se escribe el
+                         número y ya. Si empieza por + o por 00 manda lo que la
+                         persona puso; si no, se asume España. Así caben los 195
+                         países sin mantener ninguna lista. -->
+                    <input type="tel" id="t_telefono" autocomplete="tel" inputmode="tel" placeholder="612345678" required>
+                    <span class="pista">Sin espacios ni guiones. Si no es de España, poné el prefijo: +44…</span>
                 </div>
             </div>
             <div class="fila">
@@ -992,23 +985,13 @@ function nuevoJugador() {
 
 // ── Dibujar los jugadores ──────────────────────────────────────────────────
 /**
- * Los dos desplegables que se rellenan solos: prefijo del país y población.
+ * El desplegable de población, que se rellena solo.
  *
- * Se hacen desde JavaScript y no a mano en el HTML porque la lista vive en
+ * Se hace desde JavaScript y no a mano en el HTML porque la lista vive en
  * js/formulario.js, que es la misma que usa el servidor para validar. Escrita
  * dos veces, un día una acepta una población que la otra rechaza.
  */
 function prepararDesplegables() {
-    var pref = $('t_prefijo');
-    if (pref && !pref.options.length) {
-        MRCFormulario.PREFIJOS.forEach(function (p) {
-            var o = document.createElement('option');
-            o.value = p.codigo;
-            o.textContent = p.codigo + '  ' + p.pais;
-            pref.appendChild(o);
-        });
-        pref.value = '+34';
-    }
     var ciu = $('t_ciudad');
     if (ciu && !ciu.options.length) {
         var vacia = document.createElement('option');
@@ -1024,24 +1007,24 @@ function prepararDesplegables() {
     }
 }
 
-/** Parte un teléfono guardado (+34612345678) en prefijo y número. */
+/**
+ * El teléfono guardado, en el campo.
+ *
+ * Se enseña tal cual está guardado —con su prefijo— y no en trozos: lo que se
+ * ve es lo que hay, y si la persona lo quiere cambiar escribe el suyo entero.
+ * El +34 de los de España se quita para que no estorbe, que es el 99% de los
+ * casos y nadie escribe su propio prefijo.
+ */
 function ponerTelefono(guardado) {
-    prepararDesplegables();
     var v = String(guardado || '').replace(/[\s\-().]/g, '');
-    var elegido = '+34';
-    MRCFormulario.PREFIJOS.forEach(function (p) {
-        // El más largo gana: +34 y +351 empiezan igual en el primer dígito.
-        if (v.indexOf(p.codigo) === 0 && p.codigo.length > elegido.length) elegido = p.codigo;
-    });
-    if (v.indexOf(elegido) === 0) v = v.slice(elegido.length);
-    else if (v.charAt(0) === '+') { elegido = '+34'; }
-    $('t_prefijo').value = elegido;
-    $('t_telefono').value = v.replace(/^\+/, '');
+    $('t_telefono').value = v.indexOf('+34') === 0 ? v.slice(3) : v;
 }
 
 /** El teléfono tal como se guarda: con prefijo y sin nada más. */
 function telefonoDelFormulario() {
-    return MRCFormulario.normalizarTelefono($('t_telefono').value, $('t_prefijo').value);
+    // España si no dicen otra cosa: es donde vive casi todo el club. Quien
+    // ponga + o 00 delante manda lo suyo.
+    return MRCFormulario.normalizarTelefono($('t_telefono').value, '+34');
 }
 
 /**
@@ -1091,7 +1074,7 @@ function revisarResponsable() {
 
     if (pide('t_telefono', 'Falta tu teléfono.')) {
         if (!MRCFormulario.telefonoValido(telefonoDelFormulario())) {
-            marcarCampo('t_telefono', 'Ese teléfono no parece correcto. Sólo números, sin espacios ni guiones.');
+            marcarCampo('t_telefono', 'Ese teléfono no parece correcto. Sólo números, sin espacios ni guiones. Si no es de España, poné el prefijo: +44…');
             malos.push('t_telefono');
         }
     }
