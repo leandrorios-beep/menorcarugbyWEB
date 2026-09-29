@@ -73,6 +73,31 @@
       "source": "/reglamento",
       "destination": "/reglamento.html",
       "permanent": false
+    },
+    {
+      "source": "/reglamento-ca",
+      "destination": "/reglamento-ca.html",
+      "permanent": false
+    },
+    {
+      "source": "/reglamento-en",
+      "destination": "/reglamento-en.html",
+      "permanent": false
+    },
+    {
+      "source": "/reglamento-fr",
+      "destination": "/reglamento-fr.html",
+      "permanent": false
+    },
+    {
+      "source": "/reglamento-it",
+      "destination": "/reglamento-it.html",
+      "permanent": false
+    },
+    {
+      "source": "/reglamento-pt",
+      "destination": "/reglamento-pt.html",
+      "permanent": false
     }
   ]
 }

@@ -1586,11 +1586,44 @@ $('btnPagar').addEventListener('click', async function () {
     }
 });
 
+/**
+ * Que el reglamento se abra en el idioma en el que se está leyendo esto.
+ *
+ * El formulario habla seis idiomas y el reglamento también, pero los enlaces
+ * apuntaban todos a la versión castellana. Pedirle a alguien que acepte un
+ * reglamento y abrirle un texto legal en un idioma que no eligió es pedirle que
+ * acepte a ciegas — y eso, en un documento que después se le puede oponer, no
+ * vale gran cosa.
+ *
+ * Se reescriben los enlaces y no se ponen ya traducidos porque el texto de la
+ * casilla lo repinta i18n en cada cambio de idioma, borrando lo que hubiera.
+ * Por eso esto corre TAMBIÉN después de cada cambio.
+ */
+var IDIOMAS_DEL_REGLAMENTO = ['ca', 'en', 'fr', 'it', 'pt'];
+
+function ajustarEnlacesDelReglamento() {
+    var idioma = (typeof i18n !== 'undefined' && i18n && i18n.currentLanguage) ||
+        localStorage.getItem('menorca_rugby_lang') || 'es';
+    var sufijo = IDIOMAS_DEL_REGLAMENTO.indexOf(idioma) >= 0 ? '-' + idioma : '';
+    var enlaces = document.querySelectorAll('a[href^="/reglamento"]');
+    for (var k = 0; k < enlaces.length; k++) {
+        // Se conserva lo que venga después: #imagenes es el ancla a la que
+        // apunta el consentimiento de fotos, y perderla deja a la familia en el
+        // principio de un documento de trece apartados.
+        var ancla = (enlaces[k].getAttribute('href').match(/#.*$/) || [''])[0];
+        enlaces[k].setAttribute('href', '/reglamento' + sufijo + ancla);
+    }
+}
+
 // Al cambiar de idioma hay que repintar las fichas: las construye este
 // JavaScript a mano y translatePage() sólo alcanza lo que está en el HTML.
 document.addEventListener('languageChanged', function () {
     if (estado.jugadores.length) dibujarJugadores();
+    ajustarEnlacesDelReglamento();
 });
+
+// Y al cargar, para quien entra con el idioma ya guardado de otra visita.
+document.addEventListener('DOMContentLoaded', ajustarEnlacesDelReglamento);
 
 // ── La sesión tiene que sobrevivir al viaje a Stripe ───────────────────────
 //
