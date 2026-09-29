@@ -26,6 +26,7 @@
          traducción se queda con el castellano del HTML, así que agregar un
          idioma a medias no deja huecos en blanco. -->
     <script src="js/hermanos.js"></script>
+    <script src="js/formulario.js"></script>
     <script src="js/i18n.js" defer></script>
 
 <style>
@@ -115,6 +116,31 @@ input:focus, select:focus, textarea:focus {
     text-decoration: underline; cursor: pointer; font-family: inherit;
     font-size: 0.88rem; padding: 12px 0; width: 100%;
 }
+
+/* Lo que hay que rellenar, dicho de una vez.
+   No había ninguna marca: se enviaba, saltaba un aviso, se buscaba el campo.
+   Con quince campos por ficha eso es ir a ciegas. */
+.req { color: var(--amarillo, #FFC72C); font-weight: 700; margin-left: 2px; }
+.campo.mal input, .campo.mal select { border-color: #EF4444; }
+.campo .error { display: block; color: #FCA5A5; font-size: 0.78rem; margin-top: 4px; }
+.campo .pista { display: block; color: var(--gris); font-size: 0.78rem; margin-top: 4px; }
+
+/* El campo de fecha en el móvil.
+   Safari y Chrome en Android le dan al input[type=date] un ancho mínimo propio
+   que no respeta el contenedor: dentro de una .fila de dos columnas se salía y
+   se comía el campo de al lado. min-width:0 deja que el flex lo encoja, y
+   -webkit-appearance evita que iOS le ponga su propio alto. */
+input[type="date"] {
+    min-width: 0;
+    width: 100%;
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+/* El teléfono: prefijo estrecho y número ancho, sin que ninguno se desborde. */
+.tel-grupo { display: flex; gap: 8px; }
+.tel-grupo select { flex: 0 0 7.5rem; min-width: 0; }
+.tel-grupo input { flex: 1 1 auto; min-width: 0; }
 
 /* «Este año no va a jugar».
    Era .btn-texto con un borde de 1px: texto gris subrayado de 0.88rem dentro
@@ -297,31 +323,53 @@ body { background: #F1F4F8; }
             <h2><i class="fa-regular fa-address-card"></i> <span data-i18n="inscripcion.tus_datos">Tus datos</span></h2>
             <p data-i18n="inscripcion.tus_datos_ayuda" class="sub">Los del adulto responsable. Si el jugador es mayor de edad, los suyos.</p>
 
+            <p class="sub" style="margin-top:-6px;">Los campos con <span class="req">*</span> son obligatorios.</p>
+
             <div class="fila">
-                <div class="campo"><label data-i18n="inscripcion.nombre" for="t_nombre">Nombre</label><input type="text" id="t_nombre" autocomplete="given-name" required></div>
-                <div class="campo"><label data-i18n="inscripcion.apellidos" for="t_apellido">Apellidos</label><input type="text" id="t_apellido" autocomplete="family-name"></div>
+                <div class="campo"><label data-i18n="inscripcion.nombre" for="t_nombre">Nombre <span class="req">*</span></label><input type="text" id="t_nombre" autocomplete="given-name" required></div>
+                <div class="campo"><label data-i18n="inscripcion.apellidos" for="t_apellido">Apellidos <span class="req">*</span></label><input type="text" id="t_apellido" autocomplete="family-name" required></div>
             </div>
             <div class="fila">
                 <div class="campo"><label data-i18n="inscripcion.nacimiento" for="t_nacimiento">Fecha de nacimiento</label><input type="date" id="t_nacimiento"></div>
-                <div class="campo"><label data-i18n="inscripcion.telefono" for="t_telefono">Teléfono</label><input type="tel" id="t_telefono" autocomplete="tel" inputmode="tel"></div>
+                <div class="campo">
+                    <label data-i18n="inscripcion.telefono" for="t_telefono">Teléfono <span class="req">*</span></label>
+                    <!-- Prefijo aparte y número sin espacios ni guiones: así se
+                         puede marcar de un toque y armar el enlace de WhatsApp
+                         sin limpiar nada. Antes entraba como se escribiera. -->
+                    <div class="tel-grupo">
+                        <select id="t_prefijo" aria-label="Prefijo del país"></select>
+                        <input type="tel" id="t_telefono" autocomplete="tel" inputmode="tel" placeholder="612345678" required>
+                    </div>
+                    <span class="pista">Sin espacios ni guiones.</span>
+                </div>
             </div>
             <div class="fila">
                 <div class="campo">
-                    <label data-i18n="inscripcion.documento" for="t_tipodoc">Documento</label>
-                    <select id="t_tipodoc">
-                        <option value="">Sin especificar</option>
+                    <label data-i18n="inscripcion.documento" for="t_tipodoc">Documento <span class="req">*</span></label>
+                    <select id="t_tipodoc" required>
+                        <option value="">Elegí…</option>
                         <option value="DNI">DNI</option>
                         <option value="NIE">NIE</option>
                         <option value="PASAPORTE">Pasaporte</option>
                         <option value="OTRO">Otro</option>
                     </select>
                 </div>
-                <div class="campo"><label for="t_numdoc">Número <span class="opt">(si pusiste tipo)</span></label><input type="text" id="t_numdoc" autocomplete="off"></div>
+                <div class="campo">
+                    <label for="t_numdoc">Número <span class="req">*</span></label>
+                    <input type="text" id="t_numdoc" autocomplete="off" placeholder="12345678Z" required>
+                    <span class="pista">Sin puntos, guiones ni espacios.</span>
+                </div>
             </div>
-            <div class="campo"><label data-i18n="inscripcion.direccion" for="t_direccion">Dirección</label><input type="text" id="t_direccion" autocomplete="street-address"></div>
+            <div class="campo"><label data-i18n="inscripcion.direccion" for="t_direccion">Dirección <span class="req">*</span></label><input type="text" id="t_direccion" autocomplete="street-address" required placeholder="Calle y número"></div>
             <div class="fila">
-                <div class="campo"><label data-i18n="inscripcion.cp" for="t_cp">Código postal</label><input type="text" id="t_cp" autocomplete="postal-code" inputmode="numeric"></div>
-                <div class="campo"><label data-i18n="inscripcion.poblacion" for="t_ciudad">Población</label><input type="text" id="t_ciudad" autocomplete="address-level2"></div>
+                <div class="campo">
+                    <label data-i18n="inscripcion.cp" for="t_cp">Código postal <span class="req">*</span></label>
+                    <input type="text" id="t_cp" autocomplete="postal-code" inputmode="numeric" maxlength="5" placeholder="07701" required>
+                </div>
+                <!-- Desplegable y no texto libre: escrito a mano aparecen
+                     «Mahón», «Maó», «MAO» y «mahon», que son cuatro poblaciones
+                     para cualquier listado y una sola en el mapa. -->
+                <div class="campo"><label data-i18n="inscripcion.poblacion" for="t_ciudad">Población <span class="req">*</span></label><select id="t_ciudad" required></select></div>
             </div>
         </section>
 
@@ -558,12 +606,36 @@ async function api(accion, opciones) {
     $('temporadaTitulo').textContent = y + '/' + String(y + 1).slice(-2);
 })();
 
+// Los desplegables de prefijo y poblacion se rellenan desde la lista de
+// js/formulario.js, que es la misma que usa el servidor para validar.
+prepararDesplegables();
+
 // ── Paso 1: el correo ──────────────────────────────────────────────────────
 $('formEmail').addEventListener('submit', async function (e) {
     e.preventDefault();
     aviso('');
     var email = $('email').value.trim().toLowerCase();
     if (!email) return;
+
+    // La FORMA no alcanza: «pepe@gmail.co» la cumple. Y un correo mal escrito
+    // no falla ruidosamente — falla en silencio: la familia no recibe la
+    // contraseña, ni la confirmación, ni el recibo, y no sabe por qué.
+    if (!MRCFormulario.pareceCorreo(email)) {
+        aviso('Ese correo no parece bien escrito. Revisalo.');
+        return;
+    }
+    var sugerido = MRCFormulario.sugerirCorreo(email);
+    if (sugerido && sugerido !== estado.correoConfirmado) {
+        // Se PREGUNTA, no se corrige solo: corregirle el correo a alguien es
+        // cambiarle la única forma que tenemos de encontrarlo, y si la
+        // corrección estuviera mal se quedaría fuera sin saberlo.
+        if (window.confirm('¿Quisiste escribir ' + sugerido + '?\n\nSi es así, lo corregimos. Si no, seguimos con ' + email + '.')) {
+            email = sugerido;
+            $('email').value = sugerido;
+        } else {
+            estado.correoConfirmado = email;
+        }
+    }
 
     $('btnEmail').disabled = true;
     cargando(true);
@@ -689,12 +761,22 @@ async function cargarEstado() {
     $('t_nombre').value = estado.tutor.nombre || '';
     $('t_apellido').value = estado.tutor.apellido || '';
     $('t_nacimiento').value = estado.tutor.fecha_nacimiento || '';
-    $('t_telefono').value = (estado.tutor.telefonos || [])[0] || '';
+    ponerTelefono((estado.tutor.telefonos || [])[0] || '');
     $('t_tipodoc').value = estado.tutor.tipo_documento || '';
     $('t_numdoc').value = estado.tutor.numero_documento || '';
     $('t_direccion').value = estado.tutor.direccion || '';
     $('t_cp').value = estado.tutor.codigo_postal || '';
-    $('t_ciudad').value = estado.tutor.ciudad || '';
+    // La poblacion guardada puede no estar en la lista: los datos viejos
+    // traen «Mahon», «MAO» y cosas asi. Se anade como opcion suelta en vez de
+    // dejar el desplegable en blanco, que seria borrarle el dato sin avisar.
+    var ciudadGuardada = estado.tutor.ciudad || '';
+    if (ciudadGuardada && MRCFormulario.POBLACIONES.indexOf(ciudadGuardada) < 0) {
+        var suelta = document.createElement('option');
+        suelta.value = ciudadGuardada;
+        suelta.textContent = ciudadGuardada + ' (como estaba guardado)';
+        $('t_ciudad').appendChild(suelta);
+    }
+    $('t_ciudad').value = ciudadGuardada;
 
     // Se precarga con lo del año pasado: tallas, tarifa y alergias. Las
     // tallas ya no se preguntan, pero se arrastran para no pisarlas. Renovar
@@ -910,6 +992,159 @@ function nuevoJugador() {
 
 // ── Dibujar los jugadores ──────────────────────────────────────────────────
 /**
+ * Los dos desplegables que se rellenan solos: prefijo del país y población.
+ *
+ * Se hacen desde JavaScript y no a mano en el HTML porque la lista vive en
+ * js/formulario.js, que es la misma que usa el servidor para validar. Escrita
+ * dos veces, un día una acepta una población que la otra rechaza.
+ */
+function prepararDesplegables() {
+    var pref = $('t_prefijo');
+    if (pref && !pref.options.length) {
+        MRCFormulario.PREFIJOS.forEach(function (p) {
+            var o = document.createElement('option');
+            o.value = p.codigo;
+            o.textContent = p.codigo + '  ' + p.pais;
+            pref.appendChild(o);
+        });
+        pref.value = '+34';
+    }
+    var ciu = $('t_ciudad');
+    if (ciu && !ciu.options.length) {
+        var vacia = document.createElement('option');
+        vacia.value = '';
+        vacia.textContent = 'Eleg\u00ed\u2026';
+        ciu.appendChild(vacia);
+        MRCFormulario.POBLACIONES.forEach(function (n) {
+            var o = document.createElement('option');
+            o.value = n;
+            o.textContent = n;
+            ciu.appendChild(o);
+        });
+    }
+}
+
+/** Parte un teléfono guardado (+34612345678) en prefijo y número. */
+function ponerTelefono(guardado) {
+    prepararDesplegables();
+    var v = String(guardado || '').replace(/[\s\-().]/g, '');
+    var elegido = '+34';
+    MRCFormulario.PREFIJOS.forEach(function (p) {
+        // El más largo gana: +34 y +351 empiezan igual en el primer dígito.
+        if (v.indexOf(p.codigo) === 0 && p.codigo.length > elegido.length) elegido = p.codigo;
+    });
+    if (v.indexOf(elegido) === 0) v = v.slice(elegido.length);
+    else if (v.charAt(0) === '+') { elegido = '+34'; }
+    $('t_prefijo').value = elegido;
+    $('t_telefono').value = v.replace(/^\+/, '');
+}
+
+/** El teléfono tal como se guarda: con prefijo y sin nada más. */
+function telefonoDelFormulario() {
+    return MRCFormulario.normalizarTelefono($('t_telefono').value, $('t_prefijo').value);
+}
+
+/**
+ * Marca un campo como mal y explica por qué, debajo del propio campo.
+ *
+ * Debajo del campo y no en un aviso arriba: con quince campos por ficha, un
+ * «falta un dato» en la cabecera obliga a buscarlo a ojo.
+ */
+function marcarCampo(id, mensaje) {
+    var el = typeof id === 'string' ? $(id) : id;
+    if (!el) return;
+    var campo = el.closest('.campo');
+    if (!campo) return;
+    var viejo = campo.querySelector('.error');
+    if (viejo) viejo.remove();
+    campo.classList.toggle('mal', Boolean(mensaje));
+    if (mensaje) {
+        var span = document.createElement('span');
+        span.className = 'error';
+        span.textContent = mensaje;
+        campo.appendChild(span);
+    }
+}
+
+/**
+ * Revisa los datos del responsable y devuelve el primer campo que está mal.
+ *
+ * El formulario comprobaba la FORMA y nunca el contenido, así que sólo
+ * funcionaba por el camino feliz: «@gmail.co» pasaba, el teléfono entraba con
+ * espacios y sin prefijo, el DNI con puntos y el código postal podía ser
+ * cualquier cosa. Nada de eso se ve hasta que hace falta — hasta que hay que
+ * llamar a una madre un domingo o la federación rechaza una licencia.
+ */
+function revisarResponsable() {
+    var malos = [];
+    var pide = function (id, mensaje) {
+        var v = String($(id).value || '').trim();
+        if (v) { marcarCampo(id, ''); return true; }
+        marcarCampo(id, mensaje);
+        malos.push(id);
+        return false;
+    };
+
+    pide('t_nombre', 'Falta tu nombre.');
+    pide('t_apellido', 'Faltan tus apellidos.');
+    pide('t_direccion', 'Falta tu dirección.');
+
+    if (pide('t_telefono', 'Falta tu teléfono.')) {
+        if (!MRCFormulario.telefonoValido(telefonoDelFormulario())) {
+            marcarCampo('t_telefono', 'Ese teléfono no parece correcto. Sólo números, sin espacios ni guiones.');
+            malos.push('t_telefono');
+        }
+    }
+
+    if (pide('t_tipodoc', 'Elegí qué documento es.') && pide('t_numdoc', 'Falta el número del documento.')) {
+        var tipo = $('t_tipodoc').value;
+        var num = MRCFormulario.normalizarDocumento($('t_numdoc').value);
+        $('t_numdoc').value = num;
+        if (!MRCFormulario.documentoValido(tipo, num)) {
+            marcarCampo('t_numdoc', tipo === 'DNI'
+                ? 'Un DNI son 8 números y una letra, sin puntos ni guiones.'
+                : (tipo === 'NIE'
+                    ? 'Un NIE empieza por X, Y o Z, con 7 números y una letra.'
+                    : 'Ese número no parece correcto.'));
+            malos.push('t_numdoc');
+        }
+    }
+
+    if (pide('t_cp', 'Falta el código postal.')) {
+        // Menorca por defecto, con salida.
+        //
+        // Casi todo el club vive en la isla y un código de fuera es, casi
+        // siempre, una errata. Pero «casi» no es «siempre»: hay una familia en
+        // Andratx, y rechazarle el código sin darle salida la deja fuera del
+        // club por vivir donde vive. Se avisa, y quien de verdad vive fuera lo
+        // confirma una vez.
+        if (!MRCFormulario.cpDeMenorca($('t_cp').value) && !estado.viveFuera) {
+            marcarCampo('t_cp', 'Los códigos postales de Menorca empiezan por 077.');
+            var campoCp = $('t_cp').closest('.campo');
+            if (campoCp && !campoCp.querySelector('[data-vivefuera]')) {
+                var b = document.createElement('button');
+                b.type = 'button';
+                b.className = 'btn-texto';
+                b.setAttribute('data-vivefuera', '1');
+                b.style.cssText = 'text-align:left;padding:6px 0;';
+                b.textContent = 'Vivo fuera de Menorca';
+                b.addEventListener('click', function () {
+                    estado.viveFuera = true;
+                    marcarCampo('t_cp', '');
+                    b.remove();
+                });
+                campoCp.appendChild(b);
+            }
+            malos.push('t_cp');
+        }
+    }
+
+    pide('t_ciudad', 'Elegí tu población.');
+
+    return malos;
+}
+
+/**
  * Quién abrió la cuenta, leído del formulario tal como está AHORA.
  *
  * Del formulario y no de lo guardado: si alguien acaba de escribir su fecha de
@@ -1049,12 +1284,12 @@ function tarjetaJugador(j, i) {
         (j.no_renueva ? '' :
 
         '<div class="fila">' +
-            campo(i, 'nombre', 'Nombre', 'text', j.nombre) +
-            campo(i, 'apellido', 'Apellidos', 'text', j.apellido) +
+            campo(i, 'nombre', 'Nombre', 'text', j.nombre, true) +
+            campo(i, 'apellido', 'Apellidos', 'text', j.apellido, true) +
         '</div>' +
         '<div class="fila">' +
-            campo(i, 'fecha_nacimiento', 'Fecha de nacimiento', 'date', j.fecha_nacimiento) +
-            '<div class="campo"><label>Sexo</label><select data-campo="genero" data-i="' + i + '">' +
+            campo(i, 'fecha_nacimiento', 'Fecha de nacimiento', 'date', j.fecha_nacimiento, true) +
+            '<div class="campo"><label>Sexo <span class="req">*</span></label><select data-campo="genero" data-i="' + i + '">' +
                 opcion('', 'Elegí…', j.genero) + opcion('Masculino', 'Masculino', j.genero) + opcion('Femenino', 'Femenino', j.genero) +
             '</select></div>' +
         '</div>' +
@@ -1064,7 +1299,7 @@ function tarjetaJugador(j, i) {
                 opcion('NIE', 'NIE', j.tipo_documento) + opcion('PASAPORTE', 'Pasaporte', j.tipo_documento) +
                 opcion('TARJETA_SANITARIA', 'Tarjeta sanitaria', j.tipo_documento) + opcion('OTRO', 'Otro', j.tipo_documento) +
             '</select></div>' +
-            campo(i, 'numero_documento', 'Número', 'text', j.numero_documento) +
+            campo(i, 'numero_documento', 'Número', 'text', j.numero_documento, true) +
         '</div>' +
         '<div class="fila">' +
             campo(i, 'altura_cm', 'Altura (cm)', 'number', j.altura_cm) +
@@ -1113,8 +1348,12 @@ function tarjetaJugador(j, i) {
     return el;
 }
 
-function campo(i, nombre, etiqueta, tipo, valor) {
-    return '<div class="campo"><label>' + escapar(etiqueta) + '</label>' +
+function campo(i, nombre, etiqueta, tipo, valor, obligatorio) {
+    // La etiqueta se ESCAPA —viene de esta misma pagina, pero escaparla es lo
+    // que impide que un dia alguien meta ahi algo que no es texto— y el
+    // asterisco lo pone la funcion, no la cadena.
+    return '<div class="campo"><label>' + escapar(etiqueta) +
+        (obligatorio ? ' <span class="req">*</span>' : '') + '</label>' +
         '<input type="' + tipo + '" data-campo="' + nombre + '" data-i="' + i + '" value="' + escapar(valor) + '"' +
         (tipo === 'number' ? ' inputmode="numeric"' : '') + '></div>';
 }
@@ -1386,6 +1625,25 @@ $('btnEnviar').addEventListener('click', async function () {
         return;
     }
 
+    // Los datos del responsable, uno por uno y señalando el campo.
+    //
+    // Antes el formulario sólo comprobaba la FORMA, así que pasaban un
+    // teléfono con espacios, un DNI con puntos y un código postal inventado.
+    // Nada de eso se ve hasta que hace falta — hasta que hay que llamar a una
+    // madre un domingo, o hasta que la federación rechaza una licencia.
+    var malos = revisarResponsable();
+    if (malos.length) {
+        aviso('Revisá los campos marcados en tus datos: faltan ' + malos.length +
+            (malos.length === 1 ? ' dato.' : ' datos.'));
+        var primero = $(malos[0]);
+        if (primero) {
+            var y = primero.getBoundingClientRect().top + window.scrollY - 120;
+            window.scrollTo({ top: Math.max(0, y), behavior: 'smooth' });
+            primero.focus({ preventScroll: true });
+        }
+        return;
+    }
+
     // Si alguien marcó "soy yo", sus datos de arriba tienen que estar completos:
     // son los del jugador. Mejor decirlo acá que dejar que lo rechace el
     // servidor con un mensaje que no señala el campo.
@@ -1405,8 +1663,8 @@ $('btnEnviar').addEventListener('click', async function () {
             email: estado.email,
             fecha_nacimiento: $('t_nacimiento').value || null,
             tipo_documento: $('t_tipodoc').value || null,
-            numero_documento: $('t_numdoc').value || null,
-            telefonos: [$('t_telefono').value],
+            numero_documento: MRCFormulario.normalizarDocumento($('t_numdoc').value) || null,
+            telefonos: [telefonoDelFormulario()],
             direccion: $('t_direccion').value,
             codigo_postal: $('t_cp').value,
             ciudad: $('t_ciudad').value,

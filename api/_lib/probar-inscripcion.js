@@ -78,6 +78,34 @@ function comprobar(titulo, condicion, detalle) {
     console.log(`  ${ok ? 'OK  ' : 'MAL '} ${titulo}${detalle && !ok ? ` -> ${JSON.stringify(detalle)}` : ''}`);
 }
 
+/**
+ * Los datos del responsable que el servidor exige.
+ *
+ * Direccion, poblacion, codigo postal, telefono y documento pasaron a ser
+ * obligatorios: el formulario comprobaba la FORMA y nunca el contenido, asi
+ * que entraban telefonos con espacios, DNIs con puntos y codigos postales
+ * inventados. Se reparten sobre cada payload de prueba para no repetirlos
+ * veintitres veces — y para que, cuando la regla cambie, cambie en un sitio.
+ */
+let nDni = 0;
+/** Un DNI distinto en cada uso: `tutores_documento_unico` no admite repetidos. */
+function dniDePrueba() {
+    nDni += 1;
+    return String(90000000 + nDni) + 'Z';
+}
+
+const DATOS_MINIMOS = {
+    apellido: 'De Prueba',
+    telefonos: ['612345678'],
+    tipo_documento: 'DNI',
+    // Getter y no valor: cada `...DATOS_MINIMOS` lo evalua otra vez, asi que
+    // cada tutor de prueba entra con el suyo.
+    get numero_documento() { return dniDePrueba(); },
+    direccion: 'Carrer de Prova, 1',
+    codigo_postal: '07701',
+    ciudad: 'Ma\u00f3',
+};
+
 // ── Limpieza ───────────────────────────────────────────────────────────────
 async function limpiar(silencioso) {
     const { data: tutor } = await db.from('tutores').select('tutor_id').eq('email', EMAIL).maybeSingle();
@@ -143,11 +171,11 @@ async function main() {
     }
 
     console.log('\n2. Rechaza lo que tiene que rechazar');
-    r = await llamar('enviar', { body: { tutor: { nombre: 'X', email: EMAIL }, jugadores: [] } });
+    r = await llamar('enviar', { body: { tutor: { ...DATOS_MINIMOS, nombre: 'X', email: EMAIL }, jugadores: [] } });
     comprobar('sin reglamento -> 400', r.status === 400, r.body);
 
     r = await llamar('enviar', {
-        body: { acepta_reglamento: true, tutor: { nombre: 'X', email: EMAIL }, jugadores: [] },
+        body: { acepta_reglamento: true, tutor: { ...DATOS_MINIMOS, nombre: 'X', email: EMAIL }, jugadores: [] },
     });
     comprobar('sin jugadores -> 400', r.status === 400, r.body);
 
@@ -156,7 +184,7 @@ async function main() {
     r = await llamar('enviar', {
         body: {
             acepta_reglamento: true,
-            tutor: { nombre: 'Uno', apellido: 'Solo Prueba', email: 'prueba.un.solo.hijo@menorcarugbyclub.test' },
+            tutor: { ...DATOS_MINIMOS, nombre: 'Uno', apellido: 'Solo Prueba', email: 'prueba.un.solo.hijo@menorcarugbyclub.test' },
             jugadores: [{ nombre: 'Unico', apellido: 'Hijo Prueba', fecha_nacimiento: '2014-03-02', genero: 'Masculino',
                           tarifa_variante: 'con_hermano', parentesco: 'padre' }],
         },
@@ -183,7 +211,7 @@ async function main() {
     r = await llamar('enviar', {
         body: {
             acepta_reglamento: true,
-            tutor: { nombre: 'Dos', apellido: 'Hermanos Prueba', email: MAIL_HERMANOS },
+            tutor: { ...DATOS_MINIMOS, nombre: 'Dos', apellido: 'Hermanos Prueba', email: MAIL_HERMANOS },
             jugadores: [
                 { nombre: 'Grande', apellido: 'Hermanos Prueba17', fecha_nacimiento: '2009-05-10',
                   genero: 'Masculino', parentesco: 'padre' },
@@ -221,7 +249,7 @@ async function main() {
     r = await llamar('enviar', {
         body: {
             acepta_reglamento: true,
-            tutor: { nombre: 'Uno', apellido: 'De 17 Prueba', email: MAIL_17 },
+            tutor: { ...DATOS_MINIMOS, nombre: 'Uno', apellido: 'De 17 Prueba', email: MAIL_17 },
             jugadores: [{ nombre: 'Casi', apellido: 'Mayor Prueba17', fecha_nacimiento: '2009-05-10',
                           genero: 'Masculino', parentesco: 'padre' }],
         },
@@ -243,7 +271,9 @@ async function main() {
     r = await llamar('enviar', {
         body: {
             acepta_reglamento: true,
-            tutor: { nombre: 'X', email: EMAIL, tipo_documento: 'DNI' },
+            // Tipo SIN numero: los datos comunes traen uno, asi que hay que
+            // quitarlo a proposito para probar lo que esta prueba prueba.
+            tutor: { ...DATOS_MINIMOS, nombre: 'X', email: EMAIL, tipo_documento: 'DNI', numero_documento: '' },
             jugadores: [{ nombre: 'A', apellido: 'B', fecha_nacimiento: '2014-03-02', genero: 'Masculino', tarifa_variante: 'base' }],
         },
     });
@@ -252,7 +282,7 @@ async function main() {
     r = await llamar('enviar', {
         body: {
             acepta_reglamento: true,
-            tutor: { nombre: 'X', email: EMAIL },
+            tutor: { ...DATOS_MINIMOS, nombre: 'X', email: EMAIL },
             jugadores: [{ nombre: 'A', apellido: 'B', fecha_nacimiento: '2014-03-02', genero: 'Masculino', tarifa_variante: 'base', altura_cm: 400 }],
         },
     });
@@ -264,7 +294,7 @@ async function main() {
     r = await llamar('enviar', {
         body: {
             acepta_reglamento: true,
-            tutor: {
+            tutor: { ...DATOS_MINIMOS,
                 nombre: 'Prueba',
                 apellido: 'Borrar Esto',
                 email: EMAIL,
@@ -322,7 +352,7 @@ async function main() {
     r = await llamar('enviar', {
         body: {
             acepta_reglamento: true,
-            tutor: { nombre: 'Prueba', email: EMAIL },
+            tutor: { ...DATOS_MINIMOS, nombre: 'Prueba', email: EMAIL },
             jugadores: [{ nombre: 'Otro', apellido: 'Mas', fecha_nacimiento: '2015-01-01', genero: 'Masculino', tarifa_variante: 'base' }],
         },
     });
@@ -368,7 +398,7 @@ async function main() {
         token,
         body: {
             acepta_reglamento: true,
-            tutor: { nombre: 'Prueba', apellido: 'Borrar Esto', email: 'otro@intento.test', ciudad: 'Ciutadella' },
+            tutor: { ...DATOS_MINIMOS, nombre: 'Prueba', apellido: 'Borrar Esto', email: 'otro@intento.test', ciudad: 'Ciutadella' },
             jugadores: [
                 {
                     // Por nombre, NO por el primero de la lista: el orden en que
@@ -441,7 +471,7 @@ async function main() {
             token,
             body: {
                 acepta_reglamento: true,
-                tutor: { nombre: 'Prueba', email: EMAIL },
+                tutor: { ...DATOS_MINIMOS, nombre: 'Prueba', email: EMAIL },
                 jugadores: [
                     { player_id: sigue.player_id, nombre: sigue.first_name, apellido: sigue.last_name,
                       fecha_nacimiento: sigue.dob, genero: sigue.gender, tarifa_variante: 'base', parentesco: 'padre' },
@@ -489,7 +519,7 @@ async function main() {
 
     const reenvio = {
         acepta_reglamento: true,
-        tutor: { nombre: 'Prueba', email: EMAIL },
+        tutor: { ...DATOS_MINIMOS, nombre: 'Prueba', email: EMAIL },
         jugadores: [{
             player_id: idMayor, nombre: 'Hermano', apellido: 'Mayor Prueba',
             fecha_nacimiento: '2011-03-02', genero: 'Masculino',
@@ -563,7 +593,7 @@ async function main() {
     r = await llamar('enviar', {
         body: {
             acepta_reglamento: true,
-            tutor: { nombre: 'Otro', apellido: 'Correo', email: 'otro.correo.prueba@menorcarugbyclub.test' },
+            tutor: { ...DATOS_MINIMOS, nombre: 'Otro', apellido: 'Correo', email: 'otro.correo.prueba@menorcarugbyclub.test' },
             jugadores: [{
                 nombre: 'Repetido', apellido: 'De Prueba', fecha_nacimiento: '2013-02-02',
                 genero: 'Masculino', tarifa_variante: 'base', parentesco: 'madre',
@@ -599,7 +629,7 @@ async function main() {
     r = await llamar('enviar', {
         body: {
             acepta_reglamento: true,
-            tutor: { nombre: 'Falla', apellido: 'A Medias', email: MAIL_ROTO },
+            tutor: { ...DATOS_MINIMOS, nombre: 'Falla', apellido: 'A Medias', email: MAIL_ROTO },
             jugadores: [
                 { nombre: 'Primero', apellido: 'Falla Prueba', fecha_nacimiento: '2012-01-01', genero: 'Masculino', parentesco: 'padre' },
                 // Este revienta: figura de baja esta temporada.
@@ -617,7 +647,7 @@ async function main() {
     r = await llamar('enviar', {
         body: {
             acepta_reglamento: true,
-            tutor: { nombre: 'Falla', apellido: 'A Medias', email: MAIL_ROTO },
+            tutor: { ...DATOS_MINIMOS, nombre: 'Falla', apellido: 'A Medias', email: MAIL_ROTO },
             jugadores: [
                 { nombre: 'Primero', apellido: 'Falla Prueba', fecha_nacimiento: '2012-01-01', genero: 'Masculino', parentesco: 'padre' },
             ],
@@ -792,7 +822,7 @@ async function main() {
         let r = await llamar('enviar', {
             body: {
                 acepta_reglamento: true,
-                tutor: { nombre: 'Padre', apellido: 'Jugador Prueba', email: MAIL_PJ },
+                tutor: { ...DATOS_MINIMOS, nombre: 'Padre', apellido: 'Jugador Prueba', email: MAIL_PJ },
                 jugadores: [PADRE, HIJO],
             },
         });
@@ -813,7 +843,7 @@ async function main() {
         r = await llamar('enviar', {
             body: {
                 acepta_reglamento: true,
-                tutor: { nombre: 'Padre', apellido: 'Jugador Prueba', email: MAIL_PJ },
+                tutor: { ...DATOS_MINIMOS, nombre: 'Padre', apellido: 'Jugador Prueba', email: MAIL_PJ },
                 jugadores: [PADRE],
             },
         });
@@ -828,7 +858,7 @@ async function main() {
 
         r = await llamar('enviar', {
             token: tokenPJ,
-            body: { acepta_reglamento: true, tutor: { nombre: 'Padre', apellido: 'Jugador Prueba', email: MAIL_PJ }, jugadores: [HIJO] },
+            body: { acepta_reglamento: true, tutor: { ...DATOS_MINIMOS, nombre: 'Padre', apellido: 'Jugador Prueba', email: MAIL_PJ }, jugadores: [HIJO] },
         });
         comprobar('el hijo entra despues', r.status === 200, r.body);
         {
@@ -866,7 +896,7 @@ async function main() {
             const HIJO2 = { nombre: 'Hija', apellido: 'Jugador Prueba', fecha_nacimiento: '2014-06-06', genero: 'Femenino', parentesco: 'padre' };
             r = await llamar('enviar', {
                 token: tokenPJ,
-                body: { acepta_reglamento: true, tutor: { nombre: 'Padre', apellido: 'Jugador Prueba', email: MAIL_PJ }, jugadores: [HIJO2] },
+                body: { acepta_reglamento: true, tutor: { ...DATOS_MINIMOS, nombre: 'Padre', apellido: 'Jugador Prueba', email: MAIL_PJ }, jugadores: [HIJO2] },
             });
             comprobar('entra la segunda hija', r.status === 200, r.body);
             const hija = (r.body.jugadores || []).find((j) => j.nombre.startsWith('Hija'));
@@ -897,7 +927,7 @@ async function main() {
             r = await llamar('enviar', {
                 body: {
                     acepta_reglamento: true,
-                    tutor: { nombre: 'Padre', apellido: 'Jugador Prueba', email: MAIL_PJ, fecha_nacimiento: '1985-04-04' },
+                    tutor: { ...DATOS_MINIMOS, nombre: 'Padre', apellido: 'Jugador Prueba', email: MAIL_PJ, fecha_nacimiento: '1985-04-04' },
                     jugadores: [PADRE_MINTIENDO, HIJO],
                 },
             });
@@ -932,7 +962,7 @@ async function main() {
             r = await llamar('enviar', {
                 body: {
                     acepta_reglamento: true,
-                    tutor: {
+                    tutor: { ...DATOS_MINIMOS,
                         nombre: 'Jose', apellido: 'Distinto Prueba', email: MAIL_PJ,
                         tipo_documento: 'DNI', numero_documento: '00000001-R',
                     },
@@ -958,7 +988,7 @@ async function main() {
             r = await llamar('enviar', {
                 body: {
                     acepta_reglamento: true,
-                    tutor: { nombre: 'Padre', apellido: 'Jugador Prueba', email: MAIL_PJ, fecha_nacimiento: '1985-04-04' },
+                    tutor: { ...DATOS_MINIMOS, nombre: 'Padre', apellido: 'Jugador Prueba', email: MAIL_PJ, fecha_nacimiento: '1985-04-04' },
                     jugadores: [
                         // El hijo mayor se llama IGUAL que el padre, pero nacio
                         // en otra fecha: son dos personas.
@@ -982,7 +1012,7 @@ async function main() {
             r = await llamar('enviar', {
                 body: {
                     acepta_reglamento: true,
-                    tutor: { nombre: 'Madre', apellido: 'Jugador Prueba', email: MAIL_PJ, fecha_nacimiento: '1970-01-01' },
+                    tutor: { ...DATOS_MINIMOS, nombre: 'Madre', apellido: 'Jugador Prueba', email: MAIL_PJ, fecha_nacimiento: '1970-01-01' },
                     jugadores: [
                         { nombre: 'Mayor', apellido: 'Jugador Prueba', fecha_nacimiento: '2007-02-02',
                           genero: 'Masculino', parentesco: 'madre' },
@@ -1028,7 +1058,10 @@ async function main() {
         };
         await limpiarVE();
 
-        const TUTOR = { nombre: 'Madre', apellido: 'Ve Guarda', email: MAIL_VE, fecha_nacimiento: '1980-03-03' };
+        // Se congela el documento en una constante: TUTOR se reutiliza en
+        // cinco envios de esta seccion y con el getter de DATOS_MINIMOS cada
+        // uso traeria uno distinto, o sea otra persona.
+        const TUTOR = { ...DATOS_MINIMOS, nombre: 'Madre', apellido: 'Ve Guarda', email: MAIL_VE, fecha_nacimiento: '1980-03-03' };
         const UNO = { nombre: 'Uno', apellido: 'Ve Guarda', fecha_nacimiento: '2011-01-01', genero: 'Masculino', parentesco: 'madre' };
         const DOS = { nombre: 'Dos', apellido: 'Ve Guarda', fecha_nacimiento: '2013-01-01', genero: 'Femenino', parentesco: 'madre' };
 

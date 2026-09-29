@@ -47,6 +47,13 @@ const {
     MESES_DE_CUOTA,
 } = require('./inscripcion');
 
+// Las reglas de los datos las pone js/formulario.js, el MISMO archivo que
+// corre en el navegador. No se fia de el — lo vuelve a comprobar aca, porque
+// lo que llega por HTTP no tiene por que haber pasado por ninguna pantalla —
+// pero comparte las reglas: escritas dos veces, un dia una acepta lo que la
+// otra rechaza y la familia no entiende por que no puede enviar.
+const F = require('../../js/formulario.js');
+
 const TIPOS_DOC = ['DNI', 'NIE', 'PASAPORTE', 'TARJETA_SANITARIA', 'LIBRO_FAMILIA', 'OTRO'];
 const TALLAS = ['4', '6', '8', '10', '12', '14', '16', 'XS', 'S', 'M', 'L', 'XL', '2XL', '3XL'];
 const GENEROS = ['Masculino', 'Femenino'];
@@ -175,7 +182,21 @@ module.exports = async function accionEnviar(req, res) {
                 })
                 .select('tutor_id')
                 .single();
-            if (error) throw new Error(`No se pudo crear tu ficha: ${error.message}`);
+            if (error) {
+                // El documento es ÚNICO entre tutores. Sin esto, la segunda
+                // persona con ese documento recibe el error crudo de Postgres
+                // en la cara —«duplicate key value violates unique constraint
+                // tutores_documento_unico»— que no dice qué pasó ni qué hacer.
+                if (/tutores_documento_unico|documento/i.test(error.message || '') &&
+                    /duplicate key/i.test(error.message || '')) {
+                    return res.status(409).json({
+                        error: 'Ese documento ya está registrado con otra cuenta. Si es tuyo, ' +
+                            'entrá con el correo que usaste; si creés que hay un error, escribinos ' +
+                            'a info@menorcarugbyclub.com.',
+                    });
+                }
+                throw new Error(`No se pudo crear tu ficha: ${error.message}`);
+            }
             tutorId = data.tutor_id;
             tutorEsNuevo = true;
         }
@@ -907,6 +928,46 @@ function validar(body, tieneToken) {
         return { error: 'El género del tutor no es válido.' };
     }
 
+    // ── Los datos del responsable, comprobados de verdad ──────────────
+    //
+    // Antes esto sólo recortaba cadenas: pasaba un teléfono con espacios, un
+    // DNI con puntos y un código postal inventado. Nada de eso se ve hasta que
+    // hace falta — hasta que hay que llamar a una madre un domingo, o hasta
+    // que la federación rechaza una licencia por un documento mal escrito.
+    if (!limpiar(t.nombre, 80)) return { error: 'Falta tu nombre.' };
+    if (!limpiar(t.apellido, 120)) return { error: 'Faltan tus apellidos.' };
+    if (!limpiar(t.direccion, 200)) return { error: 'Falta tu dirección.' };
+    if (!limpiar(t.ciudad, 80)) return { error: 'Falta tu población.' };
+
+    // El teléfono se guarda con prefijo y sin espacios ni guiones, para poder
+    // marcarlo de un toque y armar el enlace de WhatsApp sin limpiar nada.
+    const telefonos = (Array.isArray(t.telefonos) ? t.telefonos : [t.telefono])
+        .map((x) => F.normalizarTelefono(x, '+34'))
+        .filter((x) => F.telefonoValido(x))
+        .slice(0, 3);
+    if (!telefonos.length) {
+        return { error: 'Falta tu teléfono, o el que pusiste no parece correcto.' };
+    }
+
+    if (!tipoDocTutor || !numDocTutor) {
+        return { error: 'Falta tu documento: hace falta el tipo y el número.' };
+    }
+    const docTutor = F.normalizarDocumento(numDocTutor);
+    if (!F.documentoValido(tipoDocTutor, docTutor)) {
+        return { error: `Ese ${tipoDocTutor} no parece correcto. Va sin puntos, guiones ni espacios.` };
+    }
+
+    // El código postal: cinco cifras. NO se exige que sea de Menorca.
+    //
+    // La pantalla sí lo pide, porque casi todo el club vive en la isla y un
+    // código de fuera es casi siempre una errata. Pero «casi» no es «siempre»
+    // —hay una familia en Andratx— y rechazarlo acá la dejaría sin ninguna
+    // salida, ni siquiera confirmando que vive fuera.
+    const cp = limpiar(t.codigo_postal, 12).replace(/\s/g, '');
+    if (!/^\d{5}$/.test(cp)) {
+        return { error: 'El código postal son cinco cifras.' };
+    }
+
     const tutor = {
         nombre: limpiar(t.nombre, 80),
         apellido: limpiar(t.apellido, 120),
@@ -915,13 +976,10 @@ function validar(body, tieneToken) {
         genero: generoTutor,
         nacionalidad: limpiar(t.nacionalidad, 60),
         tipo_documento: tipoDocTutor,
-        numero_documento: numDocTutor,
-        telefonos: (Array.isArray(t.telefonos) ? t.telefonos : [t.telefono])
-            .map((x) => String(x || '').replace(/[^\d+]/g, ''))
-            .filter((x) => x.length >= 6)
-            .slice(0, 3),
+        numero_documento: docTutor,
+        telefonos,
         direccion: limpiar(t.direccion, 200),
-        codigo_postal: limpiar(t.codigo_postal, 12),
+        codigo_postal: cp,
         ciudad: limpiar(t.ciudad, 80),
         provincia: limpiar(t.provincia, 80),
         pais: limpiar(t.pais, 60) || 'España',
@@ -963,8 +1021,14 @@ function validar(body, tieneToken) {
         if (!GENEROS.includes(genero)) return { error: `${nombre}: falta el sexo.` };
 
         const tipoDoc = limpiar(j.tipo_documento);
-        const numDoc = limpiar(j.numero_documento, 40);
+        const numDoc = F.normalizarDocumento(limpiar(j.numero_documento, 40));
         if (tipoDoc && !TIPOS_DOC.includes(tipoDoc)) return { error: `${nombre}: tipo de documento no válido.` };
+        // Si puso tipo, el número tiene que ser de ese tipo. Un DNI mal escrito
+        // no se descubre acá sino cuando la federación rechaza la licencia, en
+        // octubre, con el chico ya entrenando.
+        if (tipoDoc && numDoc && !F.documentoValido(tipoDoc, numDoc)) {
+            return { error: `${nombre}: ese ${tipoDoc} no parece correcto. Va sin puntos, guiones ni espacios.` };
+        }
 
         let parentesco = limpiar(j.parentesco) || 'tutor_legal';
         if (!PARENTESCOS.includes(parentesco)) return { error: `${nombre}: parentesco no válido.` };
@@ -1013,7 +1077,7 @@ function validar(body, tieneToken) {
             tipo_documento: tipoDoc,
             numero_documento: numDoc,
             email: normalizarEmail(j.email),
-            telefono: limpiar(j.telefono, 30),
+            telefono: F.normalizarTelefono(limpiar(j.telefono, 30), '+34'),
             direccion: limpiar(j.direccion, 200) || tutor.direccion,
             codigo_postal: limpiar(j.codigo_postal, 12) || tutor.codigo_postal,
             ciudad: limpiar(j.ciudad, 80) || tutor.ciudad,
