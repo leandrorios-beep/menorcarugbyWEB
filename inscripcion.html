@@ -651,7 +651,7 @@ $('formEmail').addEventListener('submit', async function (e) {
                     'Ya estás en el club. Con ese correo encontramos a <strong>' +
                     (r.encontrados || []).map(escapar).join('</strong> y <strong>') + '</strong>.' +
                     '<br><br>Todavía no tienes contraseña: pídela y te la enviamos por correo. ' +
-                    'Entrás, ves sus datos y renovás sin volver a cargar nada.';
+                    'Entras, ves sus datos y renuevas sin volver a rellenar nada.';
                 $('formEntrar').classList.add('oculto');
             } else {
                 $('formEntrar').classList.remove('oculto');
@@ -663,13 +663,13 @@ $('formEmail').addEventListener('submit', async function (e) {
                 if (quienes.length) {
                     texto = 'Hola ' + escapar(r.nombre) + '. Ya estás en el club y tienes a <strong>' +
                         quienes.join('</strong> y <strong>') + '</strong> a tu cargo. ' +
-                        'Entrá y renovás sin volver a cargar nada.';
+                        'Entra y renueva sin volver a rellenar nada.';
                 } else if (r.es_socio) {
                     texto = 'Hola ' + escapar(r.nombre) + '. Ya estás en el club como socio. ' +
-                        'Entrá con tu contraseña y desde ahí inscribís a quien quieras.';
+                        'Entra con tu contraseña y desde ahí inscribes a quien quieras.';
                 } else {
                     texto = 'Hola ' + escapar(r.nombre) + '. Ya estás en nuestra base. ' +
-                        'Entrá con tu contraseña y seguimos desde ahí.';
+                        'Entra con tu contraseña y seguimos desde ahí.';
                 }
                 if (!r.tiene_password) {
                     texto += '<br><br>Todavía no tienes contraseña: pídela y te la enviamos por correo.';
@@ -710,7 +710,7 @@ $('btnRecordar').addEventListener('click', async function () {
     try {
         var r = await api('recordar', { body: { email: estado.email } });
         aviso(r.enviado
-            ? 'Te enviamos la contraseña a ' + estado.email + '. Mirá también en spam.'
+            ? 'Te hemos enviado la contraseña a ' + estado.email + '. Mira también en spam.'
             : r.aviso, r.enviado ? 'ok' : 'error');
         // Si el formulario estaba escondido (cuenta recien creada), ahora si
         // tiene con que entrar.
@@ -1913,7 +1913,7 @@ async function volviendoDeStripe() {
     if (!guardado) {
         // Sin sesión no se puede enseñar el estado, pero sí decirle qué pasó.
         aviso(resultado === 'ok'
-            ? 'Tu tarjeta quedó guardada. Entrá con tu correo para ver cómo va tu inscripción.'
+            ? 'Tu tarjeta ha quedado guardada. Entra con tu correo para ver cómo va tu inscripción.'
             : 'No se ha guardado ninguna tarjeta. Entra con tu correo y vuelve a intentarlo.');
         return true;
     }
@@ -1937,7 +1937,7 @@ async function volviendoDeStripe() {
         mostrar('avisoVuelta', true);
     } catch (err) {
         olvidarSesion();
-        aviso('Tu sesión caducó. Entrá con tu correo para ver cómo va tu inscripción.');
+        aviso('Tu sesión ha caducado. Entra con tu correo para ver cómo va tu inscripción.');
     } finally {
         cargando(false);
     }
