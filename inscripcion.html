@@ -7,7 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 
     <title>Inscripción | Menorca Rugby Club</title>
-    <meta name="description" content="Inscribí a tus hijos en el Menorca Rugby Club. Alta nueva o renovación, todo desde acá.">
+    <meta name="description" content="Inscribe a tus hijos en el Menorca Rugby Club. Alta nueva o renovación, todo desde aquí.">
     <meta name="robots" content="index, follow">
     <link rel="canonical" href="https://www.menorcarugbyclub.com/inscripcion">
 
@@ -305,7 +305,7 @@ body { background: #F1F4F8; }
             </div>
             <button type="submit" class="btn btn-primario" id="btnEntrar" data-i18n="inscripcion.entrar">Entrar</button>
         </form>
-        <button type="button" class="btn-texto" id="btnRecordar" data-i18n="inscripcion.recordar">No me acuerdo, mandámela por correo</button>
+        <button type="button" class="btn-texto" id="btnRecordar" data-i18n="inscripcion.recordar">No me acuerdo, envíamela por correo</button>
         <button type="button" class="btn-texto" id="btnOtroEmail" data-i18n="inscripcion.otro_correo">Usar otro correo</button>
     </section>
 
@@ -333,14 +333,14 @@ body { background: #F1F4F8; }
                          persona puso; si no, se asume España. Así caben los 195
                          países sin mantener ninguna lista. -->
                     <input type="tel" id="t_telefono" autocomplete="tel" inputmode="tel" placeholder="612345678" required>
-                    <span class="pista">Sin espacios ni guiones. Si no es de España, poné el prefijo: +44…</span>
+                    <span class="pista">Sin espacios ni guiones. Si no es de España, pon el prefijo: +44…</span>
                 </div>
             </div>
             <div class="fila">
                 <div class="campo">
                     <label data-i18n="inscripcion.documento" for="t_tipodoc">Documento <span class="req">*</span></label>
                     <select id="t_tipodoc" required>
-                        <option value="">Elegí…</option>
+                        <option value="">Elige…</option>
                         <option value="DNI">DNI</option>
                         <option value="NIE">NIE</option>
                         <option value="PASAPORTE">Pasaporte</option>
@@ -393,7 +393,7 @@ body { background: #F1F4F8; }
                 cobraron de más y llama por teléfono.
             -->
             <p style="color:#AAB4C2;font-size:.78rem;margin:8px 0 0;line-height:1.5;" data-i18n="inscripcion.aviso_descuentos">
-                Si sois familia de un directivo, un entrenador o un colaborador del club, mandá la inscripción igual:
+                Si sois familia de un directivo, un entrenador o un colaborador del club, envía la inscripción igual:
                 el precio con descuento te lo aplicamos nosotros al revisarla.
             </p>
         </div>
@@ -441,7 +441,7 @@ body { background: #F1F4F8; }
             <i class="fa-regular fa-file-lines"></i> Mis recibos y mi tarjeta
         </button>
         <p style="color:var(--gris);font-size:.78rem;text-align:center;margin:12px 0 0;line-height:1.5;">
-            El pago se hace en Stripe, no acá: el club nunca ve tu tarjeta.
+            El pago se hace en Stripe, no aquí: el club nunca ve tu tarjeta.
         </p>
     </section>
 
@@ -456,7 +456,7 @@ body { background: #F1F4F8; }
     <section class="insc-card oculto" id="pasoClave">
         <h2><i class="fa-solid fa-key"></i> <span>Tu contraseña</span></h2>
         <p class="sub">
-            Elegí una que te acuerdes. Con ella entrás a ver tus jugadores, tus recibos y tu tarjeta.
+            Elige una que recuerdes. Con ella entras a ver tus jugadores, tus recibos y tu tarjeta.
         </p>
         <div class="campo">
             <label for="claveNueva">Contraseña nueva <span class="opt">(mínimo 8 caracteres)</span></label>
@@ -481,7 +481,7 @@ body { background: #F1F4F8; }
             descuento para despues devolverselo.
         -->
         <div id="pasoTarjeta" class="oculto" style="margin-top:20px;border-top:1px solid rgba(255,255,255,.14);padding-top:20px;">
-            <h2 style="font-size:1.05rem;"><i class="fa-regular fa-credit-card"></i> Falta un paso: dejá tu tarjeta</h2>
+            <h2 style="font-size:1.05rem;"><i class="fa-regular fa-credit-card"></i> Falta un paso: deja tu tarjeta</h2>
             <p class="sub">
                 <strong>No se te cobra nada ahora.</strong> Queda guardada y autorizada, y sólo se
                 usa cuando el club apruebe la inscripción. Si te aplican un descuento, se cobra el
@@ -490,7 +490,7 @@ body { background: #F1F4F8; }
             <div class="resumen" id="resumenTarjeta"></div>
             <button type="button" class="btn btn-primario" id="btnTarjeta">Dejar mi tarjeta</button>
             <p style="color:var(--gris);font-size:.78rem;text-align:center;margin:12px 0 0;line-height:1.5;">
-                La tarjeta la guarda Stripe, no el club: acá no se ve ni se almacena ningún número.
+                La tarjeta la guarda Stripe, no el club: aquí no se ve ni se almacena ningún número.
             </p>
         </div>
     </section>
@@ -614,7 +614,7 @@ $('formEmail').addEventListener('submit', async function (e) {
     // no falla ruidosamente — falla en silencio: la familia no recibe la
     // contraseña, ni la confirmación, ni el recibo, y no sabe por qué.
     if (!MRCFormulario.pareceCorreo(email)) {
-        aviso('Ese correo no parece bien escrito. Revisalo.');
+        aviso('Ese correo no parece bien escrito. Revísalo.');
         return;
     }
     var sugerido = MRCFormulario.sugerirCorreo(email);
@@ -622,7 +622,7 @@ $('formEmail').addEventListener('submit', async function (e) {
         // Se PREGUNTA, no se corrige solo: corregirle el correo a alguien es
         // cambiarle la única forma que tenemos de encontrarlo, y si la
         // corrección estuviera mal se quedaría fuera sin saberlo.
-        if (window.confirm('¿Quisiste escribir ' + sugerido + '?\n\nSi es así, lo corregimos. Si no, seguimos con ' + email + '.')) {
+        if (window.confirm('¿Querías escribir ' + sugerido + '?\n\nSi es así, lo corregimos. Si no, seguimos con ' + email + '.')) {
             email = sugerido;
             $('email').value = sugerido;
         } else {
@@ -650,7 +650,7 @@ $('formEmail').addEventListener('submit', async function (e) {
                 $('textoEntrar').innerHTML =
                     'Ya estás en el club. Con ese correo encontramos a <strong>' +
                     (r.encontrados || []).map(escapar).join('</strong> y <strong>') + '</strong>.' +
-                    '<br><br>Todavía no tenés contraseña: pedila y te la mandamos por correo. ' +
+                    '<br><br>Todavía no tienes contraseña: pídela y te la enviamos por correo. ' +
                     'Entrás, ves sus datos y renovás sin volver a cargar nada.';
                 $('formEntrar').classList.add('oculto');
             } else {
@@ -661,7 +661,7 @@ $('formEmail').addEventListener('submit', async function (e) {
                 var quienes = (r.encontrados || []).map(escapar);
                 var texto;
                 if (quienes.length) {
-                    texto = 'Hola ' + escapar(r.nombre) + '. Ya estás en el club y tenés a <strong>' +
+                    texto = 'Hola ' + escapar(r.nombre) + '. Ya estás en el club y tienes a <strong>' +
                         quienes.join('</strong> y <strong>') + '</strong> a tu cargo. ' +
                         'Entrá y renovás sin volver a cargar nada.';
                 } else if (r.es_socio) {
@@ -672,7 +672,7 @@ $('formEmail').addEventListener('submit', async function (e) {
                         'Entrá con tu contraseña y seguimos desde ahí.';
                 }
                 if (!r.tiene_password) {
-                    texto += '<br><br>Todavía no tenés contraseña: pedila y te la mandamos por correo.';
+                    texto += '<br><br>Todavía no tienes contraseña: pídela y te la enviamos por correo.';
                 }
                 $('textoEntrar').innerHTML = texto;
             }
@@ -1074,12 +1074,12 @@ function revisarResponsable() {
 
     if (pide('t_telefono', 'Falta tu teléfono.')) {
         if (!MRCFormulario.telefonoValido(telefonoDelFormulario())) {
-            marcarCampo('t_telefono', 'Ese teléfono no parece correcto. Sólo números, sin espacios ni guiones. Si no es de España, poné el prefijo: +44…');
+            marcarCampo('t_telefono', 'Ese teléfono no parece correcto. Sólo números, sin espacios ni guiones. Si no es de España, pon el prefijo: +44…');
             malos.push('t_telefono');
         }
     }
 
-    if (pide('t_tipodoc', 'Elegí qué documento es.') && pide('t_numdoc', 'Falta el número del documento.')) {
+    if (pide('t_tipodoc', 'Elige qué documento es.') && pide('t_numdoc', 'Falta el número del documento.')) {
         var tipo = $('t_tipodoc').value;
         var num = MRCFormulario.normalizarDocumento($('t_numdoc').value);
         $('t_numdoc').value = num;
@@ -1122,7 +1122,7 @@ function revisarResponsable() {
         }
     }
 
-    pide('t_ciudad', 'Elegí tu población.');
+    pide('t_ciudad', 'Elige tu población.');
 
     return malos;
 }
@@ -1241,7 +1241,7 @@ function tarjetaJugador(j, i) {
             : '') +
 
         (j.no_renueva ? '' : (j.yaEnviado
-            ? '<div class="aviso aviso-ok">Ya nos llegó su inscripción de esta temporada. Si querés cambiar algo, volvé a enviarla y pisamos la anterior.</div>'
+            ? '<div class="aviso aviso-ok">Ya nos ha llegado su inscripción de esta temporada. Si quieres cambiar algo, vuelve a enviarla y sustituimos la anterior.</div>'
             : '')) +
 
         // Un chico de diez años cambia mucho en una temporada. Si lo del año
@@ -1273,7 +1273,7 @@ function tarjetaJugador(j, i) {
         '<div class="fila">' +
             campo(i, 'fecha_nacimiento', 'Fecha de nacimiento', 'date', j.fecha_nacimiento, true) +
             '<div class="campo"><label>Sexo <span class="req">*</span></label><select data-campo="genero" data-i="' + i + '">' +
-                opcion('', 'Elegí…', j.genero) + opcion('Masculino', 'Masculino', j.genero) + opcion('Femenino', 'Femenino', j.genero) +
+                opcion('', 'Elige…', j.genero) + opcion('Masculino', 'Masculino', j.genero) + opcion('Femenino', 'Femenino', j.genero) +
             '</select></div>' +
         '</div>' +
         '<div class="fila">' +
@@ -1304,7 +1304,7 @@ function tarjetaJugador(j, i) {
         '<div class="campo"><label>Alergias o algo que debamos saber <span class="opt">(opcional)</span></label>' +
             '<textarea data-campo="alergias" data-i="' + i + '" placeholder="Alergias, medicación, lesiones previas…">' + escapar(j.alergias) + '</textarea></div>' +
 
-        '<div class="campo"><label>Foto del jugador ' + (j.foto_url ? '<span class="opt">(ya tiene una, podés cambiarla)</span>' : '') + '</label>' +
+        '<div class="campo"><label>Foto del jugador ' + (j.foto_url ? '<span class="opt">(ya tiene una, puedes cambiarla)</span>' : '') + '</label>' +
             '<div class="foto-btn">' +
                 '<button type="button" class="btn btn-secundario" data-foto="' + i + '" style="width:auto;padding:0 18px;min-height:44px;">' +
                     '<i class="fa-solid fa-camera"></i> ' + (j.foto ? 'Cambiar' : 'Elegir foto') + '</button>' +
@@ -1322,7 +1322,7 @@ function tarjetaJugador(j, i) {
 
         '<div class="check" style="margin-top:14px;">' +
             '<input type="checkbox" data-campo="acepta_uso_imagen" data-i="' + i + '"' + (j.acepta_uso_imagen ? ' checked' : '') + '>' +
-            '<span>Autorizo que el club publique fotos y vídeos donde aparezca en sus redes y en la web. <strong>Es opcional</strong> y podés cambiarlo cuando quieras (<a href="/reglamento#imagenes" target="_blank" rel="noopener">cómo</a>).' +
+            '<span>Autorizo que el club publique fotos y vídeos donde aparezca en sus redes y en la web. <strong>Es opcional</strong> y puedes cambiarlo cuando quieras (<a href="/reglamento#imagenes" target="_blank" rel="noopener">cómo</a>).' +
             (j.uso_imagen_anterior ? ' <em>La temporada pasada lo autorizaste.</em>' : '') + '</span>' +
         '</div>') +
 
@@ -1573,8 +1573,8 @@ function actualizarResumen() {
 
     $('yaEnviada').innerHTML = yaEnviadoTodo
         ? '<div class="aviso aviso-ok"><strong>Tu inscripción ya está enviada.</strong> ' +
-          'La estamos revisando y te avisamos por correo. Si querés corregir algo, ' +
-          'cambialo acá abajo y guardá.</div>'
+          'La estamos revisando y te avisaremos por correo. Si quieres corregir algo, ' +
+          'cámbialo aquí abajo y guarda.</div>'
         : '';
     mostrar('yaEnviada', yaEnviadoTodo);
 
@@ -1616,7 +1616,7 @@ $('btnEnviar').addEventListener('click', async function () {
     // madre un domingo, o hasta que la federación rechaza una licencia.
     var malos = revisarResponsable();
     if (malos.length) {
-        aviso('Revisá los campos marcados en tus datos: faltan ' + malos.length +
+        aviso('Revisa los campos marcados en tus datos: faltan ' + malos.length +
             (malos.length === 1 ? ' dato.' : ' datos.'));
         var primero = $(malos[0]);
         if (primero) {
@@ -1737,7 +1737,7 @@ $('btnEnviar').addEventListener('click', async function () {
 
         if (r.cuenta_creada) {
             html += '<div class="aviso aviso-' + (r.aviso ? 'error' : 'ok') + '">' +
-                escapar(r.aviso || 'Te enviamos tu contraseña a ' + estado.email + '. Guardala: con eso entrás a ver y renovar sin volver a cargar todo.') +
+                escapar(r.aviso || 'Te hemos enviado tu contraseña a ' + estado.email + '. Guárdala: con ella entras a ver y renovar sin volver a rellenar todo.') +
                 '</div>';
         }
         $('textoListo').innerHTML = html;
@@ -1788,7 +1788,7 @@ $('btnClave').addEventListener('click', async function () {
         await api('clave', { body: { password: valor } });
         $('claveNueva').value = '';
         $('claveAviso').style.color = 'var(--verde, #4ade80)';
-        $('claveAviso').textContent = 'Listo. Ya podés entrar con esa contraseña.';
+        $('claveAviso').textContent = 'Listo. Ya puedes entrar con esa contraseña.';
     } catch (err) {
         $('claveAviso').style.color = '#ff6b6b';
         $('claveAviso').textContent = err.message;
@@ -1914,7 +1914,7 @@ async function volviendoDeStripe() {
         // Sin sesión no se puede enseñar el estado, pero sí decirle qué pasó.
         aviso(resultado === 'ok'
             ? 'Tu tarjeta quedó guardada. Entrá con tu correo para ver cómo va tu inscripción.'
-            : 'No se guardó ninguna tarjeta. Entrá con tu correo y volvé a intentarlo.');
+            : 'No se ha guardado ninguna tarjeta. Entra con tu correo y vuelve a intentarlo.');
         return true;
     }
 
@@ -1932,7 +1932,7 @@ async function volviendoDeStripe() {
         } else {
             $('avisoVuelta').innerHTML =
                 '<div class="aviso aviso-info">No llegaste a guardar la tarjeta. ' +
-                'Podés hacerlo cuando quieras desde acá abajo.</div>';
+                'Puedes hacerlo cuando quieras desde aquí abajo.</div>';
         }
         mostrar('avisoVuelta', true);
     } catch (err) {
