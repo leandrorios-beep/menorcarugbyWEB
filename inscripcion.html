@@ -1304,7 +1304,7 @@ function tarjetaJugador(j, i) {
         '<div class="campo"><label>Alergias o algo que debamos saber <span class="opt">(opcional)</span></label>' +
             '<textarea data-campo="alergias" data-i="' + i + '" placeholder="Alergias, medicación, lesiones previas…">' + escapar(j.alergias) + '</textarea></div>' +
 
-        '<div class="campo"><label>Foto del jugador ' + (j.foto_url ? '<span class="opt">(ya tiene una, puedes cambiarla)</span>' : '') + '</label>' +
+        '<div class="campo"><label>Foto del jugador ' + (j.foto_url ? '<span class="opt">(ya tiene una, puedes cambiarla)</span>' : '<span style="color:#b91c1c;font-weight:600;font-size:.82rem;">(obligatoria)</span>') + '</label>' +
             '<div class="foto-btn">' +
                 '<button type="button" class="btn btn-secundario" data-foto="' + i + '" style="width:auto;padding:0 18px;min-height:44px;">' +
                     '<i class="fa-solid fa-camera"></i> ' + (j.foto ? 'Cambiar' : 'Elegir foto') + '</button>' +
@@ -1634,6 +1634,24 @@ $('btnEnviar').addEventListener('click', async function () {
     if (yo && (!$('t_apellido').value.trim() || !$('t_nacimiento').value)) {
         aviso('Marcaste "soy yo, el jugador": completá arriba tus apellidos y tu fecha de nacimiento.');
         $('t_apellido').focus();
+        return;
+    }
+
+    // La foto es OBLIGATORIA: o suben una nueva, o ya tienen una guardada de
+    // antes (foto_url). La federación no acepta la ficha sin foto, así que se
+    // frena acá en vez de dejar que la familia mande y se entere después.
+    var sinFoto = estado.jugadores.filter(function (x) {
+        return !x.no_renueva && !x.foto && !x.foto_url;
+    });
+    if (sinFoto.length) {
+        aviso('Falta la foto de ' +
+            sinFoto.map(function (x) { return x.nombre || 'un jugador'; }).join(', ') +
+            '. La foto es obligatoria para la ficha del club.');
+        var listaJug = $('listaJugadores');
+        if (listaJug) {
+            var yf = listaJug.getBoundingClientRect().top + window.scrollY - 100;
+            window.scrollTo({ top: Math.max(0, yf), behavior: 'smooth' });
+        }
         return;
     }
 
