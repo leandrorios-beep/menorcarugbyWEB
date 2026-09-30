@@ -1151,16 +1151,17 @@ async function main() {
             // LA INVARIANTE: lo guardado es lo que la pantalla decia.
             comprobar('se guarda lo mismo que la pantalla mostraba',
                 insc && insc.tarifa_variante === queSeVe.variante, insc);
-            comprobar('y el tope es esa misma tarifa',
-                insc && insc.tarifa_variante_origen === queSeVe.variante, insc);
+            comprobar('y el tope es la tarifa completa (base)',
+                insc && insc.tarifa_variante_origen === 'base', insc);
         }
 
-        // ── El tope, con un navegador que se quedo viejo ────────────────
+        // ── El tope es SIEMPRE 'base', pase lo que pase por pantalla ────
         //
-        // Si por lo que sea la pantalla enseno la tarifa barata y el servidor
-        // calcula la cara, el tope tiene que quedarse con la BARATA: es lo que
-        // la familia acepto. Asi cobrar_al_aprobar se niega a cobrar de mas en
-        // vez de hacerlo en silencio.
+        // Aunque el navegador mande una variante barata en tarifa_variante_vista
+        // —una pantalla vieja, o manipulada— el tope guardado es 'base' (la
+        // tarifa completa). El tope es el MAXIMO que se puede cobrar; ponerlo en
+        // la tarifa mas cara hace que cualquier ajuste del club sea a la baja y
+        // nunca dispare la re-autorizacion. Un vista barato ya no baja el techo.
         r = await llamar('enviar', {
             token: tokenVE,
             body: {
@@ -1186,8 +1187,8 @@ async function main() {
                 .eq('player_id', idUno).eq('temporada', temporada).single();
             comprobar('el precio real sigue siendo el que calcula el servidor',
                 insc && insc.tarifa_variante === 'base', insc);
-            comprobar('pero el TOPE es lo que la familia vio, no lo calculado',
-                insc && insc.tarifa_variante_origen === 'con_hermano', insc);
+            comprobar('y el TOPE es base, no la variante barata que mando la pantalla',
+                insc && insc.tarifa_variante_origen === 'base', insc);
         }
 
         // ── Y una palabra inventada no deja a nadie bloqueado ───────────
