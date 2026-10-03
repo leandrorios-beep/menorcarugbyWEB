@@ -52,7 +52,7 @@
             color: #ff6b7a; padding: 0.75rem 1rem; border-radius: 0.75rem;
             font-size: 0.85rem; margin-bottom: 1rem; display: none;
         }
-        .login-footer { margin-top: 1.5rem; font-size: 0.8rem; color: var(--text-muted, #666); }
+        .login-footer { margin-top: 1.5rem; font-size: 0.8rem; color: var(--text-muted, #9CA3AF); }
         .login-footer a { color: var(--primary-yellow, #FFC72C); text-decoration: none; }
 
         /* ── Dashboard ── */
@@ -96,7 +96,7 @@
         .carnet-logo { width: 40px; height: 40px; border-radius: 50%; background: #fff; padding: 3px; }
         .carnet-logo img { width: 100%; height: 100%; object-fit: contain; border-radius: 50%; }
         .carnet-club { color: var(--primary-yellow, #FFC72C); font-size: 0.7rem; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; }
-        .carnet-badge { font-size: 0.6rem; color: rgba(255,255,255,0.5); margin-top: 2px; }
+        .carnet-badge { font-size: 0.6rem; color: rgba(255,255,255,0.7); margin-top: 2px; }
         .carnet-body { display: flex; gap: 1.25rem; align-items: flex-start; }
         .carnet-photo-wrap {
             width: 90px; height: 110px; border-radius: 0.6rem; overflow: hidden;
@@ -120,7 +120,7 @@
             padding: 0.15rem 0.5rem; border-radius: 0.35rem; font-size: 0.7rem;
             font-weight: 600; text-transform: uppercase; margin-top: 0.4rem;
         }
-        .carnet-doc { color: rgba(255,255,255,0.4); font-size: 0.7rem; margin-top: 0.4rem; font-family: 'JetBrains Mono', monospace; }
+        .carnet-doc { color: rgba(255,255,255,0.7); font-size: 0.7rem; margin-top: 0.4rem; font-family: 'JetBrains Mono', monospace; }
         .carnet-input-file { display: none; }
 
         /* Carnet action buttons */
@@ -164,8 +164,8 @@
         .payment-note--completado { background: rgba(40,167,69,0.1); color: #28a745; border: 1px solid rgba(40,167,69,0.15); }
         .payment-note--familiar { background: rgba(40,167,69,0.1); color: #28a745; border: 1px solid rgba(40,167,69,0.15); }
         .payment-note--pendiente { background: rgba(255,165,0,0.1); color: #ffa500; border: 1px solid rgba(255,165,0,0.15); }
-        .payment-note--impago { background: rgba(220,53,69,0.1); color: #dc3545; border: 1px solid rgba(220,53,69,0.15); }
-        .payment-note--cancelado { background: rgba(155,89,182,0.1); color: #9b59b6; border: 1px solid rgba(155,89,182,0.15); }
+        .payment-note--impago { background: rgba(220,53,69,0.1); color: #f87171; border: 1px solid rgba(220,53,69,0.15); }
+        .payment-note--cancelado { background: rgba(155,89,182,0.1); color: #c084fc; border: 1px solid rgba(155,89,182,0.15); }
         .payment-dates { font-size: 0.75rem; color: var(--text-muted, #999); margin-top: 0.3rem; padding-left: 0.85rem; }
 
         /* ── Pay Inline ── */
@@ -182,7 +182,7 @@
             margin-top: 0.75rem; padding: 0.55rem 0.75rem;
             background: rgba(255,199,44,0.04); border-left: 2px solid rgba(255,199,44,0.25);
             border-radius: 0 0.4rem 0.4rem 0; font-size: 0.72rem;
-            color: var(--text-muted, #666); line-height: 1.5;
+            color: var(--text-muted, #9CA3AF); line-height: 1.5;
         }
 
         /* ── Services Grid ── */
@@ -732,13 +732,13 @@
                     }
 
                     return '<div class="service-card">' +
-                        '<div class="service-head">' +
-                            '<span class="service-name">' + (j.nombre || '') + ' ' + (j.apellido || '') +
+                        '<div class="service-card-top">' +
+                            '<span class="service-card-name">' + (j.nombre || '') + ' ' + (j.apellido || '') +
                                 (j.parentesco === 'el_mismo' ? ' <small style="opacity:.6;font-weight:400">(tú)</small>' : '') +
                             '</span>' +
-                            '<span class="service-price" style="color:' + color + '">' + texto + '</span>' +
+                            '<span class="service-card-price" style="color:' + color + '">' + texto + '</span>' +
                         '</div>' +
-                        '<p class="service-desc">' + (j.categoria || '') + (cobro ? ' — ' + cobro : '') + '</p>' +
+                        '<p class="service-card-desc">' + (j.categoria || '') + (cobro ? ' — ' + cobro : '') + '</p>' +
                     '</div>';
                 }).join('');
 
