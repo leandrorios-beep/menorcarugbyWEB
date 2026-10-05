@@ -256,6 +256,59 @@ module.exports = async function handler(req, res) {
         return res.status(200).json({ received: true, updated: data?.length || 0 });
     }
 
+    // ── Un REEMBOLSO: avisarle a la familia por correo ──────────────────────
+    //
+    // Stripe no siempre manda un email de reembolso (depende de la config de la
+    // cuenta), asi que lo mandamos nosotros, claro y en castellano, CADA vez que
+    // se hace un refund (desde el panel o desde el dashboard de Stripe). Si la
+    // carga del correo falla, se registra pero NO se rompe el webhook.
+    //
+    // OJO: para que esto llegue, el endpoint del webhook en Stripe tiene que
+    // tener habilitado el evento `charge.refunded`.
+    if (event.type === 'charge.refunded') {
+        const charge = event.data.object;
+        const email = (charge.billing_details && charge.billing_details.email)
+            || charge.receipt_email
+            || await getCustomerEmail(charge.customer);
+        const importe = (charge.amount_refunded || 0) / 100;
+        if (!email || importe <= 0) {
+            return res.status(200).json({ received: true, email: false });
+        }
+        try {
+            const nodemailer = require('nodemailer');
+            const transporter = nodemailer.createTransport({
+                service: 'gmail',
+                auth: { user: process.env.GMAIL_USER, pass: process.env.GMAIL_APP_PASSWORD },
+            });
+            const eur = importe.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            await transporter.sendMail({
+                from: `"Menorca Rugby Club" <${process.env.GMAIL_USER}>`,
+                to: email,
+                subject: 'Reembolso de Menorca Rugby Club',
+                text:
+                    `Hola:\n\n` +
+                    `Te confirmamos que te hemos devuelto ${eur} EUR. El importe vuelve a tu ` +
+                    `tarjeta en unos dias habiles, segun tu banco.\n\n` +
+                    `Si fue por un cambio de tarifa, cuando quieras puedes volver a inscribir en ` +
+                    `https://www.menorcarugbyclub.com/inscripcion y se cobrara el importe nuevo.\n\n` +
+                    `Cualquier duda, responde a este correo.\n\nGracias,\nMenorca Rugby Club`,
+                html:
+                    `<p>Hola:</p>` +
+                    `<p>Te confirmamos que te hemos devuelto <strong>${eur} &euro;</strong>. ` +
+                    `El importe vuelve a tu tarjeta en unos d&iacute;as h&aacute;biles, seg&uacute;n tu banco.</p>` +
+                    `<p>Si fue por un cambio de tarifa, cuando quieras puedes volver a inscribir en ` +
+                    `<a href="https://www.menorcarugbyclub.com/inscripcion">menorcarugbyclub.com/inscripcion</a> ` +
+                    `y se cobrar&aacute; el importe nuevo.</p>` +
+                    `<p>Cualquier duda, responde a este correo.</p>` +
+                    `<p>Gracias,<br>Menorca Rugby Club</p>`,
+            });
+            console.log(`Refund email sent to ${email} for ${eur} EUR`);
+        } catch (e) {
+            console.error('No se pudo mandar el email de reembolso:', e && e.message);
+        }
+        return res.status(200).json({ received: true, refund_email: true });
+    }
+
     // Event not handled
     return res.status(200).json({ received: true });
 };
