@@ -29,6 +29,47 @@ const {
 const { suscripcionDeLaFactura } = require('./stripe-factura');
 
 /**
+ * El porqué de un cobro rechazado, en una frase para enseñar en la bandeja.
+ *
+ * El motivo NO está en la factura: vive en el PaymentIntent (last_payment_error)
+ * o en el cargo. Y el salto factura -> payment_intent cambió de sitio entre
+ * versiones de la API —igual que `invoice.subscription`—, así que se relee la
+ * factura FIJANDO la versión acacia, donde el campo todavía existe, y se expande
+ * el pago. Si algo no se puede leer, se devuelve un texto genérico: mejor eso
+ * que dejar la bandeja diciendo sólo "cobro fallido" sin decir por qué.
+ *
+ * Distingue el rechazo de verdad del `requires_action`: un pago que espera a
+ * que la familia lo autorice (3-D Secure) NO es un rechazo, y Stripe no lo
+ * reintenta solo; hay que pedirle a la familia que entre y lo confirme.
+ */
+async function motivoDelFallo(stripe, factura) {
+    try {
+        const inv = await stripe.invoices.retrieve(
+            factura.id,
+            { expand: ['payment_intent', 'payment_intent.latest_charge'] },
+            { apiVersion: '2025-02-24.acacia' }
+        );
+        const pi = inv && inv.payment_intent;
+        if (pi && typeof pi === 'object') {
+            if (pi.status === 'requires_action' || pi.status === 'requires_confirmation') {
+                return 'Falta que la familia autorice el pago (3-D Secure) desde su banco. No es un rechazo: Stripe no lo reintenta solo. Hay que reenviarle el enlace de pago para que lo confirme.';
+            }
+            const e = pi.last_payment_error;
+            if (e && e.message) {
+                return `Tarjeta rechazada: ${e.message}${e.decline_code ? ` [${e.decline_code}]` : ''}`;
+            }
+            const ch = pi.latest_charge;
+            if (ch && typeof ch === 'object' && ch.failure_message) {
+                return `Tarjeta rechazada: ${ch.failure_message}${ch.failure_code ? ` [${ch.failure_code}]` : ''}`;
+            }
+        }
+    } catch (e) {
+        console.error('motivoDelFallo:', e && e.message);
+    }
+    return 'La pasarela rechazó el cobro. Hay que revisar la tarjeta de la familia.';
+}
+
+/**
  * ¿Este evento es de una cuota de jugador?
  * Devuelve los ids de inscripción si lo es, o null.
  */
@@ -264,9 +305,12 @@ async function facturaPagada(event, stripe, supabase) {
     // .neq('estado','baja'): sin esto, la factura del mes siguiente le devolvía
     // el estado de cobro a alguien que ya se había dado de baja, y la baja no
     // aguantaba ni un ciclo.
+    // Se limpia el motivo del fallo del intento anterior: ya pagó, y si quedara
+    // puesto la bandeja seguiría diciendo "por qué no se le cobra" sobre una
+    // familia que acaba de pagar.
     const { error } = await supabase
         .from('inscripciones')
-        .update({ estado_cobro: 'al_dia' })
+        .update({ estado_cobro: 'al_dia', cobro_error: null })
         .in('inscripcion_id', ids)
         .neq('estado', 'baja');
     if (error) throw new Error(`inscripciones: ${error.message}`);
@@ -363,12 +407,12 @@ async function facturaFallida(event, stripe, supabase) {
             .map((x) => x.trim())
             .filter(Boolean);
         if (!ids.length) return false;
+        const motivo = await motivoDelFallo(stripe, factura);
         const { error } = await supabase
             .from('inscripciones')
             .update({
                 estado_cobro: 'impago',
-                cobro_error:
-                    'La pasarela rechazó el cobro. Hay que revisar la tarjeta de la familia.',
+                cobro_error: motivo,
                 cobro_intentado_at: new Date().toISOString(),
             })
             .in('inscripcion_id', ids)
@@ -387,12 +431,13 @@ async function facturaFallida(event, stripe, supabase) {
 
     await anotar(supabase, { factura, suscripcion, ids, pagada: false, event });
 
+    const motivo = await motivoDelFallo(stripe, factura);
     // .neq('estado','baja'): sin esto, la factura del mes siguiente le devolvía
     // el estado de cobro a alguien que ya se había dado de baja, y la baja no
     // aguantaba ni un ciclo.
     const { error } = await supabase
         .from('inscripciones')
-        .update({ estado_cobro: 'impago' })
+        .update({ estado_cobro: 'impago', cobro_error: motivo, cobro_intentado_at: new Date().toISOString() })
         .in('inscripcion_id', ids)
         .neq('estado', 'baja');
     if (error) throw new Error(`inscripciones: ${error.message}`);
