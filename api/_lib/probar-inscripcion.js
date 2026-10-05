@@ -191,7 +191,7 @@ async function main() {
     });
     comprobar('la tarifa que manda el navegador se ignora', r.status === 200, r.body);
     comprobar('un solo hijo queda en cuota normal', r.body && r.body.jugadores && r.body.jugadores[0].variante === 'base', r.body && r.body.jugadores);
-    comprobar('y con la ficha de 235 por ser de 2014', r.body && r.body.jugadores && r.body.jugadores[0].ficha_anual === 235, r.body && r.body.jugadores);
+    comprobar('y con la ficha de 185 por ser de 2014 (12 años)', r.body && r.body.jugadores && r.body.jugadores[0].ficha_anual === 185, r.body && r.body.jugadores);
     {
         const { data: t } = await db.from('tutores').select('tutor_id').eq('email', 'prueba.un.solo.hijo@menorcarugbyclub.test').maybeSingle();
         if (t) {
@@ -230,9 +230,9 @@ async function main() {
             js);
         comprobar('el de 17 paga cuota de juvenil con hermano', grande && grande.mensualidad === 40, grande);
         comprobar('pero su ficha es la de senior, sin descuento', grande && grande.ficha_anual === 300, grande);
-        comprobar('el chico paga la ficha de juvenil', chico && chico.ficha_anual === 235, chico);
+        comprobar('el chico de 12 paga la ficha de juvenil (185)', chico && chico.ficha_anual === 185, chico);
         comprobar('y ninguno se queda sin total de temporada',
-            grande && chico && grande.total_temporada === 660 && chico.total_temporada === 595,
+            grande && chico && grande.total_temporada === 660 && chico.total_temporada === 545,
             js);
         const { data: t } = await db.from('tutores').select('tutor_id').eq('email', MAIL_HERMANOS).maybeSingle();
         if (t) {

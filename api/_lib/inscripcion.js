@@ -86,17 +86,24 @@ function tramoDeCategoria(categoria, dob) {
 /**
  * Tramo de la FICHA ANUAL: por la EDAD, no por la categoría.
  *
- *   17 o 18 este año -> 300 €   (tramo 'senior' del catálogo)
- *   16 o menos       -> 235 €   (tramo 'juvenil')
+ * Directiva 2026/27 (tres franjas):
+ *   17 o más   -> 300 €   (tramo 'senior')
+ *   12 a 16    -> 185 €   (tramo 'juvenil')
+ *   11 o menos -> 100 €   (tramo 'infantil')
  *
- * Es la trampa del cuadro nuevo: un chico de 17 paga la cuota de juvenil y la
- * ficha de los grandes. Usar el mismo tramo para las dos cosas le cobraría 65 €
- * de menos al club por cada uno de los de 17 y 18.
+ * Va por EDAD y no por la categoría: si un chico juega en una más grande es una
+ * decisión deportiva, no económica. El corte 100/185 está en 12 porque un chico
+ * de 12 juega en SUB14, que la directiva puso en el grupo de 185.
  *
- * Espejo de tramo_de_ficha() en la base (migración 20260928150000).
+ * Espejo de tramo_de_ficha() en la base (migración cuotas_ficha_por_edad_tres_tramos_2026_27).
  */
 function tramoDeFicha(dob, year = temporadaYear()) {
-    return year - Number(String(dob).slice(0, 4)) >= 17 ? 'senior' : 'juvenil';
+    // Directiva 2026/27: la ficha va por EDAD en tres franjas. El corte 100/185
+    // va en 12 (un chico de 12 juega en SUB14, que es el grupo de 185).
+    const edad = year - Number(String(dob).slice(0, 4));
+    if (edad >= 17) return 'senior';    // 300 €
+    if (edad >= 12) return 'juvenil';   // 185 €
+    return 'infantil';                  // 100 €
 }
 
 /**
@@ -121,10 +128,11 @@ function tramoDeFicha(dob, year = temporadaYear()) {
  * que viene son los otros 16 de su quinta.
  */
 function varianteDeFicha(variante) {
-    // 'prueba' es la tarifa de 1 € para probar el cobro de punta a punta. Si
-    // cayera en la regla general, su ficha saldría a 300 € y la prueba costaría
-    // justo lo que se quería evitar.
-    if (variante === 'directivo' || variante === 'familiar_directivo' || variante === 'prueba') {
+    // Directiva 2026/27: la ficha ya no lleva descuento de directivo; todos pagan
+    // la ficha base de su edad. Sólo 'prueba' (la tarifa de 1 € para probar el
+    // cobro de punta a punta) sigue aparte: si cayera en la regla general saldría
+    // a 300 € y la prueba costaría justo lo que se quería evitar.
+    if (variante === 'prueba') {
         return variante;
     }
     return 'base';
