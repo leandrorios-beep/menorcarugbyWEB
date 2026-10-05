@@ -110,6 +110,7 @@ const NOMBRES = {
     gimnasio: 'Gimnasio',
 };
 const TRAMOS = {
+    infantil: 'Infantil',
     juvenil: 'Juvenil',
     senior: 'Senior',
     veterano: 'Veteranos',
