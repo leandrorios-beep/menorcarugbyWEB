@@ -127,14 +127,9 @@ function tramoDeFicha(dob, year = temporadaYear()) {
  * Es el caso de Héctor Brotons, nacido en 2009, que tiene un hermano. Y el año
  * que viene son los otros 16 de su quinta.
  */
-function varianteDeFicha(variante) {
-    // Directiva 2026/27: la ficha ya no lleva descuento de directivo; todos pagan
-    // la ficha base de su edad. Sólo 'prueba' (la tarifa de 1 € para probar el
-    // cobro de punta a punta) sigue aparte: si cayera en la regla general saldría
-    // a 300 € y la prueba costaría justo lo que se quería evitar.
-    if (variante === 'prueba') {
-        return variante;
-    }
+function varianteDeFicha() {
+    // Directiva 2026/27: la ficha va por EDAD y SIEMPRE a tarifa base. No lleva
+    // descuentos del club (ni directivo ni nadie).
     return 'base';
 }
 
