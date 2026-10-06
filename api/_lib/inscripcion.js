@@ -87,21 +87,31 @@ function tramoDeCategoria(categoria, dob) {
  * Tramo de la FICHA ANUAL: por la EDAD, no por la categoría.
  *
  * Directiva 2026/27 (tres franjas):
- *   17 o más   -> 300 €   (tramo 'senior')
- *   12 a 16    -> 185 €   (tramo 'juvenil')
+ *   18 o más   -> 300 €   (tramo 'senior')
+ *   12 a 17    -> 185 €   (tramo 'juvenil')
  *   11 o menos -> 100 €   (tramo 'infantil')
  *
  * Va por EDAD y no por la categoría: si un chico juega en una más grande es una
  * decisión deportiva, no económica. El corte 100/185 está en 12 porque un chico
  * de 12 juega en SUB14, que la directiva puso en el grupo de 185.
  *
- * Espejo de tramo_de_ficha() en la base (migración cuotas_ficha_por_edad_tres_tramos_2026_27).
+ * EL CORTE DE ARRIBA ESTÁ EN 18, NO EN 17.
+ *
+ * Con 17 pasaba esto: un chico nacido en 2009 cumple 17 en la temporada 2026/27
+ * pero SIGUE jugando en SUB18, igual que uno de 2010. Dos compañeros del mismo
+ * equipo pagaban 300 y 185 — 115 € de diferencia imposible de explicar en el
+ * vestuario. Con el corte en 18, todo SUB18 paga la franja juvenil y sólo el que
+ * ya pasó a mayores paga la de 300.
+ *
+ * Espejo de tramo_de_ficha() en la base (migración cuotas_ficha_por_edad_tres_tramos_2026_27,
+ * corregida en ficha_senior_desde_los_18).
  */
 function tramoDeFicha(dob, year = temporadaYear()) {
     // Directiva 2026/27: la ficha va por EDAD en tres franjas. El corte 100/185
-    // va en 12 (un chico de 12 juega en SUB14, que es el grupo de 185).
+    // va en 12 (un chico de 12 juega en SUB14, que es el grupo de 185) y el de
+    // 185/300 en 18, porque a los 17 todavía se juega en SUB18.
     const edad = year - Number(String(dob).slice(0, 4));
-    if (edad >= 17) return 'senior';    // 300 €
+    if (edad >= 18) return 'senior';    // 300 €
     if (edad >= 12) return 'juvenil';   // 185 €
     return 'infantil';                  // 100 €
 }
