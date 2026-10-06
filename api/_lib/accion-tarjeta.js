@@ -122,6 +122,23 @@ module.exports = async function accionTarjeta(req, res) {
             customer: customerId,
             currency: 'eur',
             locale: 'es',
+            // ── QUE EL BANCO AUTENTIQUE ACÁ, Y NO DENTRO DE UN MES ────────
+            //
+            // Sin esto Stripe lo deja en "automático" y el banco se salta el
+            // 3-D Secure, porque en modo setup no se mueve un euro. El mandato
+            // queda SIN autenticar... y entonces el banco lo exige en el primer
+            // cobro de verdad, que ocurre semanas después —cuando el club
+            // aprueba— y con la familia ya no delante. Ese cobro no se puede
+            // autenticar solo: queda en `requires_action`, Stripe NO lo
+            // reintenta, y la bandeja lo enseña como "cobro fallido". Pasó con
+            // 6 de los 7 primeros cobros de la temporada 2026/2027.
+            //
+            // Con 'any' la familia autentica AHORA, que está delante y le
+            // cuesta diez segundos, y el mandato queda firmado para los cobros
+            // que vengan después.
+            payment_method_options: {
+                card: { request_three_d_secure: 'any' },
+            },
             // El webhook necesita saber de quién es esta tarjeta para poder
             // dejarla como forma de pago por defecto del cliente.
             metadata: {
