@@ -128,14 +128,15 @@ function tramoDeFicha(dob, year = temporadaYear()) {
  * POR QUÉ HACE FALTA ESTA FUNCIÓN Y NO ALCANZA CON BUSCAR POR LA VARIANTE
  *
  * La cuota va por la categoría y la ficha por el año de nacimiento. Un chico de
- * 17 con un hermano en el club tiene variante 'con_hermano' y tramo de ficha
+ * 18 con un hermano en el club tiene variante 'con_hermano' y tramo de ficha
  * 'senior'. Buscar `ficha_anual|con_hermano|senior` pedía una combinación que la
  * base PROHÍBE crear —el CHECK precios_sin_hermano_en_adultos— así que no se
  * encontraba nunca. Resultado: el pago de TODA la familia se cortaba con un 503
  * que nadie podía arreglar, porque la fila que faltaba no se puede dar de alta.
  *
- * Es el caso de Héctor Brotons, nacido en 2009, que tiene un hermano. Y el año
- * que viene son los otros 16 de su quinta.
+ * Lo destapó Héctor Brotons, nacido en 2009 y con un hermano. Desde que el corte
+ * de la ficha pasó a los 18 Héctor cae en 'juvenil' y ya no lo dispara, pero el
+ * agujero sigue tapado para el que sí tenga 18.
  */
 function varianteDeFicha() {
     // Directiva 2026/27: la ficha va por EDAD y SIEMPRE a tarifa base. No lleva

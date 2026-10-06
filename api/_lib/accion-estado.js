@@ -248,8 +248,9 @@ function tarifaDe(varianteGuardada, tramoCuota, tramoFicha, hijosDeLaFamilia, pr
 
     const resolver = (v) => {
         const mensual = precios.get(`mensualidad|${v}|${tramoCuota}`);
-        // La ficha va por EDAD, no por la categoría: quien cumple 17 o 18 paga
-        // la de los grandes aunque siga jugando en juveniles.
+        // La ficha va por EDAD, no por la categoría, pero el corte de los
+        // grandes está en 18: a los 17 todavía se juega en SUB18 y se paga la
+        // franja juvenil. Ver tramoDeFicha() en inscripcion.js.
         const ficha = precios.get(`ficha_anual|${varianteDeFicha(v)}|${tramoFicha}`);
 
         const cuota = mensual && mensual.importe !== null ? Number(mensual.importe) : null;

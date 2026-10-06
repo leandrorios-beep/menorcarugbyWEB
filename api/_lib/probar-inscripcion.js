@@ -229,10 +229,11 @@ async function main() {
             grande && chico && grande.variante === 'con_hermano' && chico.variante === 'con_hermano',
             js);
         comprobar('el de 17 paga cuota de juvenil con hermano', grande && grande.mensualidad === 40, grande);
-        comprobar('pero su ficha es la de senior, sin descuento', grande && grande.ficha_anual === 300, grande);
+        comprobar('y su ficha tambien es la de juvenil: a los 17 todavia juega en SUB18',
+            grande && grande.ficha_anual === 185, grande);
         comprobar('el chico de 12 paga la ficha de juvenil (185)', chico && chico.ficha_anual === 185, chico);
         comprobar('y ninguno se queda sin total de temporada',
-            grande && chico && grande.total_temporada === 660 && chico.total_temporada === 545,
+            grande && chico && grande.total_temporada === 545 && chico.total_temporada === 545,
             js);
         const { data: t } = await db.from('tutores').select('tutor_id').eq('email', MAIL_HERMANOS).maybeSingle();
         if (t) {
@@ -243,8 +244,10 @@ async function main() {
     }
 
     // La ficha federativa va por el AÑO DE NACIMIENTO, no por la categoría en
-    // la que entrena. El que este año cumple 17 juega de juvenil —cuota de
-    // juvenil— pero su ficha ya es la de 300 €.
+    // la que entrena. El que este año cumple 17 sigue jugando en SUB18, así que
+    // paga cuota de juvenil Y ficha de juvenil: la franja de 300 € arranca a los
+    // 18. Antes el corte estaba en 17 y dos compañeros del mismo SUB18 —uno de
+    // 2009 y otro de 2010— pagaban 300 y 185.
     const MAIL_17 = 'prueba.ficha.de.17@menorcarugbyclub.test';
     r = await llamar('enviar', {
         body: {
@@ -258,8 +261,8 @@ async function main() {
         const j = r.body && r.body.jugadores && r.body.jugadores[0];
         comprobar('el de 17 entrena de juvenil', j && j.tramo === 'juvenil', j);
         comprobar('paga cuota de juvenil', j && j.mensualidad === 50, j);
-        comprobar('pero la ficha de 300', j && j.ficha_anual === 300, j);
-        comprobar('y el total de la temporada sale bien', j && j.total_temporada === 750, j);
+        comprobar('y la ficha de juvenil (185): a los 17 todavia no es senior', j && j.ficha_anual === 185, j);
+        comprobar('y el total de la temporada sale bien', j && j.total_temporada === 635, j);
         const { data: t } = await db.from('tutores').select('tutor_id').eq('email', MAIL_17).maybeSingle();
         if (t) {
             const { data: v } = await db.from('tutor_jugador').select('player_id').eq('tutor_id', t.tutor_id);
