@@ -122,6 +122,23 @@ module.exports = async function accionTarjeta(req, res) {
             customer: customerId,
             currency: 'eur',
             locale: 'es',
+            // ── SÓLO TARJETA ─────────────────────────────────────────────
+            //
+            // Sin esta línea Stripe usa los "métodos automáticos", que son los
+            // que estén habilitados en el Dashboard de la cuenta. Hoy eso mete
+            // Klarna y Link en una pantalla cuyo único objetivo es GUARDAR algo
+            // que se pueda cobrar solo todos los meses.
+            //
+            // Klarna no sirve para eso: es pago aplazado y necesita a la familia
+            // delante en cada cobro. Si la eligen, la suscripción queda sin nada
+            // cobrable off_session. Le pasó a Mateo Alva Rojas el 6/10/2026: el
+            // cobro murió con «Customer cancelled checkout on Klarna» y Stripe
+            // le expiró la suscripción a las 23 h.
+            //
+            // Link es tarjeta por debajo, pero cuando falla devuelve el motivo
+            // vacío, y entonces el club no puede decirle a la familia por qué le
+            // rechazaron el pago.
+            payment_method_types: ['card'],
             // ── QUE EL BANCO AUTENTIQUE ACÁ, Y NO DENTRO DE UN MES ────────
             //
             // Sin esto Stripe lo deja en "automático" y el banco se salta el

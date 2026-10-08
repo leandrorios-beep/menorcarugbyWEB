@@ -265,6 +265,12 @@ module.exports = async function accionPagar(req, res) {
         const sesion = await stripe.checkout.sessions.create({
             mode: 'subscription',
             customer: customerId,
+            // Sólo tarjeta, por lo mismo que en accion-tarjeta.js: los "métodos
+            // automáticos" del Dashboard meten Klarna y Link, y de acá sale la
+            // forma de pago con la que se van a cobrar las nueve cuotas solas.
+            // Klarna necesita a la familia delante en cada cobro, así que una
+            // suscripción pagada con Klarna no se puede cobrar nunca más.
+            payment_method_types: ['card'],
             // Las matrículas van acá, no en subscription_data: `add_invoice_items`
             // es de la API de suscripciones y Checkout lo rechaza como parámetro
             // desconocido, tirando abajo la sesión entera. Checkout sí admite
