@@ -52,21 +52,34 @@ async function motivoDelFallo(stripe, factura) {
         const pi = inv && inv.payment_intent;
         if (pi && typeof pi === 'object') {
             if (pi.status === 'requires_action' || pi.status === 'requires_confirmation') {
-                return 'Falta que la familia autorice el pago (3-D Secure) desde su banco. No es un rechazo: Stripe no lo reintenta solo. Hay que reenviarle el enlace de pago para que lo confirme.';
+                return {
+                    motivo: 'Falta que la familia autorice el pago (3-D Secure) desde su banco. No es un rechazo: Stripe no lo reintenta solo. Hay que reenviarle el enlace de pago para que lo confirme.',
+                    codigo: 'authentication_required',
+                };
             }
             const e = pi.last_payment_error;
             if (e && e.message) {
-                return `Tarjeta rechazada: ${e.message}${e.decline_code ? ` [${e.decline_code}]` : ''}`;
+                return {
+                    motivo: `Tarjeta rechazada: ${e.message}${e.decline_code ? ` [${e.decline_code}]` : ''}`,
+                    codigo: e.decline_code || e.code || null,
+                };
             }
             const ch = pi.latest_charge;
             if (ch && typeof ch === 'object' && ch.failure_message) {
-                return `Tarjeta rechazada: ${ch.failure_message}${ch.failure_code ? ` [${ch.failure_code}]` : ''}`;
+                // `outcome.reason` es el codigo DEL BANCO y es el que de verdad
+                // dice que paso (card_velocity_exceeded); `failure_code` es el de
+                // Stripe y es mas grueso (card_declined vale para veinte motivos).
+                const o = ch.outcome || {};
+                return {
+                    motivo: `Tarjeta rechazada: ${ch.failure_message}${ch.failure_code ? ` [${ch.failure_code}]` : ''}`,
+                    codigo: o.reason || ch.failure_code || null,
+                };
             }
         }
     } catch (e) {
         console.error('motivoDelFallo:', e && e.message);
     }
-    return 'La pasarela rechazó el cobro. Hay que revisar la tarjeta de la familia.';
+    return { motivo: 'La pasarela rechazó el cobro. Hay que revisar la tarjeta de la familia.', codigo: null };
 }
 
 /**
@@ -310,7 +323,7 @@ async function facturaPagada(event, stripe, supabase) {
     // familia que acaba de pagar.
     const { error } = await supabase
         .from('inscripciones')
-        .update({ estado_cobro: 'al_dia', cobro_error: null })
+        .update({ estado_cobro: 'al_dia', cobro_error: null, cobro_codigo: null })
         .in('inscripcion_id', ids)
         .neq('estado', 'baja');
     if (error) throw new Error(`inscripciones: ${error.message}`);
@@ -400,7 +413,7 @@ async function facturaSueltaPagada(factura, supabase, event) {
     // sobre una familia que acaba de pagar.
     const { error } = await supabase
         .from('inscripciones')
-        .update({ estado_cobro: 'al_dia', cobro_error: null })
+        .update({ estado_cobro: 'al_dia', cobro_error: null, cobro_codigo: null })
         .in('inscripcion_id', ids)
         .neq('estado', 'baja');
     if (error) throw new Error(`inscripciones: ${error.message}`);
@@ -423,12 +436,19 @@ async function facturaFallida(event, stripe, supabase) {
             .map((x) => x.trim())
             .filter(Boolean);
         if (!ids.length) return false;
-        const motivo = await motivoDelFallo(stripe, factura);
+        const fallo = await motivoDelFallo(stripe, factura);
         const { error } = await supabase
             .from('inscripciones')
             .update({
                 estado_cobro: 'impago',
-                cobro_error: motivo,
+                cobro_error: fallo.motivo,
+                // El codigo LIMPIO, aparte del texto. `cobro_error` mezcla el
+                // motivo con la instruccion para el admin y no se le puede mandar
+                // a una familia; el codigo es lo que la app traduce a castellano
+                // para avisarle (lib/motivos-rechazo.ts). Sin esto el boton
+                // "Decirle por que no salio" no aparece para los fallos que
+                // detecta el webhook, que son la mayoria de los mensuales.
+                cobro_codigo: fallo.codigo,
                 cobro_intentado_at: new Date().toISOString(),
             })
             .in('inscripcion_id', ids)
@@ -447,13 +467,13 @@ async function facturaFallida(event, stripe, supabase) {
 
     await anotar(supabase, { factura, suscripcion, ids, pagada: false, event });
 
-    const motivo = await motivoDelFallo(stripe, factura);
+    const fallo = await motivoDelFallo(stripe, factura);
     // .neq('estado','baja'): sin esto, la factura del mes siguiente le devolvía
     // el estado de cobro a alguien que ya se había dado de baja, y la baja no
     // aguantaba ni un ciclo.
     const { error } = await supabase
         .from('inscripciones')
-        .update({ estado_cobro: 'impago', cobro_error: motivo, cobro_intentado_at: new Date().toISOString() })
+        .update({ estado_cobro: 'impago', cobro_error: fallo.motivo, cobro_codigo: fallo.codigo, cobro_intentado_at: new Date().toISOString() })
         .in('inscripcion_id', ids)
         .neq('estado', 'baja');
     if (error) throw new Error(`inscripciones: ${error.message}`);
