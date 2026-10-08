@@ -307,11 +307,14 @@ async function facturaPagada(event, stripe, supabase) {
     // El id NO se lee de `factura.subscription`: en la versión que entrega el
     // webhook ese campo ya no existe. Ver api/_lib/stripe-factura.js.
     const idSuscripcion = suscripcionDeLaFactura(factura);
-    if (!idSuscripcion) return false;
+    if (!idSuscripcion) return await cuotaDeSocioPagada(factura, stripe, supabase);
 
     const suscripcion = await stripe.subscriptions.retrieve(idSuscripcion);
     const ids = inscripcionesDe(suscripcion);
-    if (!ids) return false;
+    // Sin inscripciones no es de un jugador. Antes se devolvía false y la plata
+    // quedaba cobrada en Stripe y ausente del libro: eran las cuotas de socios y
+    // gimnasio, 275 € sólo desde el 1/9/2026, mes tras mes.
+    if (!ids) return await cuotaDeSocioPagada(factura, stripe, supabase);
 
     await anotar(supabase, { factura, suscripcion, ids, pagada: true, event });
 
@@ -338,6 +341,81 @@ async function facturaPagada(event, stripe, supabase) {
  * Una fila por cada línea de la factura, con el mismo `linea_clave` que el
  * resto: es lo que impide que un reintento de Stripe la anote dos veces.
  */
+/**
+ * Una cuota de SOCIO o de gimnasio, al libro.
+ *
+ * POR QUE EXISTE
+ *
+ * El webhook sólo anotaba lo que podía atar a una inscripción de jugador. Las
+ * suscripciones de socios y gimnasio no llevan `metadata.inscripciones`, así que
+ * se descartaban en silencio: plata cobrada de verdad, todos los meses, que no
+ * aparecía en ningún informe del club.
+ *
+ * COMO SE ATA
+ *
+ * `socios` no tiene stripe_customer_id, así que la llave es el EMAIL del cliente.
+ * Sirve porque los correos de socios son únicos (62 socios, 62 correos). Si el
+ * correo no es de ningún socio NO se inventa nada: se devuelve false y queda sin
+ * anotar, que es honesto y visible, en vez de atribuirle el cobro a cualquiera.
+ *
+ * NO PUEDE ANOTAR DOS VECES: upsert contra `linea_clave`, igual que el resto.
+ */
+async function cuotaDeSocioPagada(factura, stripe, supabase) {
+    let email = String(factura.customer_email || '').trim().toLowerCase();
+    if (!email && factura.customer) {
+        try {
+            const cli = await stripe.customers.retrieve(factura.customer);
+            email = String((cli && cli.email) || '').trim().toLowerCase();
+        } catch (e) {
+            console.error('cuotaDeSocioPagada, cliente:', e && e.message);
+        }
+    }
+    if (!email) return false;
+
+    const { data: socio } = await supabase
+        .from('socios')
+        .select('id, nombre, apellido, tipo_socio')
+        .ilike('email', email)
+        .maybeSingle();
+    if (!socio) return false;
+
+    const pagadoEn = (factura.status_transitions && factura.status_transitions.paid_at) || factura.created;
+    const f = new Date(pagadoEn * 1000);
+    // Temporada por fecha, con corte el 1 de julio, igual que el resto del club.
+    const y = f.getUTCFullYear();
+    const inicio = f.getUTCMonth() + 1 >= 7 ? y : y - 1;
+    const nombre = `${socio.nombre} ${socio.apellido || ''}`.trim();
+
+    const { error } = await supabase.from('ingresos').upsert([{
+        linea_clave: `${factura.id}:socio:${socio.id}`,
+        socio_id: socio.id,
+        // Un socio NO es un jugador: sin player_id ni inscripcion_id, y así queda
+        // fuera de los informes por categoría y de inscripciones_cobranza.
+        player_id: null,
+        inscripcion_id: null,
+        tipo_movimiento: 'Cuota socio',
+        bucket_concepto: 'CUOTA SOCIO',
+        estado: 'Pagado',
+        origen: 'stripe',
+        importe: factura.amount_paid / 100,
+        fecha_cobro: f.toISOString().slice(0, 10),
+        mes: f.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' }),
+        temporada: `${inicio}/${inicio + 1}`,
+        cliente: nombre,
+        pagador: nombre,
+        concepto: ((factura.lines && factura.lines.data) || [])[0]?.description
+            || `Cuota de socio (${socio.tipo_socio})`,
+        categoria_reporte: `SOCIOS · ${String(socio.tipo_socio).toUpperCase()}`,
+        stripe_invoice_id: factura.id,
+        stripe_customer_id: factura.customer || null,
+        matched: true,
+    }], { onConflict: 'linea_clave' });
+    if (error) throw new Error(`ingresos (socio): ${error.message}`);
+
+    console.log(`Cuota de socio anotada: ${nombre} · ${factura.amount_paid / 100} EUR`);
+    return true;
+}
+
 async function facturaSueltaPagada(factura, supabase, event) {
     const ids = String((factura.metadata || {}).inscripciones || '')
         .split(',')
