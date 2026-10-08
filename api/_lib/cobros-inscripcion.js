@@ -342,6 +342,21 @@ async function facturaPagada(event, stripe, supabase) {
  * resto: es lo que impide que un reintento de Stripe la anote dos veces.
  */
 /**
+ * De que es este cobro, mirando el concepto de la linea de Stripe.
+ *
+ * NO se deduce del `tipo_socio`: el gimnasio es un complemento que contrata
+ * cualquiera -un `familiar`, que de cuota paga 0 EUR, o un `gym`-, asi que mirar
+ * a la persona en vez de al producto clasifica mal.
+ */
+function categoriaDeSocio(concepto) {
+    const c = String(concepto || '').toLowerCase();
+    if (/gimnas|gym|fitness/.test(c)) return 'SOCIOS · GIMNASIO';
+    if (/protector/.test(c)) return 'SOCIOS · PROTECTOR';
+    if (/socio|soci|cuota|abonad/.test(c)) return 'SOCIOS · NORMAL';
+    return 'SOCIOS · SIN CLASIFICAR';
+}
+
+/**
  * Una cuota de SOCIO o de gimnasio, al libro.
  *
  * POR QUE EXISTE
@@ -385,6 +400,8 @@ async function cuotaDeSocioPagada(factura, stripe, supabase) {
     const y = f.getUTCFullYear();
     const inicio = f.getUTCMonth() + 1 >= 7 ? y : y - 1;
     const nombre = `${socio.nombre} ${socio.apellido || ''}`.trim();
+    const concepto = ((factura.lines && factura.lines.data) || [])[0]?.description
+        || `Cuota de socio (${socio.tipo_socio})`;
 
     const { error } = await supabase.from('ingresos').upsert([{
         linea_clave: `${factura.id}:socio:${socio.id}`,
@@ -403,9 +420,11 @@ async function cuotaDeSocioPagada(factura, stripe, supabase) {
         temporada: `${inicio}/${inicio + 1}`,
         cliente: nombre,
         pagador: nombre,
-        concepto: ((factura.lines && factura.lines.data) || [])[0]?.description
-            || `Cuota de socio (${socio.tipo_socio})`,
-        categoria_reporte: `SOCIOS · ${String(socio.tipo_socio).toUpperCase()}`,
+        concepto,
+        // La categoria sale de QUE SE COMPRO, no de QUE ES la persona. Un socio
+        // `familiar` paga 0 EUR de cuota: si paga algo es el GIMNASIO, que es un
+        // complemento ortogonal al tipo y lo contrata cualquiera.
+        categoria_reporte: categoriaDeSocio(concepto),
         stripe_invoice_id: factura.id,
         stripe_customer_id: factura.customer || null,
         matched: true,
