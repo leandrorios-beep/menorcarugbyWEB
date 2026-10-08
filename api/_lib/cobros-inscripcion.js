@@ -366,7 +366,23 @@ async function facturaSueltaPagada(factura, supabase, event) {
                 jugador: j,
                 nombre,
                 pagada: true,
-                tipo: esFicha ? 'Matrícula' : 'Cuota anual',
+                // 'Mensualidad', NO 'Cuota anual'.
+                //
+                // `tipo_movimiento` dice QUÉ CLASE de dinero es, no cuántos meses
+                // cubre. Un tercer nombre para la cuota rompía los contadores de
+                // inscripciones_cobranza, que filtran por este texto: a Austin
+                // Edward Holland, que recuperó su cuota de octubre con una factura
+                // suelta, el panel le decía «0 de 9 cuotas pagadas» teniendo los
+                // 10 € cobrados.
+                //
+                // Cuántos meses cubre lo dice `concepto` ("9 mensualidades de
+                // 45,00 €"), y la vista lo calcula con el importe.
+                //
+                // La base lo cierra con un CHECK: un nombre que no sea uno de los
+                // cuatro canónicos hace fallar el INSERT, y entonces el cobro no
+                // llega al libro. Si hace falta uno nuevo, hay que tocar el CHECK
+                // a propósito.
+                tipo: esFicha ? 'Matrícula' : 'Mensualidad',
                 concepto: l.description || `Temporada ${i.temporada}`,
                 importe: l.amount / 100,
                 fecha: fechaISO,
