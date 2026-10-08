@@ -121,6 +121,7 @@ const VARIANTES = {
     base: '',
     con_hermano: 'con hermano',
     con_beca: 'con beca',
+    solo_ficha: 'solo ficha',
     familiar_directivo: 'hijo/a de directivo',
     directivo: 'directivo',
     colaborador: 'colaborador',
