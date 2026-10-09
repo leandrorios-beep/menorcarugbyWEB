@@ -282,7 +282,60 @@ async function tarjetaGuardada(sesion, stripe, supabase) {
     if (error) throw new Error(`inscripciones: ${error.message}`);
 
     console.log(`Tarjeta guardada para el tutor ${tutorId} (cliente ${customerId}).`);
+
+    // ── Y SE PONE EL COBRO EN MARCHA, AHORA ──────────────────────────────
+    //
+    // Antes esto terminaba aqui: la tarjeta quedaba guardada y no pasaba nada
+    // mas. El club le pedia la tarjeta a una familia, la familia la dejaba esa
+    // misma noche, y el dinero se quedaba quieto hasta que alguien entraba a la
+    // bandeja, se daba cuenta y apretaba "Reintentar el cobro". A Evan Pikett lo
+    // dejo un dia entero parado.
+    //
+    // El cobro NO se reimplementa aqui: se llama a la app, que es donde vive
+    // cobrarAlAprobar() con toda su logica -las dos tandas del pago anual, el
+    // corte a las nueve cuotas, la metadata que el webhook necesita despues, el
+    // tope de no cobrar mas que la tarifa base-. Copiarla seria tener dos
+    // verdades sobre cuanto se le cobra a una familia.
+    //
+    // No hace falta configurar ningun secreto nuevo: se deriva de la service
+    // role que los dos repos ya comparten, y la clave en si nunca viaja.
+    //
+    // SI FALLA, NO PASA NADA GRAVE: se registra y se sigue. Esta funcion le tiene
+    // que devolver 200 a Stripe pase lo que pase; si no, Stripe reintenta el
+    // evento y la tarjeta se guardaria dos veces. El cobro se puede disparar
+    // despues a mano desde la bandeja, que es como se hacia hasta ahora.
+    try {
+        await avisarALaAppDeLaTarjeta(tutorId, temporada);
+    } catch (e) {
+        console.error('No se pudo poner el cobro en marcha tras la tarjeta:', e && e.message);
+    }
+
     return true;
+}
+
+/**
+ * Le dice a la app que esta familia ya tiene tarjeta y que arranque el cobro.
+ *
+ * El token sale de un HMAC de la service role, no de una variable nueva: una
+ * variable que hay que acordarse de poner en dos proyectos de Vercel es una
+ * variable que un dia falta, y entonces esto dejaria de funcionar sin que nadie
+ * se entere.
+ */
+async function avisarALaAppDeLaTarjeta(tutorId, temporada) {
+    const clave = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    if (!clave) return;
+    const crypto = require('crypto');
+    const token = crypto.createHmac('sha256', clave).update('cobrar-al-llegar-tarjeta').digest('hex');
+    const base = process.env.APP_URL || 'https://app.menorcarugbyclub.com';
+
+    const r = await fetch(`${base}/api/inscripciones/cobrar-al-llegar-tarjeta`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-cobro-token': token },
+        body: JSON.stringify({ tutor_id: tutorId, temporada }),
+    });
+    const txt = await r.text();
+    if (!r.ok) throw new Error(`la app respondio ${r.status}: ${txt.slice(0, 200)}`);
+    console.log(`Cobro disparado tras la tarjeta del tutor ${tutorId}: ${txt.slice(0, 200)}`);
 }
 
 async function facturaPagada(event, stripe, supabase) {
