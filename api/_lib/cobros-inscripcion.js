@@ -112,6 +112,8 @@ async function manejar(event, stripe, supabase) {
             return await facturaPagada(event, stripe, supabase);
         case 'invoice.payment_failed':
             return await facturaFallida(event, stripe, supabase);
+        case 'charge.refunded':
+            return await cobroDevuelto(event, stripe, supabase);
         case 'customer.subscription.deleted':
             return await suscripcionCancelada(event, stripe, supabase);
         default:
@@ -369,7 +371,7 @@ async function facturaPagada(event, stripe, supabase) {
     // gimnasio, 275 € sólo desde el 1/9/2026, mes tras mes.
     if (!ids) return await cuotaDeSocioPagada(factura, stripe, supabase);
 
-    await anotar(supabase, { factura, suscripcion, ids, pagada: true, event });
+    await anotar(supabase, { factura, suscripcion, ids, pagada: true, event, comision: await comisionDe(stripe, factura) });
 
     // .neq('estado','baja'): sin esto, la factura del mes siguiente le devolvía
     // el estado de cobro a alguien que ya se había dado de baja, y la baja no
@@ -407,6 +409,118 @@ function categoriaDeSocio(concepto) {
     if (/protector/.test(c)) return 'SOCIOS · PROTECTOR';
     if (/socio|soci|cuota|abonad/.test(c)) return 'SOCIOS · NORMAL';
     return 'SOCIOS · SIN CLASIFICAR';
+}
+
+/**
+ * Lo que se queda Stripe de una factura.
+ *
+ * Vive en el `balance_transaction` del cargo, no en la factura ni en el cargo: ahi
+ * esta lo que de verdad entra al banco. Se guarda con cada cobro para que el panel
+ * pueda enseñar el NETO sin llamar a Stripe cada vez que alguien abre la pantalla.
+ *
+ * Si no se puede averiguar devuelve null, y la fila queda sin comision: mejor un
+ * hueco honesto que un numero inventado en la contabilidad del club.
+ */
+async function comisionDe(stripe, factura) {
+    try {
+        const cargoId = typeof factura.charge === 'string'
+            ? factura.charge
+            : (factura.charge && factura.charge.id) || null;
+        if (!cargoId) return null;
+        const cargo = await stripe.charges.retrieve(cargoId, { expand: ['balance_transaction'] });
+        const bt = cargo && cargo.balance_transaction;
+        if (!bt || typeof bt !== 'object' || typeof bt.fee !== 'number') return null;
+        return bt.fee / 100;
+    } catch (e) {
+        console.error('comisionDe:', e && e.message);
+        return null;
+    }
+}
+
+/**
+ * Una devolucion, al libro, EN NEGATIVO.
+ *
+ * POR QUE HACIA FALTA
+ *
+ * El libro sumaba lo que entraba y nunca restaba lo que salia. Las devoluciones
+ * se arreglaban a mano: 791 EUR corregidos a dedo en la base (David Riera, Biel
+ * Sintes, Ulises Fernandez), y tres reembolsos chicos que nunca se tocaron. Un
+ * libro que solo suma no es un libro: es una lista de cobros.
+ *
+ * SE ANOTA UNA FILA NUEVA, NO SE EDITA LA VIEJA
+ *
+ * Restarle el importe a la fila del cobro borraria que ese cobro existio. Lo que
+ * de verdad paso son DOS hechos: se cobro y despues se devolvio, y el libro tiene
+ * que poder contar los dos. Ademas asi el total sale solo sumando.
+ *
+ * LA CLAVE LLEVA EL ID DEL REEMBOLSO
+ *
+ * No el de la factura. Una misma factura puede devolverse en varias veces -una
+ * parcial hoy y otra manana- y con la clave por factura la segunda pisaria a la
+ * primera y el club se quedaria contando una sola.
+ */
+async function cobroDevuelto(event, stripe, supabase) {
+    const cargo = event.data.object;
+    if (!cargo.amount_refunded) return false;
+
+    // De que cobro era. Se busca por el charge y, si no, por su factura: el libro
+    // guarda la factura, no el cargo.
+    let filaOriginal = null;
+    if (cargo.invoice) {
+        const { data } = await supabase
+            .from('ingresos')
+            .select('inscripcion_id, socio_id, player_id, cliente, pagador, temporada, concepto, categoria_reporte, tipo_movimiento, stripe_subscription_id')
+            .eq('stripe_invoice_id', typeof cargo.invoice === 'string' ? cargo.invoice : cargo.invoice.id)
+            .limit(1)
+            .maybeSingle();
+        filaOriginal = data || null;
+    }
+    // Sin el cobro original no se sabe de quien es la devolucion. Se anota igual,
+    // suelta y visible, en vez de perderla: una fila rara en el libro se
+    // investiga; una devolucion ausente no la ve nadie.
+    const o = filaOriginal || {};
+
+    const reembolsos = ((cargo.refunds && cargo.refunds.data) || []);
+    const filas = [];
+    for (const r of reembolsos) {
+        const f = new Date((r.created || cargo.created) * 1000);
+        const y = f.getUTCFullYear();
+        const inicio = f.getUTCMonth() + 1 >= 7 ? y : y - 1;
+        filas.push({
+            // Por reembolso, no por factura: una factura puede devolverse a plazos.
+            linea_clave: `${r.id}:devolucion`,
+            inscripcion_id: o.inscripcion_id || null,
+            socio_id: o.socio_id || null,
+            player_id: o.player_id || null,
+            tipo_movimiento: o.tipo_movimiento || 'Mensualidad',
+            bucket_concepto: 'DEVOLUCION',
+            estado: 'Devuelto',
+            origen: 'stripe',
+            // EN NEGATIVO: es lo que hace que el total del libro siga siendo
+            // correcto sumando, sin que nadie tenga que acordarse de restar.
+            importe: -(r.amount / 100),
+            fecha_cobro: f.toISOString().slice(0, 10),
+            mes: f.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' }),
+            temporada: o.temporada || `${inicio}/${inicio + 1}`,
+            cliente: o.cliente || null,
+            pagador: o.pagador || null,
+            concepto: `Devolución${o.concepto ? ` de: ${o.concepto}` : ''}${r.reason ? ` (${r.reason})` : ''}`,
+            categoria_reporte: o.categoria_reporte || null,
+            stripe_invoice_id: typeof cargo.invoice === 'string' ? cargo.invoice : (cargo.invoice && cargo.invoice.id) || null,
+            stripe_customer_id: typeof cargo.customer === 'string' ? cargo.customer : null,
+            stripe_subscription_id: o.stripe_subscription_id || null,
+            stripe_payment_intent_id: typeof cargo.payment_intent === 'string' ? cargo.payment_intent : null,
+            matched: Boolean(filaOriginal),
+        });
+    }
+    if (!filas.length) return false;
+
+    const { error } = await supabase.from('ingresos').upsert(filas, { onConflict: 'linea_clave' });
+    if (error) throw new Error(`ingresos (devolucion): ${error.message}`);
+
+    const total = filas.reduce((n, f) => n + f.importe, 0);
+    console.log(`Devolucion anotada: ${total.toFixed(2)} EUR (${filas.length} reembolso/s), cargo ${cargo.id}`);
+    return true;
 }
 
 /**
@@ -672,7 +786,7 @@ async function suscripcionCancelada(event, stripe, supabase) {
 // Escribir en el libro de ingresos
 // ---------------------------------------------------------------------------
 
-async function anotar(supabase, { factura, suscripcion, ids, pagada, event }) {
+async function anotar(supabase, { factura, suscripcion, ids, pagada, event, comision = null }) {
     const temporada = temporadaKey();
 
     const { data: todas, error: errInsc } = await supabase
@@ -871,6 +985,21 @@ async function anotar(supabase, { factura, suscripcion, ids, pagada, event }) {
     }
 
     if (!filas.length) return;
+    // La comision se REPARTE entre las lineas en proporcion a su importe.
+    //
+    // Una factura puede cubrir a dos hermanos y a varios conceptos; cargarsela
+    // entera a la primera linea dejaria los informes por categoria con la ficha
+    // del mayor comiendose toda la comision de la familia. Proporcional es lo
+    // unico que hace que la suma por categoria siga siendo cierta.
+    if (comision !== null && filas.length) {
+        const total = filas.reduce((n, f) => n + Number(f.importe || 0), 0);
+        if (total > 0) {
+            for (const f of filas) {
+                f.comision = Math.round((comision * (Number(f.importe || 0) / total)) * 100) / 100;
+            }
+        }
+    }
+
     await anotarFilas(supabase, filas);
     console.log(`Factura ${factura.id}: ${filas.length} línea(s) en ingresos, ${pagada ? 'cobradas' : 'FALLIDAS'}`);
 }
