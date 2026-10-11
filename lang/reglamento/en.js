@@ -108,7 +108,7 @@ module.exports = {
           ${mail(CORREOS.tesoreria)} beforehand.
         </p>
         <p>
-          On completing registration a card is provided, which is stored and authorised with the
+          On completing registration, a card is provided, which is stored and authorised with the
           payment gateway. <strong>No charge is made at that point.</strong> The Club does not at
           any time access, process or store full card details, which are held by the payment
           services provider.

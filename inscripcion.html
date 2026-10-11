@@ -272,7 +272,7 @@ body { background: #F1F4F8; }
 <main class="insc-wrap">
 
     <div class="insc-hero">
-        <h1 data-i18n="inscripcion.titulo">Inscripción <span id="temporadaTitulo"></span></h1>
+        <h1><span data-i18n="inscripcion.titulo">Inscripción</span> <span id="temporadaTitulo"></span></h1>
         <p data-i18n="inscripcion.subtitulo">Da igual si es la primera vez o si vienes renovando: empieza poniendo tu correo y nosotros vemos en qué caso estás.</p>
     </div>
 
@@ -321,13 +321,13 @@ body { background: #F1F4F8; }
             <p class="sub" style="margin-top:-6px;">Los campos con <span class="req">*</span> son obligatorios.</p>
 
             <div class="fila">
-                <div class="campo"><label data-i18n="inscripcion.nombre" for="t_nombre">Nombre <span class="req">*</span></label><input type="text" id="t_nombre" autocomplete="given-name" required></div>
-                <div class="campo"><label data-i18n="inscripcion.apellidos" for="t_apellido">Apellidos <span class="req">*</span></label><input type="text" id="t_apellido" autocomplete="family-name" required></div>
+                <div class="campo"><label for="t_nombre"><span data-i18n="inscripcion.nombre">Nombre</span> <span class="req">*</span></label><input type="text" id="t_nombre" autocomplete="given-name" required></div>
+                <div class="campo"><label for="t_apellido"><span data-i18n="inscripcion.apellidos">Apellidos</span> <span class="req">*</span></label><input type="text" id="t_apellido" autocomplete="family-name" required></div>
             </div>
             <div class="fila">
                 <div class="campo"><label data-i18n="inscripcion.nacimiento" for="t_nacimiento">Fecha de nacimiento</label><input type="date" id="t_nacimiento"></div>
                 <div class="campo">
-                    <label data-i18n="inscripcion.telefono" for="t_telefono">Teléfono <span class="req">*</span></label>
+                    <label for="t_telefono"><span data-i18n="inscripcion.telefono">Teléfono</span> <span class="req">*</span></label>
                     <!-- Un solo campo y sin lista de países: se escribe el
                          número y ya. Si empieza por + o por 00 manda lo que la
                          persona puso; si no, se asume España. Así caben los 195
@@ -338,7 +338,7 @@ body { background: #F1F4F8; }
             </div>
             <div class="fila">
                 <div class="campo">
-                    <label data-i18n="inscripcion.documento" for="t_tipodoc">Documento <span class="req">*</span></label>
+                    <label for="t_tipodoc"><span data-i18n="inscripcion.documento">Documento</span> <span class="req">*</span></label>
                     <select id="t_tipodoc" required>
                         <option value="">Elige…</option>
                         <option value="DNI">DNI</option>
@@ -353,16 +353,16 @@ body { background: #F1F4F8; }
                     <span class="pista">Sin puntos, guiones ni espacios.</span>
                 </div>
             </div>
-            <div class="campo"><label data-i18n="inscripcion.direccion" for="t_direccion">Dirección <span class="req">*</span></label><input type="text" id="t_direccion" autocomplete="street-address" required placeholder="Calle y número"></div>
+            <div class="campo"><label for="t_direccion"><span data-i18n="inscripcion.direccion">Dirección</span> <span class="req">*</span></label><input type="text" id="t_direccion" autocomplete="street-address" required placeholder="Calle y número"></div>
             <div class="fila">
                 <div class="campo">
-                    <label data-i18n="inscripcion.cp" for="t_cp">Código postal <span class="req">*</span></label>
+                    <label for="t_cp"><span data-i18n="inscripcion.cp">Código postal</span> <span class="req">*</span></label>
                     <input type="text" id="t_cp" autocomplete="postal-code" inputmode="numeric" maxlength="5" placeholder="07701" required>
                 </div>
                 <!-- Desplegable y no texto libre: escrito a mano aparecen
                      «Mahón», «Maó», «MAO» y «mahon», que son cuatro poblaciones
                      para cualquier listado y una sola en el mapa. -->
-                <div class="campo"><label data-i18n="inscripcion.poblacion" for="t_ciudad">Población <span class="req">*</span></label><select id="t_ciudad" required></select></div>
+                <div class="campo"><label for="t_ciudad"><span data-i18n="inscripcion.poblacion">Población</span> <span class="req">*</span></label><select id="t_ciudad" required></select></div>
             </div>
         </section>
 
