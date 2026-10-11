@@ -221,7 +221,7 @@ module.exports = async function accionEstado(req, res) {
         });
     } catch (e) {
         console.error('inscripcion-estado:', e && e.message);
-        return res.status(500).json({ error: 'No se pudo cargar tu información' });
+        return res.status(500).json({ error: 'No se ha podido cargar tu información' });
     }
 };
 

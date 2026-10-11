@@ -275,7 +275,7 @@ module.exports = async function handler(req, res) {
     const token = auth.slice(7);
     const { data: { user }, error: authError } = await supabase.auth.getUser(token);
     if (authError || !user) {
-        return res.status(401).json({ error: 'Token invalido' });
+        return res.status(401).json({ error: 'Token inválido' });
     }
     const { data: adminCheck } = await supabase
         .from('admin_users')
@@ -283,7 +283,7 @@ module.exports = async function handler(req, res) {
         .eq('email', user.email)
         .single();
     if (!adminCheck) {
-        return res.status(403).json({ error: 'No eres admin' });
+        return res.status(403).json({ error: 'No tienes permisos de administrador.' });
     }
 
     // ── GET: solo lectura, importes y suscripciones por email ──
@@ -293,7 +293,7 @@ module.exports = async function handler(req, res) {
             return res.status(200).json(await getPagos(force));
         } catch (err) {
             console.error('socios payments error:', err);
-            return res.status(500).json({ error: 'Stripe API error: ' + err.message });
+            return res.status(500).json({ error: 'Error de la API de Stripe: ' + err.message });
         }
     }
 
@@ -303,7 +303,7 @@ module.exports = async function handler(req, res) {
         results = await syncPagos(supabase);
     } catch (stripeErr) {
         console.error('Stripe sync error:', stripeErr);
-        return res.status(500).json({ error: 'Stripe API error: ' + stripeErr.message });
+        return res.status(500).json({ error: 'Error de la API de Stripe: ' + stripeErr.message });
     }
 
     const totalUpdated = results.filter(r => r.updated > 0).length;

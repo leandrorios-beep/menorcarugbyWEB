@@ -73,7 +73,7 @@
       "subtitle": "El corazón del club",
       "description": "Nuestro equipo senior compite en la Liga Balear, enfrentándose a rivales de Mallorca e Ibiza en un campeonato de ida y vuelta. Al final de la temporada, los cuatro mejores se disputan el título. También contamos con un equipo femenino, que participa en la modalidad de Rugby 7's, llevando el espíritu del rugby a lo más alto.",
       "players": "20+ jugadores",
-      "training": "Entrena Martes y Jueves 19.30"
+      "training": "Entrena martes y jueves 19.30"
     },
     "youth": {
       "title": "Equipo Juvenil",
@@ -81,7 +81,7 @@
       "subtitle": "El futuro del rugby",
       "description": "Dirigido a jugadores de 14 a 18 años, nuestro juvenil participa en la Liga Balear, midiendo fuerzas con equipos de Mallorca e Ibiza. Además, tienen presencia en seleccionados nacionales y en distintos torneos, tanto oficiales como amistosos, lo que les brinda una experiencia única de crecimiento deportivo y personal.",
       "players": "40+ jugadores",
-      "training": "Entrena Martes y Jueves 18.00"
+      "training": "Entrena martes y jueves 18.00"
     },
     "school": {
       "title": "Escuela de Rugby",
@@ -89,7 +89,7 @@
       "subtitle": "Primeros pasos",
       "description": "La base de nuestro club empieza con los más pequeños: desde los 6 hasta los 12 años. Aunque no compiten en ligas, disfrutan de los divertidos \"Rugby Day\", jornadas donde los equipos SUB6, SUB8, SUB10 y SUB12 juegan partidos cortos, se divierten y aprenden que lo importante no es el resultado, sino disfrutar del juego. Cada equipo disputa entre 3 y 4 encuentros por jornada, siempre con sonrisas de por medio.",
       "players": "20+ niños",
-      "training": "Entrena Martes y Jueves 18.00"
+      "training": "Entrena martes y jueves 18.00"
     }
   },
   "gallery": {
@@ -111,7 +111,7 @@
         "description": "Camiseta oficial del Menorca Rugby Club temporada 2025. Diseño exclusivo con colores tradicionales."
       },
       "hoodie": {
-        "title": "Sudadera Training",
+        "title": "Sudadera de Entrenamiento",
         "description": "Sudadera técnica para entrenamientos con logo bordado y tecnología transpirable."
       },
       "cap": {
@@ -130,7 +130,7 @@
     "buy": "Comprar",
     "cta": {
       "title": "¿Buscas algo específico?",
-      "description": "Visita nuestra tienda online completa con todos los productos oficiales",
+      "description": "Visita nuestra tienda en línea completa con todos los productos oficiales",
       "button": "Ver Tienda Completa"
     },
     "external": {
@@ -189,7 +189,7 @@
       "title": "Teléfono"
     },
     "email": {
-      "title": "Email"
+      "title": "Correo electrónico"
     },
     "map": {
       "title": "Mapa del Campo de Rugby",
@@ -198,7 +198,7 @@
   },
   "sponsors": {
     "title": "Nuestros Patrocinadores",
-    "subtitle": "Gracias a nuestros sponsors que apoyan el rugby en Menorca"
+    "subtitle": "Gracias a nuestros patrocinadores, que apoyan el rugby en Menorca"
   },
   "footer": {
     "club_name": "MENORCA RUGBY CLUB",
@@ -216,13 +216,13 @@
     "opening": "Abriendo chat...",
     "loading": "Conectando con nuestro equipo...",
     "external_info": "Serás redirigido a nuestro chat en tiempo real donde podrás hablar directamente con nuestro equipo.",
-    "live_support": "Soporte en vivo disponible"
+    "live_support": "Atención en directo disponible"
   },
   "forms": {
-    "success": "¡Solicitud enviada exitosamente! Te contactaremos pronto.",
+    "success": "¡Solicitud enviada correctamente! Te escribiremos pronto.",
     "error": "Error en el formulario",
     "required": "Este campo es obligatorio",
-    "invalid_email": "El email no tiene un formato válido",
+    "invalid_email": "El correo no tiene un formato válido",
     "sending": "Enviando..."
   },
   "notifications": {
@@ -235,7 +235,7 @@
     "title": "Calendario de Partidos",
     "subtitle": "Próximos encuentros y resultados",
     "list_title": "Lista Completa de Partidos",
-    "list_subtitle": "Todos los partidos de la temporada • Octubre 2025 - Mayo 2026",
+    "list_subtitle": "Todos los partidos de la temporada • octubre 2025 - mayo 2026",
     "loading": "Cargando partidos...",
     "view_full_list": "Ver Lista Completa",
     "view_calendar": "Ver Calendario",
@@ -255,7 +255,7 @@
     "tag_title": "Inscripciones",
     "tag_season": "Temporada 2026/2027",
     "titulo": "Inscripción",
-    "subtitulo": "Da igual si es la primera vez o si venís renovando: empezá poniendo tu correo y nosotros vemos en qué caso estás.",
+    "subtitulo": "Da igual si es la primera vez o si vienes renovando: empieza poniendo tu correo y nosotros vemos en qué caso estás.",
     "tu_correo": "Tu correo",
     "correo_ayuda": "El de la madre, el padre o quien se encargue. Si el jugador es mayor de edad, el suyo.",
     "correo_label": "Correo electrónico",
@@ -263,7 +263,7 @@
     "ya_estas": "Ya estás en nuestra base de datos",
     "password_label": "Tu contraseña",
     "entrar": "Entrar",
-    "recordar": "No me acuerdo, mandámela por correo",
+    "recordar": "No me acuerdo, envíamela por correo",
     "otro_correo": "Usar otro correo",
     "tus_datos": "Tus datos",
     "tus_datos_ayuda": "Los del adulto responsable. Si el jugador es mayor de edad, los suyos.",
@@ -281,10 +281,10 @@
     "enviada": "Inscripción enviada",
     "enviar": "Enviar inscripción",
     "cargando": "Un momento…",
-    "pie": "¿Algo no cuadra? Escribinos a <a href=\"mailto:info@menorcarugbyclub.com\">info@menorcarugbyclub.com</a>",
+    "pie": "¿Algo no cuadra? Escríbenos a <a href=\"mailto:info@menorcarugbyclub.com\">info@menorcarugbyclub.com</a>",
     "reglamento": "He leído y acepto el <a href=\"/reglamento\" target=\"_blank\" rel=\"noopener\">reglamento del club</a> y la <a href=\"/privacidad\" target=\"_blank\" rel=\"noopener\">política de privacidad</a>: cuotas, bajas, uso de instalaciones, tratamiento de mis datos y derechos de imagen.",
     "total_temporada": "Toda la temporada",
     "pago_anual": "<strong>Quiero pagar el año completo de una vez</strong>, en lugar de las cuotas mensuales. Te preparamos un único recibo con la ficha y todas las cuotas.",
-    "aviso_descuentos": "Si sois familia de un directivo, un entrenador o un colaborador del club, mandá la inscripción igual: el precio con descuento te lo aplicamos nosotros al revisarla."
+    "aviso_descuentos": "Si sois familia de un directivo, un entrenador o un colaborador del club, envía la inscripción igual: el precio con descuento te lo aplicamos nosotros al revisarla."
   }
 }

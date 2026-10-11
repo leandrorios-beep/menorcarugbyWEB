@@ -42,7 +42,7 @@ module.exports = async function handler(req, res) {
 
     const { email, password } = req.body;
     if (!email || !password) {
-        return res.status(400).json({ error: 'Email y contraseña son obligatorios' });
+        return res.status(400).json({ error: 'Correo y contraseña son obligatorios' });
     }
 
     const supabase = createClient(
@@ -78,14 +78,14 @@ module.exports = async function handler(req, res) {
             return res.status(500).json({ error: 'Error de base de datos' });
         }
         if (!tutor) {
-            return res.status(401).json({ error: 'Email o contraseña incorrectos' });
+            return res.status(401).json({ error: 'Correo o contraseña incorrectos' });
         }
         if (!tutor.socio_id) {
             // Es tutor pero no socio. Decirlo, y decir adonde ir: mandarlo a
             // cambiar la contraseña que SI le funciona es el camino mas largo
             // posible a ninguna parte.
             return res.status(403).json({
-                error: 'Con este correo gestionás la inscripción de tus jugadores, pero todavía no tenés ficha de socio. Entrá en menorcarugbyclub.com/inscripcion, o hacete socio en la web.',
+                error: 'Con este correo gestionas la inscripción de tus jugadores, pero todavía no tienes ficha de socio. Entra en menorcarugbyclub.com/inscripcion, o hazte socio en la web.',
             });
         }
         const { data: suSocio } = await supabase
@@ -94,7 +94,7 @@ module.exports = async function handler(req, res) {
             .eq('id', tutor.socio_id)
             .maybeSingle();
         if (!suSocio) {
-            return res.status(401).json({ error: 'Email o contraseña incorrectos' });
+            return res.status(401).json({ error: 'Correo o contraseña incorrectos' });
         }
         socio = suSocio;
         hashAComprobar = tutor.password_hash;
@@ -102,15 +102,15 @@ module.exports = async function handler(req, res) {
     }
 
     if (!hashAComprobar) {
-        return res.status(401).json({ error: 'Esta cuenta no tiene contraseña. Regístrate de nuevo o contacta al club.' });
+        return res.status(401).json({ error: 'Esta cuenta no tiene contraseña. Regístrate de nuevo o contacta con el club.' });
     }
 
     try {
         if (!verifyPassword(password, hashAComprobar)) {
-            return res.status(401).json({ error: 'Email o contraseña incorrectos' });
+            return res.status(401).json({ error: 'Correo o contraseña incorrectos' });
         }
     } catch {
-        return res.status(401).json({ error: 'Email o contraseña incorrectos' });
+        return res.status(401).json({ error: 'Correo o contraseña incorrectos' });
     }
 
     // Entro como socio: ver si esa misma persona es tambien tutor, para que el

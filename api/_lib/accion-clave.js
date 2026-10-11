@@ -30,7 +30,7 @@ const MINIMO = 8;
 module.exports = async function accionClave(req, res) {
     const payload = getAuthPayload(req);
     if (!payload || (!payload.tutor_id && !payload.socio_id)) {
-        return res.status(401).json({ error: 'Entrá antes de cambiar tu contraseña.' });
+        return res.status(401).json({ error: 'Entra antes de cambiar tu contraseña.' });
     }
 
     const nueva = String((req.body || {}).password || '');
@@ -67,6 +67,6 @@ module.exports = async function accionClave(req, res) {
         return res.status(200).json({ success: true });
     } catch (e) {
         console.error('accion-clave:', e && e.message);
-        return res.status(500).json({ error: 'No pudimos cambiar tu contraseña. Probá de nuevo.' });
+        return res.status(500).json({ error: 'No hemos podido cambiar tu contraseña. Inténtalo de nuevo.' });
     }
 };

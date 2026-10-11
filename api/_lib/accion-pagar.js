@@ -73,7 +73,7 @@ module.exports = async function accionPagar(req, res) {
 
     if (!process.env.STRIPE_SECRET_KEY) {
         return res.status(503).json({
-            error: 'El cobro por tarjeta todavía no está activado. Escribinos a info@menorcarugbyclub.com.',
+            error: 'El cobro por tarjeta todavía no está activado. Escríbenos a info@menorcarugbyclub.com.',
         });
     }
 
@@ -117,7 +117,7 @@ module.exports = async function accionPagar(req, res) {
         const yaPagando = listas.filter((i) => i.stripe_subscription_id);
         if (yaPagando.length === listas.length) {
             return res.status(409).json({
-                error: 'Ya tenés la cuota domiciliada. Si querés cambiar la tarjeta, escribinos.',
+                error: 'Ya tienes la cuota domiciliada. Si quieres cambiar la tarjeta, escríbenos.',
             });
         }
         // Sólo lo que todavía no tiene suscripción: cobrar dos veces al mismo
@@ -151,7 +151,7 @@ module.exports = async function accionPagar(req, res) {
             // se le cobraría 0 € y se le diría por correo que su cuota es 0,00.
             if (!mensual || mensual.importe === null || !mensual.stripe_price_id) {
                 return res.status(503).json({
-                    error: `Todavía no está publicado en la pasarela el precio de ${nombre}. Avisanos y lo resolvemos.`,
+                    error: `Todavía no está publicado en la pasarela el precio de ${nombre}. Avísanos y lo resolvemos.`,
                 });
             }
 
@@ -182,7 +182,7 @@ module.exports = async function accionPagar(req, res) {
                 return res.status(503).json({
                     error:
                         `La cuota de ${nombre} tiene un descuento que todavía no podemos cobrar por la web. ` +
-                        'Escribinos a info@menorcarugbyclub.com y lo resolvemos sin que pagues de más.',
+                        'Escríbenos a info@menorcarugbyclub.com y lo resolvemos sin que pagues de más.',
                 });
             }
 
@@ -201,7 +201,7 @@ module.exports = async function accionPagar(req, res) {
             // mitad de lo que aporta un jugador en toda la temporada.
             if (!ficha || ficha.importe === null || !ficha.stripe_price_id) {
                 return res.status(503).json({
-                    error: `Todavía no está publicada en la pasarela la ficha de ${nombre}. Avisanos y lo resolvemos.`,
+                    error: `Todavía no está publicada en la pasarela la ficha de ${nombre}. Avísanos y lo resolvemos.`,
                 });
             }
             matriculas.push({ price: ficha.stripe_price_id, quantity: 1 });
@@ -312,6 +312,6 @@ module.exports = async function accionPagar(req, res) {
         });
     } catch (e) {
         console.error('accion-pagar:', e && e.message);
-        return res.status(500).json({ error: 'No pudimos preparar el pago. Probá en un rato o escribinos.' });
+        return res.status(500).json({ error: 'No hemos podido preparar el pago. Prueba en un rato o escríbenos.' });
     }
 };

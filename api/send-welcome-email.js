@@ -67,7 +67,7 @@ module.exports = async function handler(req, res) {
         const mailOptions = {
             from: `"Menorca Rugby Club" <${process.env.GMAIL_USER}>`,
             to: to,
-            subject: `Bienvenid@ al Menorca Rugby Club, ${nombre}!`,
+            subject: `¡Bienvenid@ al Menorca Rugby Club, ${nombre}!`,
             html: htmlEmail,
             attachments: []
         };
@@ -132,7 +132,7 @@ function buildWelcomeEmail(nombre, tipo_socio, numero_socio, mensaje_extra, logi
                                         <div style="text-align:center;margin-top:20px;">
                                             <a href="https://www.menorcarugbyclub.com/mi-carnet" style="display:inline-block;background:#FFC72C;color:#182B49;padding:12px 30px;border-radius:8px;font-weight:700;text-decoration:none;font-size:15px;">Acceder a Mi Carnet</a>
                                         </div>
-                                        <p style="color:#9BA6B5;font-size:12px;margin:15px 0 0;text-align:center;">Puedes cambiar tu contraseña desde la seccion Seguridad.</p>
+                                        <p style="color:#9BA6B5;font-size:12px;margin:15px 0 0;text-align:center;">Puedes cambiar tu contraseña desde la sección Seguridad.</p>
                                     </td>
                                 </tr>
                             </table>
@@ -168,7 +168,7 @@ function buildWelcomeEmail(nombre, tipo_socio, numero_socio, mensaje_extra, logi
                     <!-- Bienvenida -->
                     <tr>
                         <td style="padding:35px 40px 20px;background-color:#ffffff;">
-                            <h2 style="color:#182B49;font-size:24px;margin:0 0 8px;">Bienvenid@ ${escapeHtml(nombre)}!</h2>
+                            <h2 style="color:#182B49;font-size:24px;margin:0 0 8px;">¡Bienvenid@ ${escapeHtml(nombre)}!</h2>
                             <p style="color:#FFC72C;font-size:16px;font-weight:600;margin:0;">Socio ${escapeHtml(tipoDisplay)}${numero_socio ? ' #' + escapeHtml(numero_socio) : ''}</p>
                         </td>
                     </tr>
@@ -177,12 +177,12 @@ function buildWelcomeEmail(nombre, tipo_socio, numero_socio, mensaje_extra, logi
                     <tr>
                         <td style="padding:10px 40px 25px;background-color:#ffffff;">
                             <p style="color:#333333;font-size:15px;line-height:1.6;margin:0 0 15px;">
-                                Desde el Menorca Rugby Club queremos darte las gracias por unirte a nuestra familia rugbistica.
+                                Desde el Menorca Rugby Club queremos darte las gracias por unirte a nuestra familia rugbística.
                                 Tu apoyo es fundamental para seguir creciendo y promoviendo los valores del rugby en nuestra isla.
                             </p>
                             <p style="color:#333333;font-size:15px;line-height:1.6;margin:0 0 15px;">
-                                Como socio del club, disfrutaras de beneficios exclusivos, acceso a eventos y la satisfaccion
-                                de formar parte de una comunidad unida por la pasion al rugby.
+                                Como socio del club, disfrutarás de beneficios exclusivos, acceso a eventos y la satisfacción
+                                de formar parte de una comunidad unida por la pasión por el rugby.
                             </p>
                             ${mensaje_extra ? `<p style="color:#333333;font-size:15px;line-height:1.6;margin:0 0 15px;padding:15px;background-color:#f8f9fa;border-left:3px solid #FFC72C;border-radius:4px;">${escapeHtml(mensaje_extra)}</p>` : ''}
                         </td>
@@ -197,7 +197,7 @@ function buildWelcomeEmail(nombre, tipo_socio, numero_socio, mensaje_extra, logi
                             <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f8f9fa;border-radius:8px;overflow:hidden;">
                                 <tr>
                                     <td style="padding:20px 25px;">
-                                        <p style="color:#182B49;font-size:14px;font-weight:700;margin:0 0 10px;">INFORMACION UTIL</p>
+                                        <p style="color:#182B49;font-size:14px;font-weight:700;margin:0 0 10px;">INFORMACIÓN ÚTIL</p>
                                         <table cellpadding="0" cellspacing="0">
                                             <tr><td style="padding:4px 0;color:#555555;font-size:14px;"><strong style="color:#182B49;">Web:</strong> <a href="https://www.menorcarugbyclub.com" style="color:#1565c0;text-decoration:none;">menorcarugbyclub.com</a></td></tr>
                                             <tr><td style="padding:4px 0;color:#555555;font-size:14px;"><strong style="color:#182B49;">Calendario:</strong> <a href="https://www.menorcarugbyclub.com/calendar.html" style="color:#1565c0;text-decoration:none;">Ver partidos y eventos</a></td></tr>
@@ -213,11 +213,11 @@ function buildWelcomeEmail(nombre, tipo_socio, numero_socio, mensaje_extra, logi
                     <!-- Footer -->
                     <tr>
                         <td style="background-color:#182B49;padding:25px 40px;text-align:center;">
-                            <p style="color:#FFC72C;font-size:14px;font-weight:600;margin:0 0 8px;">Nos vemos en el campo!</p>
+                            <p style="color:#FFC72C;font-size:14px;font-weight:600;margin:0 0 8px;">¡Nos vemos en el campo!</p>
                             <p style="color:#C3CBD6;font-size:12px;margin:0;">
-                                Menorca Rugby Club &bull; Sa Terranova 8, Mao, Illes Balears
+                                Menorca Rugby Club &bull; Sa Terranova 8, Maó, Illes Balears
                             </p>
-                            <p style="color:#AAB4C2;font-size:12px;margin:15px 0 8px;text-transform:uppercase;letter-spacing:1px;">Siguenos en redes</p>
+                            <p style="color:#AAB4C2;font-size:12px;margin:15px 0 8px;text-transform:uppercase;letter-spacing:1px;">Síguenos en redes</p>
                             <div>
                                 <a href="https://www.instagram.com/menorcarugby/" style="color:#FFC72C;text-decoration:none;margin:0 8px;font-size:13px;">Instagram</a>
                                 <a href="https://www.facebook.com/menorcarugby" style="color:#FFC72C;text-decoration:none;margin:0 8px;font-size:13px;">Facebook</a>

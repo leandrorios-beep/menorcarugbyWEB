@@ -135,7 +135,7 @@ module.exports = async function accionEnviar(req, res) {
             const yaExiste = await buscarTutorPorEmail(supabase, datosTutor.email, 'tutor_id');
             if (yaExiste) {
                 return res.status(409).json({
-                    error: 'Ese correo ya está registrado. Entrá con tu contraseña para renovar.',
+                    error: 'Ese correo ya está registrado. Entra con tu contraseña para renovar.',
                     ya_registrado: true,
                 });
             }
@@ -160,7 +160,7 @@ module.exports = async function accionEnviar(req, res) {
                     /duplicate key/i.test(error.message || '')) {
                     return res.status(409).json({
                         error: 'Ese documento ya está registrado con otra cuenta. Si es tuyo, ' +
-                            'entrá con el correo que usaste; si creés que hay un error, escribinos ' +
+                            'entra con el correo que usaste; si crees que hay un error, escríbenos ' +
                             'a info@menorcarugbyclub.com.',
                     });
                 }
@@ -306,7 +306,7 @@ module.exports = async function accionEnviar(req, res) {
                 throw new RechazoDelFormulario(
                     400,
                     `${j.nombre}: todavía no está publicada la cuota de ${tramo} para esta temporada. ` +
-                        'Avisanos a info@menorcarugbyclub.com y la cargamos.'
+                        'Avísanos a info@menorcarugbyclub.com y la cargamos.'
                 );
             }
 
@@ -364,12 +364,12 @@ module.exports = async function accionEnviar(req, res) {
                 if (yaHay && yaHay.estado === 'baja') {
                     throw new RechazoDelFormulario(
                         409,
-                        `${j.nombre} figura de baja esta temporada. Escribinos a info@menorcarugbyclub.com y lo revisamos con vos.`
+                        `${j.nombre} figura de baja esta temporada. Escríbenos a info@menorcarugbyclub.com y lo revisamos contigo.`
                     );
                 }
                 if (yaHay && yaHay.estado === 'aprobada') {
                     conservarEstado = true;
-                    notas.push('La familia mando cambios sobre una inscripcion ya aprobada.');
+                    notas.push('La familia ha mandado cambios sobre una inscripción ya aprobada.');
                 }
                 // Rechazada -> la familia esta corrigiendo lo que le pidieron.
                 //
@@ -390,7 +390,7 @@ module.exports = async function accionEnviar(req, res) {
                     if (errVolver) {
                         throw new Error(`No se pudo reabrir la inscripcion de ${j.nombre}: ${errVolver.message}`);
                     }
-                    notas.push('La familia corrigio y volvio a enviar una inscripcion rechazada.');
+                    notas.push('La familia ha corregido y ha vuelto a enviar una inscripción rechazada.');
                 }
             }
 
@@ -473,7 +473,7 @@ module.exports = async function accionEnviar(req, res) {
                     if (suya && suya.estado === 'baja') {
                         throw new RechazoDelFormulario(
                             409,
-                            `${j.nombre} figura de baja esta temporada. Escribinos a info@menorcarugbyclub.com y lo revisamos con vos.`
+                            `${j.nombre} figura de baja esta temporada. Escríbenos a info@menorcarugbyclub.com y lo revisamos contigo.`
                         );
                     }
                     if (suya && suya.estado === 'aprobada') conservarEstado = true;
@@ -488,7 +488,7 @@ module.exports = async function accionEnviar(req, res) {
                         if (errVolver) {
                             throw new Error(`No se pudo reabrir la inscripcion de ${j.nombre}: ${errVolver.message}`);
                         }
-                        notas.push('La familia corrigio y volvio a enviar una inscripcion rechazada.');
+                        notas.push('La familia ha corregido y ha vuelto a enviar una inscripción rechazada.');
                     }
                     descuentosPrevios = (suya && suya.tarifa_descuentos) || [];
 
@@ -712,8 +712,8 @@ module.exports = async function accionEnviar(req, res) {
                 // La inscripción quedó guardada. Lo que no salió es el mail con
                 // la contraseña, y sin eso la familia no puede volver a entrar.
                 aviso =
-                    'Tu inscripción quedó registrada, pero no pudimos enviarte el correo con tu contraseña. ' +
-                    'Escribinos a info@menorcarugbyclub.com y te la damos.';
+                    'Tu inscripción ha quedado registrada, pero no hemos podido enviarte el correo con tu contraseña. ' +
+                    'Escríbenos a info@menorcarugbyclub.com y te la damos.';
             }
         }
 
@@ -879,8 +879,8 @@ function validar(body, tieneToken) {
     if (!body.acepta_reglamento) {
         return { error: 'Hay que aceptar el reglamento del club para inscribirse.' };
     }
-    if (!lista.length) return { error: 'No agregaste ningún jugador.' };
-    if (lista.length > 6) return { error: 'Son demasiados jugadores para un solo envío. Escribinos.' };
+    if (!lista.length) return { error: 'No has añadido ningún jugador.' };
+    if (lista.length > 6) return { error: 'Son demasiados jugadores para un solo envío. Escríbenos.' };
 
     const email = normalizarEmail(t.email);
     if (!tieneToken && !email) return { error: 'El correo del tutor no es válido.' };
@@ -893,7 +893,7 @@ function validar(body, tieneToken) {
     }
     // El CHECK tutores_documento_completo los quiere de a pares.
     if (Boolean(tipoDocTutor) !== Boolean(numDocTutor)) {
-        return { error: 'Poné el tipo y el número de documento del tutor, o ninguno de los dos.' };
+        return { error: 'Pon el tipo y el número de documento del tutor, o ninguno de los dos.' };
     }
 
     const generoTutor = limpiar(t.genero);
@@ -1110,14 +1110,14 @@ function plantillaBienvenida(nombre, password, jugadores) {
   <tr><td style="padding:30px 40px;">
     <h2 style="color:#182B49;font-size:20px;margin:0 0 15px;">Gracias, ${escapeHtml(nombre)}</h2>
     <p style="color:#333;font-size:15px;line-height:1.6;margin:0 0 20px;">
-      Recibimos la inscripción. La revisamos y te avisamos cuando esté confirmada.
+      Hemos recibido la inscripción. La revisamos y te avisamos cuando esté confirmada.
     </p>
     <table width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 24px;">${filas}</table>
     <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#182B49;border-radius:12px;">
       <tr><td style="padding:25px 30px;">
         <p style="color:#AAB4C2;font-size:11px;margin:0 0 6px;text-transform:uppercase;letter-spacing:1px;">Tu contraseña</p>
         <p style="color:#FFC72C;font-size:28px;font-weight:700;margin:0;font-family:'Courier New',monospace;letter-spacing:3px;">${escapeHtml(password)}</p>
-        <p style="color:#C3CBD6;font-size:12px;margin:10px 0 0;">Con esto entrás a ver y renovar sin volver a cargar todo.</p>
+        <p style="color:#C3CBD6;font-size:12px;margin:10px 0 0;">Con esto entras a ver y renovar sin volver a cargar todo.</p>
       </td></tr>
     </table>
     <div style="text-align:center;margin:25px 0 10px;">

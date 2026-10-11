@@ -47,12 +47,12 @@ function conectarStripe() {
 module.exports = async function accionTarjeta(req, res) {
     const payload = getAuthPayload(req);
     if (!payload) {
-        return res.status(401).json({ error: 'Entrá con tu correo y tu contraseña.' });
+        return res.status(401).json({ error: 'Entra con tu correo y tu contraseña.' });
     }
 
     if (!process.env.STRIPE_SECRET_KEY) {
         return res.status(503).json({
-            error: 'La pasarela de pago todavía no está activada. Escribinos a info@menorcarugbyclub.com.',
+            error: 'La pasarela de pago todavía no está activada. Escríbenos a info@menorcarugbyclub.com.',
         });
     }
 
@@ -181,7 +181,7 @@ module.exports = async function accionTarjeta(req, res) {
     } catch (e) {
         console.error('accion-tarjeta:', e && e.message);
         return res.status(500).json({
-            error: 'No pudimos abrir la pantalla de la tarjeta. Probá en un rato o escribinos.',
+            error: 'No hemos podido abrir la pantalla de la tarjeta. Prueba en un rato o escríbenos.',
         });
     }
 };

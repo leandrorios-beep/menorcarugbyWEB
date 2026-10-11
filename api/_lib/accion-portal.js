@@ -30,12 +30,12 @@ const URL_BASE = 'https://www.menorcarugbyclub.com';
 module.exports = async function accionPortal(req, res) {
     const payload = getAuthPayload(req);
     if (!payload) {
-        return res.status(401).json({ error: 'Entrá con tu correo y tu contraseña.' });
+        return res.status(401).json({ error: 'Entra con tu correo y tu contraseña.' });
     }
 
     if (!process.env.STRIPE_SECRET_KEY) {
         return res.status(503).json({
-            error: 'La pasarela de pago todavía no está activada. Escribinos a info@menorcarugbyclub.com.',
+            error: 'La pasarela de pago todavía no está activada. Escríbenos a info@menorcarugbyclub.com.',
         });
     }
 
@@ -65,7 +65,7 @@ module.exports = async function accionPortal(req, res) {
         const customerId = (inscripciones || [])[0] && inscripciones[0].stripe_customer_id;
         if (!customerId) {
             return res.status(409).json({
-                error: 'Todavía no dejaste ninguna tarjeta, así que no hay nada que ver acá.',
+                error: 'Todavía no has dejado ninguna tarjeta, así que no hay nada que ver aquí.',
             });
         }
 
@@ -85,12 +85,12 @@ module.exports = async function accionPortal(req, res) {
         if (/configuration/i.test(mensaje) || /portal/i.test(mensaje)) {
             return res.status(503).json({
                 error:
-                    'La zona de gestión de pagos todavía no está activada. Avisanos a ' +
+                    'La zona de gestión de pagos todavía no está activada. Avísanos a ' +
                     'info@menorcarugbyclub.com y lo resolvemos.',
             });
         }
         return res.status(500).json({
-            error: 'No pudimos abrir tu zona de pagos. Probá en un rato o escribinos.',
+            error: 'No hemos podido abrir tu zona de pagos. Prueba en un rato o escríbenos.',
         });
     }
 };

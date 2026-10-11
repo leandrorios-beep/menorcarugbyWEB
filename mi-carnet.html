@@ -300,7 +300,7 @@
                 <li><a href="index.html#nosotros" class="nav-link">Nosotros</a></li>
                 <li><a href="index.html#equipo" class="nav-link">Equipo</a></li>
                 <li><a href="calendar.html" class="nav-link">Calendario</a></li>
-                <li><a href="index.html#galeria" class="nav-link">Galeria</a></li>
+                <li><a href="index.html#galeria" class="nav-link">Galería</a></li>
                 <li><a href="index.html#tienda" class="nav-link">Tienda</a></li>
                 <li><a href="index.html#contacto" class="nav-link">Contacto</a></li>
                 <li><a href="socios.html" class="nav-link">Hazte Socio</a></li>
@@ -326,11 +326,11 @@
             <div id="loginView" class="login-card">
                 <div style="font-size:3rem;margin-bottom:1rem;"><i class="fas fa-id-card" style="color:var(--primary-yellow,#FFC72C);"></i></div>
                 <h1>Zona Socios</h1>
-                <p>Accede con el email y la contraseña que recibiste al registrarte</p>
+                <p>Accede con el correo y la contraseña que recibiste al registrarte</p>
                 <div id="loginError" class="login-error"></div>
                 <form id="loginForm">
                     <div class="login-field">
-                        <label for="loginEmail">Email</label>
+                        <label for="loginEmail">Correo</label>
                         <input type="email" id="loginEmail" required autocomplete="email" placeholder="tu@email.com">
                     </div>
                     <div class="login-field">
@@ -338,17 +338,17 @@
                         <input type="password" id="loginPassword" required autocomplete="current-password" placeholder="Tu contraseña">
                     </div>
                     <button type="submit" class="login-btn" id="loginBtn">
-                        <i class="fas fa-sign-in-alt"></i> Iniciar sesion
+                        <i class="fas fa-sign-in-alt"></i> Iniciar sesión
                     </button>
                 </form>
                 <div class="login-footer">
-                    <p>¿No tienes cuenta? <a href="socios.html">Hazte socio aqui</a></p>
+                    <p>¿No tienes cuenta? <a href="socios.html">Hazte socio aquí</a></p>
                     <p style="margin-top:0.5rem;"><a href="#" id="forgotLink" style="color:var(--primary-yellow,#FFC72C);text-decoration:none;">¿Olvidaste tu contraseña?</a></p>
                 </div>
 
                 <!-- Forgot password form (hidden by default) -->
                 <div id="forgotView" style="display:none;margin-top:1.5rem;padding-top:1.5rem;border-top:1px solid rgba(255,255,255,0.08);">
-                    <p style="color:#ccc;font-size:0.85rem;margin-bottom:1rem;">Introduce tu email y te enviaremos una nueva contraseña.</p>
+                    <p style="color:#ccc;font-size:0.85rem;margin-bottom:1rem;">Introduce tu correo y te enviaremos una nueva contraseña.</p>
                     <div id="forgotMsg" style="display:none;padding:0.65rem 1rem;border-radius:0.6rem;font-size:0.82rem;margin-bottom:1rem;"></div>
                     <div class="login-field">
                         <input type="email" id="forgotEmail" required autocomplete="email" placeholder="tu@email.com">
@@ -364,7 +364,7 @@
             <div id="dashboardView" class="dashboard">
                 <div class="dash-header">
                     <h1><i class="fas fa-id-card"></i> Mi Carnet</h1>
-                    <button class="dash-logout" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Cerrar sesion</button>
+                    <button class="dash-logout" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Cerrar sesión</button>
                 </div>
 
                 <div class="dash-grid">
@@ -405,7 +405,7 @@
                         <!-- Generating message -->
                         <div id="carnetPngPending" style="display:none;margin-top:0.75rem;text-align:center;padding:0.6rem;background:rgba(255,255,255,0.03);border-radius:0.5rem;">
                             <p style="color:var(--text-muted,#999);font-size:0.78rem;margin:0;">
-                                <i class="fas fa-clock" style="color:var(--primary-yellow);margin-right:0.3rem;"></i> Tu carnet digital se esta generando. Lo veras aqui pronto.
+                                <i class="fas fa-clock" style="color:var(--primary-yellow);margin-right:0.3rem;"></i> Tu carnet digital se está generando. Lo verás aquí pronto.
                             </p>
                         </div>
 
@@ -444,11 +444,11 @@
                         <!-- Payment status (subtle note) -->
                         <div id="paymentNote" class="payment-note payment-note--completado">
                             <i class="fas fa-check-circle" id="payIcon"></i>
-                            <span id="payStatusText">Cuota al dia</span>
+                            <span id="payStatusText">Cuota al día</span>
                         </div>
                         <div id="payDatesInfo" class="payment-dates" style="display:none;">
-                            <span id="payDateRow" style="display:none;">Ultimo pago: <strong id="payDate"></strong></span>
-                            <span id="payNextRow" style="display:none;"> · Proximo: <strong id="payNext"></strong></span>
+                            <span id="payDateRow" style="display:none;">Último pago: <strong id="payDate"></strong></span>
+                            <span id="payNextRow" style="display:none;"> · Próximo: <strong id="payNext"></strong></span>
                         </div>
 
                         <!-- Pay button (shown when needed) -->
@@ -461,7 +461,7 @@
                         <!-- Email hint (hidden for free socios) -->
                         <div class="email-hint" id="emailHint">
                             <i class="fas fa-info-circle" style="color:var(--primary-yellow,#FFC72C);margin-right:0.25rem;"></i>
-                            Al pagar, usa el mismo email con el que te registraste para vincular el pago.
+                            Al pagar, usa el mismo correo con el que te registraste para vincular el pago.
                         </div>
                     </div>
                 </div>
@@ -513,29 +513,29 @@
                         <img src="assets/images/static/logo.png" alt="Menorca Rugby" class="footer-logo">
                         <h3>MENORCA RUGBY CLUB</h3>
                     </div>
-                    <p>Vive la pasion del rugby en Menorca. Mas que un deporte, una familia unida por los valores del rugby.</p>
+                    <p>Vive la pasión del rugby en Menorca. Más que un deporte, una familia unida por los valores del rugby.</p>
                 </div>
                 <div class="footer-section">
-                    <h4>Enlaces Rapidos</h4>
+                    <h4>Enlaces Rápidos</h4>
                     <ul class="footer-links">
                         <li><a href="index.html#inicio">Inicio</a></li>
                         <li><a href="index.html#nosotros">Nosotros</a></li>
                         <li><a href="index.html#equipo">Equipos</a></li>
                         <li><a href="calendar.html">Calendario</a></li>
-                        <li><a href="privacidad.html">Politica de Privacidad</a></li>
+                        <li><a href="privacidad.html">Política de Privacidad</a></li>
                         <li><a href="/reglamento">Reglamento y normativa</a></li>
                     </ul>
                 </div>
                 <div class="footer-section">
                     <h4>Contacto</h4>
                     <ul class="footer-links">
-                        <li><i class="fas fa-map-marker-alt"></i> Carrer d'Artrutx, 4, 07714 Mao</li>
-                        <li><i class="fas fa-map-marker-alt"></i> Sa Terranova 8, Mao</li>
+                        <li><i class="fas fa-map-marker-alt"></i> Carrer d'Artrutx, 4, 07714 Maó</li>
+                        <li><i class="fas fa-map-marker-alt"></i> Sa Terranova 8, Maó</li>
                         <li><i class="fas fa-envelope"></i> info@menorcarugbyclub.com</li>
                     </ul>
                 </div>
                 <div class="footer-section">
-                    <h4>Siguenos</h4>
+                    <h4>Síguenos</h4>
                     <div class="social-links">
                         <a href="https://www.instagram.com/menorcarugby/" target="_blank" rel="noopener" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
                         <a href="https://www.facebook.com/menorcarugby" target="_blank" rel="noopener" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
@@ -629,7 +629,7 @@
                 });
                 const data = await resp.json();
                 if (!resp.ok || !data.success) {
-                    throw new Error(data.error || 'Error al iniciar sesion');
+                    throw new Error(data.error || 'Error al iniciar sesión');
                 }
 
                 // Familia sin ficha de socio: no hay carnet que ensenar, pero
@@ -637,7 +637,7 @@
                 // nada.
                 if (!data.es_socio) {
                     throw new Error(
-                        'Tu cuenta es de familia, no de socio, asi que todavia no tenes carnet. ' +
+                        'Tu cuenta es de familia, no de socio, así que todavía no tienes carnet. ' +
                         'Desde menorcarugbyclub.com/inscripcion ves a tus jugadores, sus cuotas y tus recibos.'
                     );
                 }
@@ -650,13 +650,13 @@
                 // ficha entera; ahora se piden aparte, con el mismo camino que
                 // ya usa la vuelta con el token guardado.
                 await loadProfile();
-                if (!currentSocio) throw new Error('No pudimos cargar tu ficha. Proba de nuevo.');
+                if (!currentSocio) throw new Error('No hemos podido cargar tu ficha. Prueba de nuevo.');
             } catch (err) {
                 loginError.textContent = err.message;
                 loginError.style.display = 'block';
             } finally {
                 loginBtn.disabled = false;
-                loginBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Iniciar sesion';
+                loginBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Iniciar sesión';
             }
         });
 
@@ -879,7 +879,7 @@
             } else if (estado === 'completado') {
                 payNote.className = 'payment-note payment-note--completado';
                 payIcon.className = 'fas fa-check-circle';
-                payText.textContent = 'Cuota al dia';
+                payText.textContent = 'Cuota al día';
                 emailHint.style.display = 'none';
             } else if (estado === 'pendiente') {
                 payNote.className = 'payment-note payment-note--pendiente';
@@ -894,7 +894,7 @@
             } else if (estado === 'cancelado') {
                 payNote.className = 'payment-note payment-note--cancelado';
                 payIcon.className = 'fas fa-times-circle';
-                payText.textContent = 'Suscripcion cancelada';
+                payText.textContent = 'Suscripción cancelada';
                 emailHint.style.display = '';
             }
 
@@ -921,7 +921,7 @@
                 paySection.style.display = '';
                 const link = getStripeLink(s);
                 document.getElementById('payBtn').href = link + '?prefilled_email=' + encodeURIComponent(s.email);
-                const labels = { pendiente: 'Completar pago', impago: 'Reintentar pago', cancelado: 'Reactivar suscripcion' };
+                const labels = { pendiente: 'Completar pago', impago: 'Reintentar pago', cancelado: 'Reactivar suscripción' };
                 document.getElementById('payBtnText').textContent = labels[estado] || 'Pagar ahora';
             } else {
                 paySection.style.display = 'none';
@@ -958,13 +958,13 @@
             const gymActive = (s.stripe_link === STRIPE_LINKS.gym) && s.estado_pago === 'completado' && !!s.fecha_pago;
 
             const services = [
-                { icon: 'fa-user', name: 'Socio Normal', price: '50\u20AC/a\u00F1o',
-                  desc: '10% dto. ropa oficial, 1\u00AA consumicion gratis, newsletter, carnet digital',
+                { icon: 'fa-user', name: 'Socio Normal', price: '50\u00A0\u20AC/a\u00F1o',
+                  desc: '10% dto. ropa oficial, 1\u00AA consumici\u00f3n gratis, bolet\u00EDn, carnet digital',
                   active: tipo === 'normal', link: STRIPE_LINKS.normal + emailParam },
-                { icon: 'fa-hand-holding-heart', name: 'Socio Protector', price: 'desde 33\u20AC/mes',
+                { icon: 'fa-hand-holding-heart', name: 'Socio Protector', price: 'desde 33\u00A0\u20AC/mes',
                   desc: 'Todo lo del socio normal + reconocimiento especial del club',
                   active: tipo === 'protector', usePricingTable: true },
-                { icon: 'fa-dumbbell', name: 'Gimnasio', price: '10\u20AC/mes',
+                { icon: 'fa-dumbbell', name: 'Gimnasio', price: '10\u00A0\u20AC/mes',
                   desc: 'Acceso al gimnasio del club, complemento a cualquier tipo de socio',
                   active: gymActive, link: STRIPE_LINKS.gym + emailParam },
             ];
@@ -1016,7 +1016,7 @@
                 forgotMsg.style.display = '';
                 forgotMsg.style.background = 'rgba(220,53,69,0.15)';
                 forgotMsg.style.color = '#ff6b7a';
-                forgotMsg.textContent = 'Introduce tu email';
+                forgotMsg.textContent = 'Introduce tu correo';
                 return;
             }
             forgotBtn.disabled = true;
@@ -1035,7 +1035,7 @@
                 forgotMsg.style.display = '';
                 forgotMsg.style.background = 'rgba(40,167,69,0.15)';
                 forgotMsg.style.color = '#28a745';
-                forgotMsg.textContent = 'Si el email existe, recibiras tu nueva contraseña en breve. Revisa tu bandeja de entrada y spam.';
+                forgotMsg.textContent = 'Si el correo existe, recibirás tu nueva contraseña en breve. Revisa tu bandeja de entrada y el spam.';
             } catch (err) {
                 forgotMsg.style.display = '';
                 forgotMsg.style.background = 'rgba(220,53,69,0.15)';
@@ -1127,7 +1127,7 @@
 
             if (!curr || !newP || !conf) { msg.className = 'pwd-msg pwd-msg--err'; msg.textContent = 'Completa todos los campos'; return; }
             if (newP !== conf) { msg.className = 'pwd-msg pwd-msg--err'; msg.textContent = 'Las contraseñas no coinciden'; return; }
-            if (newP.length < 6) { msg.className = 'pwd-msg pwd-msg--err'; msg.textContent = 'Minimo 6 caracteres'; return; }
+            if (newP.length < 6) { msg.className = 'pwd-msg pwd-msg--err'; msg.textContent = 'Mínimo 6 caracteres'; return; }
 
             try {
                 const resp = await fetch('/api/socio-change-password', {
@@ -1199,7 +1199,7 @@
                 toast('Carnet regenerado correctamente');
             } catch (err) {
                 console.error('Carnet regen error:', err);
-                toast('Foto actualizada, pero el carnet no se pudo regenerar', true);
+                toast('Foto actualizada, pero el carnet no se ha podido regenerar', true);
             }
         }
 

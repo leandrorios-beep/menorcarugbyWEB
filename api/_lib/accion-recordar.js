@@ -18,7 +18,7 @@ const { normalizarEmail, buscarTutorPorEmail, buscarJugadoresPorEmail, enviarMai
 module.exports = async function accionRecordar(req, res) {
 
     const email = normalizarEmail((req.body || {}).email);
-    if (!email) return res.status(400).json({ error: 'Escribí un correo válido' });
+    if (!email) return res.status(400).json({ error: 'Escribe un correo válido' });
 
     const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
 
@@ -54,7 +54,7 @@ module.exports = async function accionRecordar(req, res) {
                 tutor = await crearCuentaDesdeJugadores(supabase, email, jugadores);
             } catch (e) {
                 console.error('inscripcion-recordar (crear cuenta):', e && e.message);
-                return res.status(500).json({ error: 'No pudimos preparar tu cuenta. Escribinos.' });
+                return res.status(500).json({ error: 'No hemos podido preparar tu cuenta. Escríbenos.' });
             }
         }
     }
@@ -78,14 +78,14 @@ module.exports = async function accionRecordar(req, res) {
             .eq('tutor_id', tutor.tutor_id);
         if (error) {
             console.error('inscripcion-recordar (tutor):', error.message);
-            return res.status(500).json({ error: 'No se pudo cambiar la contraseña' });
+            return res.status(500).json({ error: 'No se ha podido cambiar la contraseña' });
         }
     }
     if (socio) {
         const { error } = await supabase.from('socios').update({ password_hash: hash }).eq('id', socio.id);
         if (error) {
             console.error('inscripcion-recordar (socio):', error.message);
-            return res.status(500).json({ error: 'No se pudo cambiar la contraseña' });
+            return res.status(500).json({ error: 'No se ha podido cambiar la contraseña' });
         }
     }
 
@@ -102,8 +102,8 @@ module.exports = async function accionRecordar(req, res) {
         return res.status(200).json({
             enviado: false,
             aviso:
-                'Cambiamos tu contraseña pero no pudimos enviarte el correo. ' +
-                'Escribinos a info@menorcarugbyclub.com y te la damos.',
+                'Hemos cambiado tu contraseña, pero no hemos podido enviarte el correo. ' +
+                'Escríbenos a info@menorcarugbyclub.com y te la damos.',
         });
     }
 
@@ -209,7 +209,7 @@ function plantilla(nombre, password) {
   <tr><td style="padding:30px 40px;">
     <h2 style="color:#182B49;font-size:20px;margin:0 0 15px;">Hola ${escapeHtml(nombre)},</h2>
     <p style="color:#333;font-size:15px;line-height:1.6;margin:0 0 20px;">
-      Ya estás en nuestra base de datos. Con esta contraseña podés entrar, ver a tus jugadores y renovar la inscripción.
+      Ya estás en nuestra base de datos. Con esta contraseña puedes entrar, ver a tus jugadores y renovar la inscripción.
     </p>
     <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#182B49;border-radius:12px;">
       <tr><td style="padding:25px 30px;">
@@ -222,7 +222,7 @@ function plantilla(nombre, password) {
     </div>
   </td></tr>
   <tr><td style="background-color:#182B49;padding:20px 40px;text-align:center;">
-    <p style="color:#C3CBD6;font-size:12px;margin:0;">Si no pediste esto, escribinos a info@menorcarugbyclub.com</p>
+    <p style="color:#C3CBD6;font-size:12px;margin:0;">Si no has pedido esto, escríbenos a info@menorcarugbyclub.com</p>
   </td></tr>
 </table>
 </td></tr></table>

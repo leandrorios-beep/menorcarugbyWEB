@@ -287,10 +287,10 @@ module.exports = async function handler(req, res) {
                 subject: 'Reembolso de Menorca Rugby Club',
                 text:
                     `Hola:\n\n` +
-                    `Te confirmamos que te hemos devuelto ${eur} EUR. El importe vuelve a tu ` +
-                    `tarjeta en unos dias habiles, segun tu banco.\n\n` +
+                    `Te confirmamos que te hemos devuelto ${eur} €. El importe vuelve a tu ` +
+                    `tarjeta en unos días hábiles, según tu banco.\n\n` +
                     `Si fue por un cambio de tarifa, cuando quieras puedes volver a inscribir en ` +
-                    `https://www.menorcarugbyclub.com/inscripcion y se cobrara el importe nuevo.\n\n` +
+                    `https://www.menorcarugbyclub.com/inscripcion y se cobrará el importe nuevo.\n\n` +
                     `Cualquier duda, responde a este correo.\n\nGracias,\nMenorca Rugby Club`,
                 html:
                     `<p>Hola:</p>` +

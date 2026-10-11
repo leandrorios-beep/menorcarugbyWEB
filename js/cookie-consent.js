@@ -18,12 +18,12 @@
         '<div class="cookie-banner-content">' +
             '<p class="cookie-banner-text" data-i18n-cookie="text">' +
                 'Usamos cookies propias para guardar tu preferencia de idioma. ' +
-                'Tambien cargamos recursos externos (Google Maps, Google Fonts, Font Awesome). ' +
+                'También cargamos recursos externos (Google Maps, Google Fonts, Font Awesome). ' +
                 'Al continuar navegando, aceptas su uso.' +
             '</p>' +
             '<div class="cookie-banner-actions">' +
                 '<button class="cookie-btn-accept" id="cookieAccept" data-i18n-cookie="accept">Aceptar</button>' +
-                '<a href="privacidad.html" class="cookie-btn-info" data-i18n-cookie="info">Mas info</a>' +
+                '<a href="privacidad.html" class="cookie-btn-info" data-i18n-cookie="info">Más info</a>' +
             '</div>' +
         '</div>';
 
@@ -45,9 +45,9 @@
     // Translations
     var translations = {
         es: {
-            text: 'Usamos cookies propias para guardar tu preferencia de idioma. Tambien cargamos recursos externos (Google Maps, Google Fonts, Font Awesome). Al continuar navegando, aceptas su uso.',
+            text: 'Usamos cookies propias para guardar tu preferencia de idioma. También cargamos recursos externos (Google Maps, Google Fonts, Font Awesome). Al continuar navegando, aceptas su uso.',
             accept: 'Aceptar',
-            info: 'Mas info'
+            info: 'Más info'
         },
         en: {
             text: 'We use our own cookies to save your language preference. We also load external resources (Google Maps, Google Fonts, Font Awesome). By continuing to browse, you accept their use.',

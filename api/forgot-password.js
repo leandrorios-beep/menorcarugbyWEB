@@ -119,7 +119,7 @@ function buildResetEmail(nombre, password) {
     <!-- Footer -->
     <tr><td style="background-color:#182B49;padding:20px 40px;text-align:center;">
         <p style="color:#C3CBD6;font-size:12px;margin:0;">
-            Si no solicitaste este cambio, contacta con nosotros en info@menorcarugbyclub.com
+            Si no has solicitado este cambio, contacta con nosotros en info@menorcarugbyclub.com
         </p>
     </td></tr>
 

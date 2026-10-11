@@ -90,7 +90,7 @@ module.exports = async function accionAcceso(req, res) {
     const candidatos = [tutor, socio].filter((c) => c && c.password_hash);
     if (!candidatos.length) {
         return res.status(401).json({
-            error: 'Esta cuenta todavía no tiene contraseña. Pedí que te la enviemos por correo.',
+            error: 'Esta cuenta todavía no tiene contraseña. Pide que te la enviemos por correo.',
         });
     }
 
@@ -109,7 +109,7 @@ module.exports = async function accionAcceso(req, res) {
         return res.status(403).json({
             error:
                 'Tu ficha de tutor está archivada porque ningún jugador figura a tu cargo. ' +
-                'Escribinos a info@menorcarugbyclub.com y la reactivamos.',
+                'Escríbenos a info@menorcarugbyclub.com y la reactivamos.',
         });
     }
 

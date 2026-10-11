@@ -273,7 +273,7 @@ body { background: #F1F4F8; }
 
     <div class="insc-hero">
         <h1 data-i18n="inscripcion.titulo">Inscripción <span id="temporadaTitulo"></span></h1>
-        <p data-i18n="inscripcion.subtitulo">Da igual si es la primera vez o si venís renovando: empezá poniendo tu correo y nosotros vemos en qué caso estás.</p>
+        <p data-i18n="inscripcion.subtitulo">Da igual si es la primera vez o si vienes renovando: empieza poniendo tu correo y nosotros vemos en qué caso estás.</p>
     </div>
 
     <div id="avisoGlobal"></div>
@@ -369,7 +369,7 @@ body { background: #F1F4F8; }
         <div id="listaJugadores"></div>
 
         <button type="button" class="btn btn-secundario" id="btnAgregar" style="margin-bottom:16px;">
-            <i class="fa-solid fa-plus"></i> Agregar otro jugador
+            <i class="fa-solid fa-plus"></i> Añadir otro jugador
         </button>
 
         <div class="resumen oculto" id="resumen">
@@ -512,7 +512,7 @@ body { background: #F1F4F8; }
     <div class="cargando oculto" id="cargando"><i class="fa-solid fa-circle-notch fa-spin"></i> <span data-i18n="inscripcion.cargando">Un momento…</span></div>
 
     <p class="pie" data-i18n="inscripcion.pie">
-        ¿Algo no cuadra? Escribinos a <a href="mailto:info@menorcarugbyclub.com">info@menorcarugbyclub.com</a>
+        ¿Algo no cuadra? Escríbenos a <a href="mailto:info@menorcarugbyclub.com">info@menorcarugbyclub.com</a>
     </p>
 </main>
 
@@ -588,7 +588,7 @@ async function api(accion, opciones) {
     var r = await fetch(url, { method: esGet ? 'GET' : 'POST', headers: headers, body: cuerpo });
     var datos = null;
     try { datos = await r.json(); } catch (e) { datos = {}; }
-    if (!r.ok) throw new Error(datos.error || 'Algo falló. Probá de nuevo en un momento.');
+    if (!r.ok) throw new Error(datos.error || 'Algo ha fallado. Prueba de nuevo en un momento.');
     return datos;
 }
 
@@ -599,9 +599,9 @@ async function api(accion, opciones) {
 (function () {
     var pago = new URLSearchParams(window.location.search).get('pago');
     if (pago === 'ok') {
-        aviso('Listo, el pago se envio. En cuanto el banco lo confirme te llega el recibo por correo.', 'ok');
+        aviso('Listo, el pago se ha enviado. En cuanto el banco lo confirme te llega el recibo por correo.', 'ok');
     } else if (pago === 'cancelado') {
-        aviso('No se completo el pago. Podes volver a intentarlo cuando quieras.', 'info');
+        aviso('No se ha completado el pago. Puedes volver a intentarlo cuando quieras.', 'info');
     }
     if (pago) history.replaceState({}, '', window.location.pathname);
 })();
@@ -652,7 +652,7 @@ $('formEmail').addEventListener('submit', async function (e) {
 
         if (r.existe) {
             if (!r.activo) {
-                aviso('Tu ficha está archivada porque ningún jugador figura a tu cargo. Escribinos y la reactivamos.', 'info');
+                aviso('Tu ficha está archivada porque ningún jugador figura a tu cargo. Escríbenos y la reactivamos.', 'info');
                 return;
             }
             // Reconocido por la ficha del jugador y todavía sin cuenta: es el
@@ -866,8 +866,8 @@ function prepararPago(jugadores) {
     }).length) {
         mostrar('pasoPagar', true);
         $('textoPagar').textContent =
-            'Ya pagaste la temporada completa. No hay ninguna cuota mensual programada: ' +
-            'no se te va a cobrar nada mas hasta la temporada que viene.';
+            'Ya has pagado la temporada completa. No hay ninguna cuota mensual programada: ' +
+            'no se te va a cobrar nada más hasta la temporada que viene.';
         $('resumenPago').classList.add('oculto');
         $('btnPagar').classList.add('oculto');
         mostrar('btnPortal', true);
@@ -894,7 +894,7 @@ function prepararPago(jugadores) {
     if (cobrando.length && !sinTarjeta.length) {
         mostrar('pasoPagar', true);
         $('textoPagar').textContent =
-            'Ya está todo en marcha: la cuota se cobra sola con la tarjeta que dejaste.';
+            'Ya está todo en marcha: la cuota se cobra sola con la tarjeta que has dejado.';
         $('resumenPago').classList.add('oculto');
         // Cambiar la tarjeta tiene que poder hacerse SIEMPRE. Antes el botón
         // sólo salía si todavía no habías dejado ninguna, así que a quien se le
@@ -1010,7 +1010,7 @@ function prepararDesplegables() {
     if (ciu && !ciu.options.length) {
         var vacia = document.createElement('option');
         vacia.value = '';
-        vacia.textContent = 'Eleg\u00ed\u2026';
+        vacia.textContent = 'Elige\u2026';
         ciu.appendChild(vacia);
         MRCFormulario.POBLACIONES.forEach(function (n) {
             var o = document.createElement('option');
@@ -1265,7 +1265,7 @@ function tarjetaJugador(j, i) {
         // peso" hace que se mire eso y nada más, y lo que cambia de un año a
         // otro es un teléfono, una dirección o una alergia igual de a menudo.
         (j.heredado && !j.no_renueva
-            ? '<div class="aviso aviso-info">Es el momento de actualizar lo que haya cambiado: <strong>verificá bien todos los datos</strong>.</div>'
+            ? '<div class="aviso aviso-info">Es el momento de actualizar lo que haya cambiado: <strong>verifica bien todos los datos</strong>.</div>'
             : '') +
 
         // "Soy yo, el jugador": en este club hay 32 adultos que juegan y se
@@ -1532,7 +1532,7 @@ function elegirFoto(input, i) {
             var avatar = input.closest('.jugador').querySelector('.avatar');
             if (avatar) avatar.src = estado.jugadores[i].foto;
         };
-        img.onerror = function () { aviso('No pudimos leer esa imagen. Probá con otra.'); };
+        img.onerror = function () { aviso('No hemos podido leer esa imagen. Prueba con otra.'); };
         img.src = lector.result;
     };
     lector.readAsDataURL(file);
@@ -1646,7 +1646,7 @@ $('btnEnviar').addEventListener('click', async function () {
     // servidor con un mensaje que no señala el campo.
     var yo = estado.jugadores.find(function (x) { return x.soy_yo; });
     if (yo && (!$('t_apellido').value.trim() || !$('t_nacimiento').value)) {
-        aviso('Marcaste "soy yo, el jugador": completá arriba tus apellidos y tu fecha de nacimiento.');
+        aviso('Has marcado "soy yo, el jugador": completa arriba tus apellidos y tu fecha de nacimiento.');
         $('t_apellido').focus();
         return;
     }
@@ -1743,7 +1743,7 @@ $('btnEnviar').addEventListener('click', async function () {
         var html = altas.length === 0
             ? '<p class="sub">Anotamos que ' + bajas.map(function (x) { return '<strong>' + escapar(x.nombre) + '</strong>'; }).join(' y ') +
               ' no juega' + (bajas.length > 1 ? 'n' : '') + ' esta temporada. Gracias por avisar.</p>'
-            : '<p class="sub">Recibimos la inscripción de ' +
+            : '<p class="sub">Hemos recibido la inscripción de ' +
             altas.map(function (x) { return '<strong>' + escapar(x.nombre) + '</strong> (' + escapar(x.categoria) + ')'; }).join(', ') +
             ' para la temporada ' + escapar(r.temporada) + '. La revisamos y te avisamos.</p>';
 
@@ -1958,12 +1958,12 @@ async function volviendoDeStripe() {
         mostrar('pasoFormulario', true);
         if (resultado === 'ok') {
             $('avisoVuelta').innerHTML =
-                '<div class="aviso aviso-ok"><strong>Tu tarjeta quedó guardada.</strong> ' +
-                'No se te cobró nada. En cuanto el club apruebe la inscripción se pone en marcha ' +
+                '<div class="aviso aviso-ok"><strong>Tu tarjeta ha quedado guardada.</strong> ' +
+                'No se te ha cobrado nada. En cuanto el club apruebe la inscripción se pone en marcha ' +
                 'la cuota y te avisamos por correo.</div>';
         } else {
             $('avisoVuelta').innerHTML =
-                '<div class="aviso aviso-info">No llegaste a guardar la tarjeta. ' +
+                '<div class="aviso aviso-info">No has llegado a guardar la tarjeta. ' +
                 'Puedes hacerlo cuando quieras desde aquí abajo.</div>';
         }
         mostrar('avisoVuelta', true);

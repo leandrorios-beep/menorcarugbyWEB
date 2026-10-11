@@ -27,7 +27,7 @@ const { findSociosByEmail } = require('./auth');
 module.exports = async function accionInicio(req, res) {
 
     const email = normalizarEmail((req.body || {}).email);
-    if (!email) return res.status(400).json({ error: 'Escribí un correo válido' });
+    if (!email) return res.status(400).json({ error: 'Escribe un correo válido' });
 
     const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
 
