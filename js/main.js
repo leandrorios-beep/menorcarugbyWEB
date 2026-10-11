@@ -14,42 +14,42 @@ const siteConfig = {
     'TIKTOK_URL': 'https://www.tiktok.com/@menorcarugbyclub'
 };
 
+/**
+ * Arranca una pieza de la pagina sin que pueda tumbar a las demas.
+ *
+ * Esto estaba escrito como doce llamadas seguidas, y eso significaba que la
+ * primera que fallara se llevaba por delante a todas las siguientes. Y
+ * fallaba: initGallery() es la segunda y buscaba el lightbox, que SOLO existe
+ * en la portada. En las otras catorce paginas que cargan este archivo
+ * reventaba ahi, asi que el formulario, el scroll suave, las animaciones, el
+ * parallax y el chat no llegaban a arrancar nunca. Nadie se entero porque el
+ * error se quedaba en la consola.
+ *
+ * Son doce piezas independientes: que una pagina no tenga galeria no es razon
+ * para quedarse sin chat. Si una falla, se dice en la consola con su nombre y
+ * se sigue con la siguiente.
+ */
+function arrancar(nombre, fn) {
+    try {
+        fn();
+    } catch (e) {
+        console.error(`[main.js] ${nombre} no arranco:`, e);
+    }
+}
+
 document.addEventListener('DOMContentLoaded', function() {
-    // Navigation functionality
-    initNavigation();
-
-    // Gallery functionality
-    initGallery();
-
-    // Load gallery images dynamically
-    loadGalleryImages();
-
-    // Photo upload functionality
-    initPhotoUpload();
-
-    // Form functionality
-    initForms();
-
-    // Smooth scrolling for navigation links
-    initSmoothScroll();
-
-    // Intersection Observer for animations
-    initScrollAnimations();
-
-    // Parallax effects
-    initParallaxEffects();
-
-    // Chat widget functionality
-    initChatWidget();
-
-    // Setup external links
-    setupExternalLinks();
-
-    // Setup image fallbacks
-    setupImageFallbacks();
-
-    // Setup random hero background
-    setupRandomHeroBackground();
+    arrancar('initNavigation', initNavigation);
+    arrancar('initGallery', initGallery);
+    arrancar('loadGalleryImages', loadGalleryImages);
+    arrancar('initPhotoUpload', initPhotoUpload);
+    arrancar('initForms', initForms);
+    arrancar('initSmoothScroll', initSmoothScroll);
+    arrancar('initScrollAnimations', initScrollAnimations);
+    arrancar('initParallaxEffects', initParallaxEffects);
+    arrancar('initChatWidget', initChatWidget);
+    arrancar('setupExternalLinks', setupExternalLinks);
+    arrancar('setupImageFallbacks', setupImageFallbacks);
+    arrancar('setupRandomHeroBackground', setupRandomHeroBackground);
 });
 
 // ==========================================================================
@@ -197,6 +197,9 @@ function initGallery() {
     });
 
     function openLightbox(src) {
+        // Se expone en window y la llama el carrusel, asi que puede entrar
+        // aqui desde una pagina que no tiene lightbox.
+        if (!lightbox || !lightboxImg) return;
         lightboxImg.src = src;
         lightbox.classList.add('active');
         document.body.style.overflow = 'hidden';
@@ -209,6 +212,7 @@ function initGallery() {
     window.openLightbox = openLightbox;
 
     function closeLightbox() {
+        if (!lightbox) return;
         lightbox.classList.remove('active');
         document.body.style.overflow = '';
         document.removeEventListener('keydown', handleKeyDown);
@@ -238,17 +242,22 @@ function initGallery() {
         }
     }
 
-    // Event listeners
-    lightboxClose.addEventListener('click', closeLightbox);
-    lightboxPrev.addEventListener('click', showPrevImage);
-    lightboxNext.addEventListener('click', showNextImage);
+    // El lightbox SOLO existe en la portada. En las otras catorce paginas que
+    // cargan este archivo, estos cuatro elementos son null y engancharles un
+    // listener reventaba la funcion entera... y con ella todo lo que venia
+    // detras en el DOMContentLoaded.
+    if (lightbox && lightboxClose && lightboxPrev && lightboxNext) {
+        lightboxClose.addEventListener('click', closeLightbox);
+        lightboxPrev.addEventListener('click', showPrevImage);
+        lightboxNext.addEventListener('click', showNextImage);
 
-    // Close lightbox when clicking outside image
-    lightbox.addEventListener('click', (e) => {
-        if (e.target === lightbox) {
-            closeLightbox();
-        }
-    });
+        // Close lightbox when clicking outside image
+        lightbox.addEventListener('click', (e) => {
+            if (e.target === lightbox) {
+                closeLightbox();
+            }
+        });
+    }
 }
 
 // ==========================================================================
@@ -752,7 +761,11 @@ function initChatWidget() {
         });
 
         if (!chatWindow) {
-            console.error('❌ CHAT: No chatWindow element found. Available elements with ID:');
+            // Normal: el chat solo esta maquetado en la portada. No es un error,
+            // y gritarlo en rojo en las otras catorce paginas solo sirve para que
+            // nadie mire la consola, que es como initGallery se paso anios
+            // reventando sin que se enterara nadie.
+            console.log('CHAT: esta pagina no lleva chat, no se inicia.');
             const allWithIds = document.querySelectorAll('[id]');
             allWithIds.forEach(el => {
                 if (el.id.toLowerCase().includes('chat')) {
@@ -1189,6 +1202,7 @@ function setupRandomHeroBackground() {
         };
         img.src = jpegPath;
     } else {
-        console.error('❌ Hero video element not found');
+        // Normal tambien: la cabecera con video solo esta en la portada.
+        console.log('Portada: esta pagina no lleva cabecera con video.');
     }
 }
