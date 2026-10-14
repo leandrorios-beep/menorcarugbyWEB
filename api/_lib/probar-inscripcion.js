@@ -10,15 +10,30 @@
  *
  * Todo lo que crea lleva el correo de prueba de abajo y se limpia al terminar,
  * incluso si algún paso falla.
+ *
+ * BLINDAJE. Regla de Leandro (12/10/2026): una prueba JAMÁS tiene impacto
+ * económico ni deja filas en los logs, y si necesita un usuario de la app, usa
+ * el suyo y el de nadie más. Esta no usa ninguno: actúa como familias de
+ * prueba con correos .test. Lo de abajo va ANTES de cargar ningún handler:
+ *
+ * 1. Del .env.local entra sólo lo de Supabase. La clave LIVE de Stripe ni se
+ *    lee, y lo que viniera heredado de la consola (Stripe, Gmail, push) se borra.
+ * 2. require('stripe'), require('nodemailer') y require('web-push') devuelven
+ *    algo que revienta al usarse, aunque mañana un handler lea la clave de otro
+ *    sitio.
+ * 3. fetch, http y https sólo llegan a Supabase. Cualquier escritura en
+ *    app_logs, admin_logs o correos_enviados se contesta con un 201 falso y no
+ *    llega a la base.
  */
 
 const fs = require('fs');
 const path = require('path');
-const { createClient } = require('@supabase/supabase-js');
+const Module = require('module');
 
 // El .env.local vive en el proyecto de la app; esta web lee las variables desde
 // Vercel. Para probar en local se toman de ahí.
 const RUTA_ENV = 'C:/red.umbrella/rugby-manager/rugby-manager/.env.local';
+const QUIERO = new Set(['NEXT_PUBLIC_SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY']);
 const env = Object.fromEntries(
     fs
         .readFileSync(RUTA_ENV, 'utf8')
@@ -28,13 +43,57 @@ const env = Object.fromEntries(
             const i = l.indexOf('=');
             return [l.slice(0, i).trim(), l.slice(i + 1).trim()];
         })
+        .filter(([k]) => QUIERO.has(k))
 );
+// Sin credenciales de Gmail se prueba también que el handler avise cuando el
+// correo no sale, que es la situación real de hoy.
+const PROHIBIDAS = /STRIPE|GMAIL|SMTP|MAIL|VAPID|PUSH|TWILIO|WHATSAPP|RESEND|SENDGRID|ACCESS_TOKEN/i;
+for (const k of Object.keys(process.env)) if (PROHIBIDAS.test(k)) delete process.env[k];
 process.env.SUPABASE_URL = env.NEXT_PUBLIC_SUPABASE_URL;
 process.env.SUPABASE_SERVICE_ROLE_KEY = env.SUPABASE_SERVICE_ROLE_KEY;
-// A propósito SIN credenciales de Gmail: así se prueba también que el handler
-// avise cuando el correo no sale, que es la situación real de hoy.
-delete process.env.GMAIL_USER;
-delete process.env.GMAIL_APP_PASSWORD;
+
+const HOST_SUPABASE = new URL(process.env.SUPABASE_URL).host;
+const TABLAS_DE_LOG = /\/rest\/v1\/(app_logs|admin_logs|correos_enviados)(\?|\/|$)/;
+const bloqueado = [];
+const logsDescartados = [];
+function cortar(que) {
+    bloqueado.push(que);
+    throw new Error('BLINDAJE: una prueba no hace esto: ' + que);
+}
+
+const cargarModulo = Module._load;
+Module._load = function (pedido, ...resto) {
+    if (pedido === 'stripe') return () => cortar('stripe');
+    if (pedido === 'nodemailer') return { createTransport: () => cortar('nodemailer.createTransport') };
+    if (pedido === 'web-push') return { setVapidDetails() {}, sendNotification: async () => cortar('web-push.sendNotification') };
+    return cargarModulo.call(this, pedido, ...resto);
+};
+
+const fetchReal = globalThis.fetch;
+globalThis.fetch = async (entrada, init = {}) => {
+    const url = new URL(typeof entrada === 'string' ? entrada : (entrada && entrada.url) || String(entrada));
+    const metodo = String(init.method || (entrada && entrada.method) || 'GET').toUpperCase();
+    if (url.host !== HOST_SUPABASE) cortar(`${metodo} ${url.host}${url.pathname}`);
+    if (TABLAS_DE_LOG.test(url.pathname) && metodo !== 'GET' && metodo !== 'HEAD') {
+        logsDescartados.push(`${metodo} ${url.pathname.replace('/rest/v1/', '')}`);
+        return new Response(null, { status: 201 });
+    }
+    return fetchReal(entrada, init);
+};
+
+for (const mod of [require('http'), require('https')]) {
+    for (const f of ['request', 'get']) {
+        const original = mod[f];
+        mod[f] = function (a, ...resto) {
+            const host = typeof a === 'string' || a instanceof URL ? new URL(String(a)).host : a && (a.host || a.hostname);
+            if (host && String(host).split(':')[0] !== HOST_SUPABASE.split(':')[0]) cortar(`${f} ${host}`);
+            return original.call(this, a, ...resto);
+        };
+    }
+}
+
+// Después del blindaje: supabase-js se queda con el fetch al crear el cliente.
+const { createClient } = require('@supabase/supabase-js');
 
 const EMAIL = 'prueba.inscripcion.borrar@menorcarugbyclub.test';
 const db = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY, {
@@ -131,8 +190,37 @@ async function limpiar(silencioso) {
     if (!silencioso) console.log(`  limpiados: 1 tutor, ${ids.length} jugadores`);
 }
 
+/**
+ * Los DNI de mentira de esta prueba (00000000T, 00000001R) tienen la forma de
+ * uno de verdad, y el alta REUTILIZA la ficha de quien ya tenga el mismo
+ * documento. Si un jugador o un tutor real tuviera uno de esos —un relleno
+ * típico para quien no tiene DNI—, la prueba le pisaría los datos y al limpiar
+ * lo borraría. Así que antes de tocar nada se comprueba que no hay ninguno.
+ */
+async function ningunRealConLosDniDePrueba() {
+    const limpio = (s) => String(s || '').toUpperCase().replace(/[^0-9A-Z]/g, '');
+    const DE_PRUEBA = new Set(['00000000T', '00000001R']);
+    const [{ data: ps, error: e1 }, { data: ts, error: e2 }] = await Promise.all([
+        db.from('players').select('player_id, tax_number').ilike('tax_number', '%0000000%'),
+        db.from('tutores').select('tutor_id, email, numero_documento').ilike('numero_documento', '%0000000%'),
+    ]);
+    if (e1 || e2) throw new Error('no se pudo comprobar los DNI de prueba: ' + (e1 || e2).message);
+    const choques = [
+        ...(ps || []).filter((p) => DE_PRUEBA.has(limpio(p.tax_number))).map((p) => 'jugador ' + p.player_id),
+        ...(ts || [])
+            .filter((t) => DE_PRUEBA.has(limpio(t.numero_documento)) && !/\.test$/i.test(t.email || ''))
+            .map((t) => 'tutor ' + t.tutor_id),
+    ];
+    if (choques.length) {
+        console.error('BLINDAJE: alguien real tiene un DNI de los de esta prueba. No sigo:', choques);
+        process.exit(1);
+    }
+}
+
 // ── La prueba ──────────────────────────────────────────────────────────────
 async function main() {
+    await ningunRealConLosDniDePrueba();
+
     console.log('Limpieza previa');
     await limpiar();
 
@@ -1265,6 +1353,10 @@ async function main() {
 
     console.log('\nLimpieza');
     await limpiar();
+
+    console.log('\nBlindaje');
+    comprobar('nada intentó salir de Supabase: ni Stripe, ni correo, ni push', bloqueado.length === 0, bloqueado);
+    comprobar('ninguna escritura en los logs (ni descartada)', logsDescartados.length === 0, logsDescartados);
 
     console.log(`\n${fallos === 0 ? 'Todo en orden.' : fallos + ' comprobaciones fallaron.'}`);
     process.exit(fallos === 0 ? 0 : 1);
