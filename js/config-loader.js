@@ -57,9 +57,13 @@ class ConfigLoader {
 
     loadDefaultConfig() {
         this.config = {
-            // Tienda discontinuada: ver data/external-urls.txt.
-            'STORE_ES': '', 'STORE_CA': '', 'STORE_EN': '',
-            'STORE_FR': '', 'STORE_IT': '', 'STORE_PT': '',
+            // La tienda sigue en Clupik: ver data/external-urls.txt.
+            'STORE_ES': 'https://menorcarugby.clupik.app/es/shopCategory/all',
+            'STORE_CA': 'https://menorcarugby.clupik.app/ca/shopCategory/all',
+            'STORE_EN': 'https://menorcarugby.clupik.app/en/shopCategory/all',
+            'STORE_FR': 'https://menorcarugby.clupik.app/fr/shopCategory/all',
+            'STORE_IT': 'https://menorcarugby.clupik.app/it/shopCategory/all',
+            'STORE_PT': 'https://menorcarugby.clupik.app/pt/shopCategory/all',
             'REGISTRATION_SCHOOL': 'https://www.menorcarugbyclub.com/inscripcion',
             'REGISTRATION_YOUTH': 'https://www.menorcarugbyclub.com/inscripcion',
             'REGISTRATION_SENIOR': 'https://www.menorcarugbyclub.com/inscripcion',

@@ -322,6 +322,7 @@ img {
 .nav-brand {
     display: flex;
     align-items: center;
+    flex-shrink: 0;
     gap: 1rem;
     text-decoration: none;
     cursor: pointer;
@@ -343,19 +344,35 @@ img {
     font-size: 1.5rem;
     color: var(--primary-navy);
     letter-spacing: 1px;
+    white-space: nowrap;
 }
 
 .nav-menu {
     display: flex;
     align-items: center;
-    gap: 2rem;
+    flex-wrap: nowrap;
+    gap: 0.25rem;
     list-style: none;
+}
+
+.nav-menu > * {
+    flex-shrink: 0;
+}
+
+/* El selector de idioma lo mete i18n.js al final del menú. */
+.nav-menu > .language-switcher {
+    margin-left: 0.75rem;
+}
+
+.lang-current {
+    white-space: nowrap;
 }
 
 .nav-link {
     font-weight: 500;
     color: var(--primary-navy);
-    padding: 0.5rem 1rem;
+    white-space: nowrap;
+    padding: 0.5rem 0.7rem;
     border-radius: var(--border-radius);
     transition: var(--transition-fast);
     position: relative;
@@ -408,6 +425,76 @@ img {
     background: var(--primary-navy);
     transition: var(--transition-fast);
     border-radius: 2px;
+}
+
+/* UNA SOLA FILA, SIEMPRE.
+   El header lleva el logo, nueve enlaces y el selector de idioma. Antes, en
+   cuanto faltaba sitio, los textos se partían en dos líneas («Hazte / Socio»,
+   «MENORCA / RUGBY») y a 1280 px —una pantalla de 1920 con el zoom al 150 %—
+   el nombre se montaba encima de «Inicio». Ahora nada se parte, y según baja
+   el ancho se cede sitio en dos pasos: primero menos aire entre enlaces y el
+   nombre del idioma (queda la bandera), y por debajo de 1200 px el menú de
+   hamburguesa. Los cortes están medidos en Chrome: con el primer paso, todo
+   cabe en una fila hasta ~1.180 px. */
+@media (max-width: 1500px) {
+    .nav-container { padding: 0 24px; }
+    .nav-brand { gap: 0.75rem; }
+    .brand-text { font-size: 1.25rem; }
+    .nav-link { padding: 0.5rem; font-size: 0.95rem; }
+    .nav-menu > .language-switcher { margin-left: 0.5rem; }
+    .nav-menu > .language-switcher .lang-name { display: none; }
+}
+
+@media (max-width: 1200px) {
+    .nav-menu {
+        position: fixed;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: var(--white);
+        flex-direction: column;
+        gap: 1rem;
+        padding: 2rem;
+        box-shadow: var(--shadow-md);
+        transform: translateY(-100%);
+        transition: var(--transition-smooth);
+        opacity: 0;
+        visibility: hidden;
+    }
+
+    .nav-menu.active {
+        transform: translateY(0);
+        opacity: 1;
+        visibility: visible;
+    }
+
+    .nav-link { font-size: 1rem; }
+
+    .nav-menu > .language-switcher {
+        order: -1;
+        margin: 0 0 1rem;
+    }
+
+    .nav-menu > .language-switcher .lang-name { display: inline; }
+
+    .lang-dropdown {
+        right: auto;
+        left: 0;
+        min-width: 150px;
+    }
+
+    .nav-toggle { display: flex; }
+
+    .nav-toggle.active span:nth-child(1) { transform: rotate(45deg) translate(5px, 5px); }
+    .nav-toggle.active span:nth-child(2) { opacity: 0; }
+    .nav-toggle.active span:nth-child(3) { transform: rotate(-45deg) translate(7px, -6px); }
+}
+
+/* En el teléfono el nombre va en una línea al lado del logo, más chico. */
+@media (max-width: 480px) {
+    .nav-container { padding: 0 16px; }
+    .logo { height: 40px; }
+    .brand-text { font-size: 1.1rem; }
 }
 
 /* Hero Section */
@@ -643,6 +730,15 @@ img {
 .stack-img:hover {
     transform: scale(1.05);
     z-index: 3;
+}
+
+/* En el teléfono, una debajo de la otra: escalonadas se pisaban y la de abajo
+   parecía caerse encima de la primera. */
+@media (max-width: 768px) {
+    .about-visual { height: auto; }
+    .image-stack { display: flex; flex-direction: column; gap: 1rem; height: auto; }
+    .stack-img { position: static; width: 100%; height: 260px; }
+    .stack-img:hover { transform: none; }
 }
 
 /* Team Section */
@@ -1526,7 +1622,10 @@ img {
 
 .join-content {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    /* minmax(0, …) y no 1fr a secas: con 1fr la columna de las tarjetas se
+       estiraba hasta meter las cuatro en fila, aplastaba el texto de la
+       izquierda y la cuarta se salía de la pantalla a 1280 px. */
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr);
     gap: 4rem;
     align-items: start;
 }
@@ -2191,14 +2290,25 @@ img {
         transform: rotate(-45deg) translate(7px, -6px);
     }
 
+    /* En el teléfono la portada crece con su contenido. Con alto fijo y el
+       contenido centrado, el título «MENORCA RUGBY CLUB» quedaba escondido
+       detrás del header y el cartel de inscripciones tapaba el subtítulo. El
+       relleno de arriba deja sitio al header y al cartel colgante. */
     .hero {
-        height: 80vh;
-        min-height: 600px;
+        height: auto;
+        min-height: 0;
+        display: block;
+    }
+
+    .hero-video {
+        position: relative;
+        height: auto;
     }
 
     .hero-content {
-        margin-top: -40px;
-        padding: 1.5rem;
+        margin-top: 0;
+        min-height: 0;
+        padding: 195px 1.5rem 3rem;
     }
 
     .title-main {
@@ -3215,6 +3325,17 @@ img {
     opacity: 0.8;
 }
 
+/* En un teléfono de 360 px el botón de la tienda medía 356 px y se salía por la
+   derecha. */
+@media (max-width: 480px) {
+    .btn-large {
+        padding: 1.1rem 1.5rem;
+        font-size: 1rem;
+        min-width: 0;
+        max-width: 100%;
+    }
+}
+
 /* =============================================
    CHAT CONTACT SECTION
    ============================================= */
@@ -3223,6 +3344,15 @@ img {
     background: linear-gradient(135deg, var(--navy-blue) 0%, #1a2f4f 100%);
     color: var(--white);
     padding: 5rem 0;
+}
+
+/* El fondo es azul marino: el título en azul marino no se veía. */
+.chat-contact .section-header h2 {
+    color: var(--white);
+}
+
+.chat-contact .section-header p {
+    color: rgba(255, 255, 255, 0.8);
 }
 
 .chat-activation-content {
@@ -3494,15 +3624,16 @@ img {
     text-align: center;
 }
 
+/* La sección es azul marino: el título en azul marino no se veía. */
 .join-options h3 {
     font-size: 2rem;
     margin-bottom: 1rem;
-    color: var(--navy-blue);
+    color: var(--white);
 }
 
 .join-options > p {
     font-size: 1.1rem;
-    color: var(--medium-gray);
+    color: rgba(255, 255, 255, 0.8);
     margin-bottom: 3rem;
 }
 
@@ -3514,6 +3645,13 @@ img {
     max-width: 1200px;
     margin-left: auto;
     margin-right: auto;
+}
+
+/* Al lado del texto, de dos en dos: cuatro en fila no entran. */
+@media (min-width: 1025px) {
+    .join-options .registration-cards {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
 }
 
 .registration-card {
@@ -6390,7 +6528,7 @@ img {
    ========================================================================== */
 
 .fridas-hanging-tag {
-    position: fixed;
+    position: absolute;
     top: 72px;
     right: 100px;
     z-index: 999;
@@ -6479,15 +6617,19 @@ img {
    ETIQUETA COLGANTE DE INSCRIPCIONES
 
    Hermana de la de FRIDAS, pero del lado IZQUIERDO. Dos motivos: no se pisan
-   —la de FRIDAS es position:fixed a la derecha— y en un teléfono, con una a
-   cada lado, las dos entran sin encimarse.
+   —la de FRIDAS cuelga a la derecha— y en un teléfono, con una a cada lado,
+   las dos entran sin encimarse.
+
+   Las dos son position:absolute, no fixed: cuelgan del header al abrir la
+   página y se van al bajar. Fijas se quedaban encima de cada sección y tapaban
+   textos (hasta el 14/10/2026).
 
    Colores del club (azul marino y amarillo) para que se distinga de FRIDAS de
    un vistazo, que es otra cosa.
    ========================================================================== */
 
 .inscripcion-hanging-tag {
-    position: fixed;
+    position: absolute;
     top: 72px;
     left: 100px;
     z-index: 999;

@@ -2,18 +2,18 @@
 # Edit these URLs to change external services without touching code
 
 # TIENDA
-# Discontinuada el 28/09/2026. Apuntaba a la tienda de Clupik, de donde el club
-# ya se fue. Mientras estas claves esten vacias, el boton de la home no abre
-# nada: avisa de que la tienda esta en preparacion.
+# La tienda sigue en Clupik. El 28/09/2026 se desconecto por error, dando por
+# hecho que el club habia dejado Clupik del todo; la tienda seguia abierta. Se
+# volvio a enlazar el 14/10/2026.
 #
-# Para reabrirla, poner aqui la direccion nueva y el boton vuelve a funcionar
-# solo, sin tocar codigo.
-STORE_ES=
-STORE_CA=
-STORE_EN=
-STORE_FR=
-STORE_IT=
-STORE_PT=
+# Si un dia se vacian estas claves, el boton de la home no abre nada: avisa de
+# que la tienda esta en preparacion.
+STORE_ES=https://menorcarugby.clupik.app/es/shopCategory/all
+STORE_CA=https://menorcarugby.clupik.app/ca/shopCategory/all
+STORE_EN=https://menorcarugby.clupik.app/en/shopCategory/all
+STORE_FR=https://menorcarugby.clupik.app/fr/shopCategory/all
+STORE_IT=https://menorcarugby.clupik.app/it/shopCategory/all
+STORE_PT=https://menorcarugby.clupik.app/pt/shopCategory/all
 
 # INSCRIPCIONES
 # Ya no van a Clupik: se hacen en la propia web, en /inscripcion. Es una sola

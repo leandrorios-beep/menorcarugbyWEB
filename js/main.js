@@ -5,9 +5,13 @@
 
 // Simple config object to replace config-loader.js
 const siteConfig = {
-    // Tienda discontinuada: ver data/external-urls.txt.
-    'STORE_ES': '', 'STORE_CA': '', 'STORE_EN': '',
-    'STORE_FR': '', 'STORE_IT': '', 'STORE_PT': '',
+    // La tienda sigue en Clupik: ver data/external-urls.txt.
+    'STORE_ES': 'https://menorcarugby.clupik.app/es/shopCategory/all',
+    'STORE_CA': 'https://menorcarugby.clupik.app/ca/shopCategory/all',
+    'STORE_EN': 'https://menorcarugby.clupik.app/en/shopCategory/all',
+    'STORE_FR': 'https://menorcarugby.clupik.app/fr/shopCategory/all',
+    'STORE_IT': 'https://menorcarugby.clupik.app/it/shopCategory/all',
+    'STORE_PT': 'https://menorcarugby.clupik.app/pt/shopCategory/all',
     'CHAT_URL': 'https://smartchatweb-pi.vercel.app/',
     'INSTAGRAM_URL': 'https://www.instagram.com/menorcarugby/',
     'FACEBOOK_URL': 'https://www.facebook.com/menorcarugby',
