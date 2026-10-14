@@ -6,14 +6,18 @@
 # hecho que el club habia dejado Clupik del todo; la tienda seguia abierta. Se
 # volvio a enlazar el 14/10/2026.
 #
+# Los seis idiomas van a /es, la portada de la tienda: Clupik la tiene solo en
+# castellano y las otras direcciones redirigian ahi. La de /xx/shopCategory/all
+# le daba "Forbidden" a Leandro y /es no.
+#
 # Si un dia se vacian estas claves, el boton de la home no abre nada: avisa de
 # que la tienda esta en preparacion.
-STORE_ES=https://menorcarugby.clupik.app/es/shopCategory/all
-STORE_CA=https://menorcarugby.clupik.app/ca/shopCategory/all
-STORE_EN=https://menorcarugby.clupik.app/en/shopCategory/all
-STORE_FR=https://menorcarugby.clupik.app/fr/shopCategory/all
-STORE_IT=https://menorcarugby.clupik.app/it/shopCategory/all
-STORE_PT=https://menorcarugby.clupik.app/pt/shopCategory/all
+STORE_ES=https://menorcarugby.clupik.app/es
+STORE_CA=https://menorcarugby.clupik.app/es
+STORE_EN=https://menorcarugby.clupik.app/es
+STORE_FR=https://menorcarugby.clupik.app/es
+STORE_IT=https://menorcarugby.clupik.app/es
+STORE_PT=https://menorcarugby.clupik.app/es
 
 # INSCRIPCIONES
 # Ya no van a Clupik: se hacen en la propia web, en /inscripcion. Es una sola
