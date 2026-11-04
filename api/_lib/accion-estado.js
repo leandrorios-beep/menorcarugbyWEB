@@ -88,6 +88,25 @@ module.exports = async function accionEstado(req, res) {
                     .in('player_id', ids)
                     .in('temporada', [temporada, anterior]);
 
+                // Qué fichas de esta temporada ya están cobradas. Hace falta para
+                // decirle a la familia cuánto se le cobrará al volver a dejar la
+                // tarjeta: si la ficha ya entró (p. ej. la tanda 1 del pago anual),
+                // no se le vuelve a cobrar, y la pantalla no puede decir que sí.
+                // Sale del mismo libro que mira la app al cobrar (fichaYaPagada).
+                const idsDeEsteAnio = (inscs || [])
+                    .filter((i) => i.temporada === temporada)
+                    .map((i) => i.inscripcion_id);
+                const fichasPagadas = new Set();
+                if (idsDeEsteAnio.length) {
+                    const { data: fichas } = await supabase
+                        .from('ingresos')
+                        .select('inscripcion_id')
+                        .in('inscripcion_id', idsDeEsteAnio)
+                        .eq('tipo_movimiento', 'Matrícula')
+                        .eq('estado', 'Pagado');
+                    (fichas || []).forEach((f) => fichasPagadas.add(f.inscripcion_id));
+                }
+
                 // Todas de una: es una llamada a la base por jugador, pero la
                 // alternativa es mostrar un precio que después cambia.
                 // Cuántos jugadores tiene la familia: decide si los juveniles
@@ -179,11 +198,17 @@ module.exports = async function accionEstado(req, res) {
                         parentesco: (mVinculo.get(p.player_id) || {}).parentesco || null,
                         // Lo que ya está enviado para ESTA temporada. Si existe,
                         // la pantalla muestra "ya renovaste" en vez del formulario.
-                        inscripcion_actual: deEsteAnio || null,
+                        inscripcion_actual: deEsteAnio
+                            ? { ...deEsteAnio, ficha_pagada: fichasPagadas.has(deEsteAnio.inscripcion_id) }
+                            : null,
                         // Lo del año pasado sirve para precargar: tallas, tarifa,
                         // alergias. Es la diferencia entre renovar en dos toques
                         // y volver a escribir todo.
                         inscripcion_anterior: delAnterior || null,
+                        // Si la primera cuota espera al 5 de octubre: entonces
+                        // el primer cobro es sólo la ficha. La pantalla lo
+                        // necesita para no anunciar "ficha y primera cuota".
+                        cuota_en_espera: cuotaEnEspera(year),
                         tramo,
                         // Una sola tarifa, no una lista para elegir: la familia
                         // ya no elige. El descuento por hermano se calcula, y
@@ -232,6 +257,16 @@ module.exports = async function accionEstado(req, res) {
  * la familia, las pone el club. Si se ofrecieran, cualquiera se autoasigna la
  * cuota de 1 €.
  */
+/**
+ * ¿La primera cuota espera al 5 de octubre? Sólo si falta más de dos días.
+ *
+ * ESPEJO de primerCobroDeLaTemporada() en la app (lib/cobrar-al-aprobar.ts),
+ * que es la que de verdad decide el cobro. Si se cambia allí, se cambia aquí.
+ */
+function cuotaEnEspera(year) {
+    return Date.UTC(year, 9, 5, 9, 0, 0) - Date.now() > 48 * 3600 * 1000;
+}
+
 /**
  * La tarifa que le toca a un jugador, ya resuelta.
  *

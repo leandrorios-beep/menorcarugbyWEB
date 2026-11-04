@@ -116,6 +116,8 @@ async function manejar(event, stripe, supabase) {
             return await cobroDevuelto(event, stripe, supabase);
         case 'customer.subscription.deleted':
             return await suscripcionCancelada(event, stripe, supabase);
+        case 'customer.subscription.updated':
+            return await suscripcionCaducada(event, stripe, supabase);
         default:
             return false;
     }
@@ -759,8 +761,10 @@ async function suscripcionCancelada(event, stripe, supabase) {
     // salir de ahí había que tocarle la fila a mano en la base.
     //
     // Pasa más de lo que parece: alcanza con que alguien cancele desde el panel
-    // de Stripe, o con que la primera factura no se cobre —Stripe expira la
-    // suscripción a las 23 horas y manda este mismo evento.
+    // de Stripe. OJO: cuando la primera factura no se cobra, Stripe expira la
+    // suscripción a las 23 horas pero NO manda este evento, sino
+    // `customer.subscription.updated` con status `incomplete_expired`. Eso lo
+    // atiende suscripcionCaducada, más abajo.
     //
     // El `stripe_customer_id` SÍ se conserva: es de la familia, no de la
     // suscripción, y reutilizarlo evita clientes duplicados en Stripe.
@@ -779,6 +783,86 @@ async function suscripcionCancelada(event, stripe, supabase) {
     if (error) throw new Error(`inscripciones: ${error.message}`);
 
     console.log(`Suscripción ${suscripcion.id} dada de baja: ${ids.length} inscripción(es)`);
+    return true;
+}
+
+/**
+ * La primera factura no se cobró y Stripe dio la suscripción por terminada.
+ *
+ * Si el banco rechaza la PRIMERA factura, la suscripción queda `incomplete` y a
+ * las 23 h Stripe la pasa a `incomplete_expired`: no se revive. Lo avisa con
+ * `customer.subscription.updated`, no con `deleted`, y hasta ahora no se
+ * atendía. La base seguía apuntando a una suscripción muerta y la familia
+ * quedaba atascada: la web le decía «ya está todo en marcha», en la bandeja no
+ * salía «Reintentar el cobro», y aunque dejara otra tarjeta no se le cobraba
+ * nada. Les pasó a Albert Asensio, César Cubero, Mateo Alva y Samuel Sarcar en
+ * octubre de 2026, y hubo que soltarlas a mano.
+ *
+ * Se sueltan los ids como en suscripcionCancelada, con dos diferencias:
+ *
+ *  - `estado_cobro` queda en 'impago', NO en 'cancelada'. La familia no se ha
+ *    ido: le falló el cobro, y 'cancelada' es el estado de las bajas.
+ *  - Sólo se tocan las inscripciones que siguen apuntando a ESTA suscripción. Si
+ *    mientras tanto ya se le creó otra, no se le pisa.
+ *
+ * Al soltarla, volver a dejar la tarjeta pone el cobro en marcha solo
+ * (tarjetaGuardada -> la app), y en la bandeja vuelve a salir «Reintentar».
+ *
+ * No manda ningún correo: a la familia le escribe el club, a mano.
+ */
+async function suscripcionCaducada(event, stripe, supabase) {
+    const suscripcion = event.data.object;
+    // De todos los cambios de una suscripción, sólo interesa éste. El resto
+    // (metadata, cantidad, fecha de corte) no lo maneja este webhook.
+    if (!suscripcion || suscripcion.status !== 'incomplete_expired') return false;
+    const ids = inscripcionesDe(suscripcion);
+    if (!ids) return false;
+
+    const { data: soltadas, error } = await supabase
+        .from('inscripciones')
+        .update({
+            estado_cobro: 'impago',
+            stripe_subscription_id: null,
+            stripe_subscription_item_id: null,
+        })
+        .in('inscripcion_id', ids)
+        .eq('stripe_subscription_id', suscripcion.id)
+        .neq('estado', 'baja')
+        .select('inscripcion_id, cobro_error');
+    if (error) throw new Error(`inscripciones: ${error.message}`);
+
+    // Si el motivo del rechazo no llegó a guardarse, que la bandeja diga algo.
+    const sinMotivo = (soltadas || []).filter((x) => !x.cobro_error).map((x) => x.inscripcion_id);
+    if (sinMotivo.length) {
+        const { error: e2 } = await supabase
+            .from('inscripciones')
+            .update({
+                cobro_error:
+                    'La primera factura no se pagó y Stripe dio la suscripción por terminada. ' +
+                    'Hay que volver a cobrar: que la familia deje otra tarjeta, o reintentar el cobro.',
+            })
+            .in('inscripcion_id', sinMotivo);
+        if (e2) throw new Error(`inscripciones: ${e2.message}`);
+    }
+
+    console.warn(
+        `Suscripción ${suscripcion.id} caducada (primera factura sin pagar): ${(soltadas || []).length} inscripción(es) liberadas`
+    );
+
+    // Si la familia dejó otra tarjeta DURANTE esas 23 h, en su momento la app no
+    // pudo hacer nada: la suscripción seguía viva, a medias. Ahora que se ha
+    // soltado, se le avisa a la app para que lo intente con esa tarjeta. La app
+    // decide: sólo cobra si la tarjeta es más nueva que el último intento, así
+    // que sin tarjeta nueva esto no hace nada. Si falla, se registra y se sigue,
+    // igual que en tarjetaGuardada: este evento le debe 200 a Stripe.
+    const meta = suscripcion.metadata || {};
+    if ((soltadas || []).length && meta.tutor_id && meta.temporada) {
+        try {
+            await avisarALaAppDeLaTarjeta(meta.tutor_id, meta.temporada);
+        } catch (e) {
+            console.error('No se pudo reintentar el cobro tras la caducidad:', e && e.message);
+        }
+    }
     return true;
 }
 
@@ -870,6 +954,14 @@ async function anotar(supabase, { factura, suscripcion, ids, pagada, event, comi
     const hayCuota = (factura.lines && factura.lines.data ? factura.lines.data : []).some(
         (l) => l.amount > 0 && esCuota(l)
     );
+    // Y lo mismo con la ficha: la primera factura ya no la lleva siempre. Si la
+    // ficha estaba pagada (la tanda 1 de un pago anual que después se pasó a
+    // mensual, o una suscripción cancelada tras pagarla), la app crea la
+    // suscripción SIN ella. Anotarla igual por ser la primera metía en el libro
+    // una ficha cobrada que nadie pagó, tapada con un descuadre negativo.
+    const hayFicha = (factura.lines && factura.lines.data ? factura.lines.data : []).some(
+        (l) => l.amount > 0 && !esCuota(l)
+    );
     const fecha = new Date((factura.status_transitions?.paid_at || event.created) * 1000);
     const fechaISO = fecha.toISOString().slice(0, 10);
     const mes = fecha.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' });
@@ -884,7 +976,7 @@ async function anotar(supabase, { factura, suscripcion, ids, pagada, event, comi
         // Si la factura no trae cuota —primera factura con espera hasta
         // octubre— no se anota ninguna: sólo va la matrícula.
         if (!hayCuota) {
-            if (esPrimera) {
+            if (esPrimera && hayFicha) {
                 const matriculaSola = precio(
                     'ficha_anual',
                     varianteDeFicha(i.tarifa_variante),
@@ -926,7 +1018,7 @@ async function anotar(supabase, { factura, suscripcion, ids, pagada, event, comi
             sufijo: 'mensualidad',
         }));
 
-        if (esPrimera) {
+        if (esPrimera && hayFicha) {
             // Los dos ejes otra vez: la cuota va por la categoría y la ficha
             // por el año de nacimiento, y la ficha de la federación no lleva
             // los descuentos del club. Buscándola por `tarifa_tramo` y por la

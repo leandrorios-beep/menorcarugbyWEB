@@ -847,12 +847,98 @@ async function cargarEstado() {
     prepararPago(r.jugadores || []);
 }
 
+// Lo ultimo que dijo el servidor de cada jugador. Lo usa el aviso de vuelta del
+// Checkout para no decirle "en cuanto el club apruebe" a quien ya esta aprobado.
+var ultimosJugadores = [];
+
+/**
+ * El cobro se intento, el banco lo rechazo, y ya no queda nada en marcha (la
+ * suscripcion murio o la factura se anulo).
+ */
+function cobroQueFallo(i) {
+    return Boolean(i && i.estado === 'aprobada' && i.estado_cobro === 'impago' &&
+        !i.stripe_subscription_id && i.tarjeta_lista_at);
+}
+
+/** "El ultimo cobro de X no ha salido", sin decir que no se cobra nada si a un hermano si. */
+function textoDeLosFallidos(fallidos, cobrando) {
+    // Quien se inscribe a si mismo lee "tu", no su propio nombre.
+    var soloEl = fallidos.length === 1 && fallidos[0].parentesco === 'el_mismo';
+    var quien = fallidos.map(function (j) { return j.nombre; }).join(' y ');
+    var otros = (cobrando || []).filter(function (j) {
+        return j.inscripcion_actual && j.inscripcion_actual.estado_cobro !== 'impago';
+    });
+    return (soloEl ? 'Tu último cobro' : 'El último cobro de ' + quien) + ' no ha salido: tu banco lo ha rechazado.' +
+        (otros.length
+            ? ' A ' + otros.map(function (j) { return j.nombre; }).join(' y ') +
+              (otros.length > 1 ? ' se les' : ' se le') + ' sigue cobrando con normalidad.'
+            : ' Ahora mismo no se te está cobrando nada.');
+}
+
+/**
+ * "(la misma, si tu banco ya te ha subido el limite, u otra)" solo si de verdad
+ * fue el limite. A quien le rechazaron por otro motivo, eso le manda a pedirle
+ * al banco algo que no tiene nada que ver.
+ */
+function cualTarjeta(jugadores) {
+    var todosPorLimite = jugadores.length && jugadores.every(function (j) {
+        return (j.inscripcion_actual || {}).cobro_codigo === 'card_velocity_exceeded';
+    });
+    return todosPorLimite ? '(la misma, si tu banco ya te ha subido el límite, u otra)' : '(la misma u otra)';
+}
+
+/**
+ * Lo que sale de la tarjeta al volver a dejarla, por los que tienen el cobro
+ * fallido. La misma cuenta que hace la app al cobrar (primerCargo): si la ficha
+ * ya esta pagada no se vuelve a cobrar, y en el pago anual va en dos cargos.
+ * Si falta algun precio, no se da cifra: mejor eso que una equivocada.
+ */
+function queSeCobraAlDejarla(fallidos) {
+    var total = 0, sabemos = true, anual = false, conFicha = false, sinFicha = false;
+    // Antes del 5 de octubre la primera cuota espera: ahora solo va la ficha.
+    var espera = fallidos.some(function (j) { return j.cuota_en_espera; });
+    fallidos.forEach(function (j) {
+        var t = j.tarifa || {}, i = j.inscripcion_actual || {};
+        if (t.ficha_anual === null || t.ficha_anual === undefined ||
+            t.mensualidad === null || t.mensualidad === undefined) { sabemos = false; return; }
+        if (i.pago_anual) {
+            anual = true;
+            total += i.ficha_pagada ? Number(t.mensualidad) * (t.meses || 9) : Number(t.ficha_anual);
+        } else {
+            total += (i.ficha_pagada ? 0 : Number(t.ficha_anual)) + (j.cuota_en_espera ? 0 : Number(t.mensualidad));
+        }
+        if (i.ficha_pagada) sinFicha = true; else conFicha = true;
+    });
+    var cifra = sabemos ? ' (' + euros(total) + ')' : '';
+    if (anual) {
+        return conFicha
+            ? 'Al guardarla se pone en marcha el cobro de la temporada, en dos cargos: primero la ficha' + cifra +
+              ' y después las cuotas.'
+            : 'Al guardarla se cobran las cuotas de la temporada' + cifra + ': la ficha ya está pagada.';
+    }
+    if (espera) {
+        return conFicha
+            ? 'Al guardarla se cobra la ficha' + cifra + ', y la primera cuota el 5 de octubre.'
+            : 'La ficha ya está pagada: la primera cuota se cobra el 5 de octubre.';
+    }
+    if (conFicha && !sinFicha) {
+        return 'Al guardarla se pone en marcha el cobro: la ficha y la primera cuota' + cifra +
+            ', y después una cuota al mes.';
+    }
+    if (sinFicha && !conFicha) {
+        return 'Al guardarla se pone en marcha el cobro: la primera cuota' + cifra +
+            ' (la ficha ya está pagada), y después una cuota al mes.';
+    }
+    return 'Al guardarla se pone en marcha el cobro' + cifra + ', y después una cuota al mes.';
+}
+
 /**
  * La cuota solo se puede domiciliar cuando el club YA aprobo la inscripcion.
  * Mientras esta "enviada" no se ensena el boton: cobrar antes de revisar seria
  * cobrar una tarifa que todavia nadie miro.
  */
 function prepararPago(jugadores) {
+    ultimosJugadores = jugadores || [];
     // Quien pago la temporada entera: no hay cuota mensual ni nada pendiente.
     // Antes caia en el cubo de "tu tarjeta esta guardada y no se te ha cobrado
     // nada", que es lo contrario de lo que le paso.
@@ -884,34 +970,77 @@ function prepararPago(jugadores) {
         return i && !i.stripe_subscription_id && !i.tarjeta_lista_at &&
             i.estado !== 'baja' && i.estado !== 'rechazada';
     });
+    var fallidos = jugadores.filter(function (j) {
+        return cobroQueFallo(j.inscripcion_actual);
+    });
     var conTarjeta = jugadores.filter(function (j) {
         var i = j.inscripcion_actual;
         return i && !i.stripe_subscription_id && i.tarjeta_lista_at &&
-            i.estado !== 'baja' && i.estado !== 'rechazada';
+            i.estado !== 'baja' && i.estado !== 'rechazada' && !cobroQueFallo(i);
     });
 
+    // El banco rechazo el cobro y no queda nada en marcha. Antes esta familia
+    // caia en "tu tarjeta ya esta guardada... en cuanto el club apruebe", que es
+    // falso dos veces: ya esta aprobada y no se le esta cobrando. Lo que la
+    // destraba es volver a dejar la tarjeta: al guardarla se cobra solo.
+    if (fallidos.length && !sinTarjeta.length) {
+        mostrar('pasoPagar', true);
+        $('textoPagar').textContent = textoDeLosFallidos(fallidos, cobrando) +
+            ' Para terminar, vuelve a dejar la tarjeta ' + cualTarjeta(fallidos) + '. ' +
+            queSeCobraAlDejarla(fallidos);
+        $('resumenPago').classList.add('oculto');
+        $('btnPagar').classList.remove('oculto');
+        $('btnPagar').textContent = 'Dejar la tarjeta otra vez';
+        $('btnPagar').removeAttribute('data-i18n');
+        // Sin el portal: cambiar la tarjeta ahí no vuelve a cobrar nada, y
+        // parecería que ahí se arregla.
+        mostrar('btnPortal', false);
+        return;
+    }
+
     // Ya se le cobra: no hay nada que hacer y hay que decirlo asi, sin botones.
+    // Salvo que el ultimo cobro haya fallado: ahi "todo en marcha" es mentira, y
+    // la familia no sabe que tiene que hacer algo.
+    var cobroConFallo = cobrando.some(function (j) {
+        return j.inscripcion_actual.estado_cobro === 'impago';
+    });
     if (cobrando.length && !sinTarjeta.length) {
         mostrar('pasoPagar', true);
-        $('textoPagar').textContent =
-            'Ya está todo en marcha: la cuota se cobra sola con la tarjeta que has dejado.';
+        // Con el fallo, lo que funciona es volver a DEJAR la tarjeta aquí (no
+        // sólo subir el límite: nadie reintenta solo la primera factura).
+        var conElFallo = cobrando.filter(function (j) {
+            return j.inscripcion_actual.estado_cobro === 'impago';
+        });
+        $('textoPagar').textContent = cobroConFallo
+            ? 'El último cobro no ha salido: tu banco lo ha rechazado. Vuelve a dejar la tarjeta ' +
+              cualTarjeta(conElFallo) + ' y el cobro se volverá a intentar con ella.'
+            : 'Ya está todo en marcha: la cuota se cobra sola con la tarjeta que has dejado.';
         $('resumenPago').classList.add('oculto');
         // Cambiar la tarjeta tiene que poder hacerse SIEMPRE. Antes el botón
         // sólo salía si todavía no habías dejado ninguna, así que a quien se le
         // caducaba la tarjeta no le quedaba más remedio que escribir al club.
         $('btnPagar').classList.remove('oculto');
-        $('btnPagar').textContent = 'Cambiar mi tarjeta';
+        $('btnPagar').textContent = cobroConFallo ? 'Dejar la tarjeta otra vez' : 'Cambiar mi tarjeta';
         $('btnPagar').removeAttribute('data-i18n');
-        mostrar('btnPortal', true);
+        // Con el cobro fallido, sin el portal: cambiar la tarjeta ahi no vuelve
+        // a intentar la primera factura, y pareceria que ahi se arregla.
+        mostrar('btnPortal', !cobroConFallo);
         return;
     }
 
     // Dejo la tarjeta y espera que el club apruebe: tampoco hay nada que hacer.
+    // Si ya esta aprobada, "en cuanto el club apruebe" es falso: es el club el
+    // que tiene pendiente poner el cobro en marcha.
+    var conTarjetaAprobada = conTarjeta.some(function (j) {
+        return j.inscripcion_actual.estado === 'aprobada';
+    });
     if (conTarjeta.length && !sinTarjeta.length) {
         mostrar('pasoPagar', true);
-        $('textoPagar').textContent =
-            'Tu tarjeta ya está guardada y no se te ha cobrado nada. En cuanto el club apruebe la ' +
-            'inscripción se pone en marcha la cuota y te avisamos por correo.';
+        $('textoPagar').textContent = conTarjetaAprobada
+            ? 'Tu tarjeta ya está guardada y tu inscripción, aprobada. Falta que el club ponga en marcha ' +
+              'el cobro; te avisamos por correo.'
+            : 'Tu tarjeta ya está guardada y no se te ha cobrado nada. En cuanto el club apruebe la ' +
+              'inscripción se pone en marcha la cuota y te avisamos por correo.';
         $('resumenPago').classList.add('oculto');
         $('btnPagar').classList.remove('oculto');
         $('btnPagar').textContent = 'Cambiar mi tarjeta';
@@ -930,11 +1059,23 @@ function prepararPago(jugadores) {
     $('btnPagar').textContent = 'Dejar mi tarjeta';
     $('btnPagar').removeAttribute('data-i18n');
     var t0 = (aprobados[0] || {}).tarifa || {};
-    $('textoPagar').textContent =
-        'Falta que dejes tu tarjeta. No se te cobra nada ahora: se guarda autorizada y el cobro ' +
-        'lo pone en marcha el club al aprobar la inscripción. Son ' + (t0.meses || 9) +
-        ' cuotas, del ' + (t0.primer_cobro || '5 de octubre') + ' al ' + (t0.ultimo_cobro || '5 de junio') +
-        ', y la ficha anual va en el primer recibo.';
+    // Los que ya estan aprobados: a ellos la tarjeta les pone el cobro en marcha
+    // en el acto. Decirles "no se te cobra nada ahora, el club lo pone en marcha
+    // al aprobar" es falso: ya se aprobo.
+    var aprobadasSinTarjeta = sinTarjeta.filter(function (j) {
+        return j.inscripcion_actual.estado === 'aprobada';
+    });
+    $('textoPagar').textContent = fallidos.length
+        // La misma tarjeta pone en marcha YA el cobro del que fallo: decir "no se
+        // te cobra nada ahora" seria mentirle.
+        ? textoDeLosFallidos(fallidos, cobrando) + ' Al dejar la tarjeta, ese cobro se vuelve a intentar al instante. ' +
+          queSeCobraAlDejarla(fallidos)
+        : aprobadasSinTarjeta.length
+        ? 'Tu inscripción ya está aprobada: falta que dejes la tarjeta. ' + queSeCobraAlDejarla(aprobadasSinTarjeta)
+        : 'Falta que dejes tu tarjeta. No se te cobra nada ahora: se guarda autorizada y el cobro ' +
+          'lo pone en marcha el club al aprobar la inscripción. Son ' + (t0.meses || 9) +
+          ' cuotas, del ' + (t0.primer_cobro || '5 de octubre') + ' al ' + (t0.ultimo_cobro || '5 de junio') +
+          ', y la ficha anual va en el primer recibo.';
 
     var total = 0, filas = '';
     aprobados.forEach(function (j) {
@@ -1956,7 +2097,40 @@ async function volviendoDeStripe() {
         await cargarEstado();
         mostrar('pasoEmail', false);
         mostrar('pasoFormulario', true);
-        if (resultado === 'ok') {
+        // A quien ya esta aprobado y le falta el cobro, la tarjeta lo pone en
+        // marcha en el acto (el webhook avisa a la app). Decirle "no se te ha
+        // cobrado nada, en cuanto el club apruebe" seria mentirle justo antes
+        // de que le llegue el cargo.
+        // 'pendiente' con suscripcion es la que esta misma tarjeta acaba de crear,
+        // si el webhook llego antes que la familia de vuelta.
+        var cobraYa = ultimosJugadores.some(function (j) {
+            var i = j.inscripcion_actual;
+            return i && i.estado === 'aprobada' && i.estado_cobro !== 'al_dia' &&
+                (!i.stripe_subscription_id || i.estado_cobro === 'pendiente');
+        });
+        var yaAprobada = ultimosJugadores.some(function (j) {
+            var i = j.inscripcion_actual;
+            return i && i.estado === 'aprobada';
+        });
+        if (resultado === 'ok' && cobraYa) {
+            $('avisoVuelta').innerHTML =
+                '<div class="aviso aviso-ok"><strong>Tu tarjeta ha quedado guardada.</strong> ' +
+                'Como tu inscripción ya está aprobada, el cobro se hace ahora mismo con esta tarjeta.</div>';
+            // El estado se ha leído ANTES de que el cobro termine (tarda unos
+            // segundos en pasar por Stripe y por la app), así que el panel de
+            // abajo todavía diría "vuelve a dejar la tarjeta" o "no se te ha
+            // cobrado nada". Se le dice lo que está pasando y sin botones.
+            $('textoPagar').textContent =
+                'Estamos poniendo en marcha el cobro con tu tarjeta. En unos segundos quedará reflejado: ' +
+                'si recargas la página, lo verás.';
+            $('resumenPago').classList.add('oculto');
+            $('btnPagar').classList.add('oculto');
+            mostrar('btnPortal', false);
+        } else if (resultado === 'ok' && yaAprobada) {
+            $('avisoVuelta').innerHTML =
+                '<div class="aviso aviso-ok"><strong>Tu tarjeta ha quedado guardada.</strong> ' +
+                'Los próximos cobros se harán con esta tarjeta.</div>';
+        } else if (resultado === 'ok') {
             $('avisoVuelta').innerHTML =
                 '<div class="aviso aviso-ok"><strong>Tu tarjeta ha quedado guardada.</strong> ' +
                 'No se te ha cobrado nada. En cuanto el club apruebe la inscripción se pone en marcha ' +

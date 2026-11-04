@@ -721,6 +721,14 @@
                     if (i.estado !== 'baja' && i.estado !== 'rechazada') {
                         if (i.pago_anual && i.estado_cobro === 'al_dia') {
                             cobro = 'Temporada pagada por adelantado. No hay cuotas mensuales.';
+                        } else if (i.estado === 'aprobada' && i.estado_cobro === 'impago') {
+                            // Antes salía "Cuota domiciliada" o "El cobro empieza
+                            // cuando el club apruebe" aunque el banco lo hubiera
+                            // rechazado: la familia no se enteraba de que tenía
+                            // que hacer algo.
+                            // Con enlace: el botón de esta página abre el portal
+                            // de Stripe, y cambiar ahí la tarjeta no vuelve a cobrar.
+                            cobro = 'El último cobro no ha salido. Entra en <a href="/inscripcion">Inscripción</a> y vuelve a dejar la tarjeta.';
                         } else if (i.stripe_subscription_id) {
                             cobro = 'Cuota domiciliada: ' + euros(t.mensualidad) + '/mes.';
                         } else if (i.tarjeta_lista_at) {
