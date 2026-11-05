@@ -265,8 +265,16 @@ module.exports = async function accionEnviar(req, res) {
                     // La más reciente manda; las anteriores ya no importan.
                     if (previa.player_id in varianteEspecialPrevia) continue;
                     const v = previa.tarifa_variante;
+                    // «Otro: situación especial» es de UNA temporada: el club la
+                    // pone al aprobar, con el motivo de ese año. Al renovar no se
+                    // arrastra, y si se arrastrara tampoco tendría precio: la
+                    // familia se toparía con «la cuota no está publicada».
+                    const deOtraTemporada = previa.temporada !== temporada;
                     varianteEspecialPrevia[previa.player_id] =
-                        v && v !== 'base' && v !== 'con_hermano' ? v : null;
+                        v && v !== 'base' && v !== 'con_hermano' &&
+                        !(v === 'situacion_especial' && deOtraTemporada)
+                            ? v
+                            : null;
                 }
             }
         }
@@ -302,7 +310,11 @@ module.exports = async function accionEnviar(req, res) {
             // diciendo que su cuota es 0,00 €/mes. Un compromiso por escrito
             // con un número inventado.
             const precioMensual = precios.get(`mensualidad|${j.tarifa_variante}|${tramo}`);
-            if (!precioMensual || precioMensual.importe === null) {
+            // La situación especial no tiene precio en el catálogo: no se cobra
+            // por la web. Sólo llega acá cuando la familia corrige datos de una
+            // inscripción que el club ya aprobó así.
+            const sinCobroPorLaWeb = j.tarifa_variante === 'situacion_especial';
+            if (!sinCobroPorLaWeb && (!precioMensual || precioMensual.importe === null)) {
                 throw new RechazoDelFormulario(
                     400,
                     `${j.nombre}: todavía no está publicada la cuota de ${tramo} para esta temporada. ` +
@@ -325,6 +337,8 @@ module.exports = async function accionEnviar(req, res) {
             // la temporada siguiente, y eso lo decide el club.
             let conservarEstado = false;
             let descuentosPrevios = [];
+            // El motivo de la «situación especial», si la tiene: ver el upsert.
+            let motivoEspecialPrevio = null;
             // La tarifa que NO se puede tocar porque ya se está cobrando.
             let tarifaCongelada = null;
             if (playerId) {
@@ -332,12 +346,13 @@ module.exports = async function accionEnviar(req, res) {
                     .from('inscripciones')
                     .select(
                         'estado, tarifa_descuentos, tarifa_tramo, tarifa_variante, ' +
-                            'tarifa_variante_origen, stripe_subscription_id, stripe_invoice_id'
+                            'tarifa_variante_origen, stripe_subscription_id, stripe_invoice_id, motivo_especial'
                     )
                     .eq('temporada', temporada)
                     .eq('player_id', playerId)
                     .maybeSingle();
                 descuentosPrevios = (yaHay && yaHay.tarifa_descuentos) || [];
+                motivoEspecialPrevio = (yaHay && yaHay.motivo_especial) || null;
 
                 // ── A quién ya se le está cobrando, no se le toca la tarifa ──
                 //
@@ -610,8 +625,17 @@ module.exports = async function accionEnviar(req, res) {
 
             // ── La inscripción ──────────────────────────────────────────
             const ahora = new Date().toISOString();
+            const varianteQueQueda = tarifaCongelada ? tarifaCongelada.tarifa_variante : j.tarifa_variante;
             const { error: errInsc } = await supabase.from('inscripciones').upsert(
                 {
+                    // EL MOTIVO DE LA SITUACIÓN ESPECIAL VA AUNQUE NO CAMBIE.
+                    //
+                    // El upsert es un INSERT ... ON CONFLICT, y Postgres mira los
+                    // CHECK sobre la fila que se iba a INSERTAR antes de ver que ya
+                    // existe. Sin el motivo en esa fila, el CHECK
+                    // inscripciones_especial_con_motivo la rechazaba y la familia
+                    // no podía ni cambiar un teléfono. Se reescribe el mismo.
+                    ...(varianteQueQueda === 'situacion_especial' ? { motivo_especial: motivoEspecialPrevio } : {}),
                     temporada,
                     player_id: playerId,
                     tutor_id: tutorId,
@@ -669,7 +693,7 @@ module.exports = async function accionEnviar(req, res) {
             );
             if (errInsc) throw new Error(`No se pudo guardar la inscripción de ${j.nombre}: ${errInsc.message}`);
 
-            const mensual = Number(precioMensual.importe);
+            const mensual = sinCobroPorLaWeb ? null : Number(precioMensual.importe);
             // La ficha federativa NO va por el tramo de la cuota: va por el año
             // de nacimiento. El que este año cumple 17 o 18 paga la de senior
             // (300 €) aunque entrene con los juveniles y pague cuota juvenil.
@@ -687,10 +711,10 @@ module.exports = async function accionEnviar(req, res) {
                 mensualidad: mensual,
                 meses: MESES_DE_CUOTA,
                 total_temporada:
-                    ficha && ficha.importe !== null
+                    !sinCobroPorLaWeb && ficha && ficha.importe !== null
                         ? Math.round((mensual * MESES_DE_CUOTA + Number(ficha.importe)) * 100) / 100
                         : null,
-                ficha_anual: ficha && ficha.importe !== null ? Number(ficha.importe) : null,
+                ficha_anual: !sinCobroPorLaWeb && ficha && ficha.importe !== null ? Number(ficha.importe) : null,
             });
         }
 
@@ -1091,7 +1115,7 @@ function plantillaBienvenida(nombre, password, jugadores) {
         <td style="padding:8px 0;color:#333;font-size:14px;border-bottom:1px solid #eee;">${escapeHtml(j.nombre)}<br>
           <span style="color:#777;font-size:12px;">${escapeHtml(j.categoria)}</span></td>
         <td style="padding:8px 0;color:#182B49;font-size:14px;font-weight:700;text-align:right;border-bottom:1px solid #eee;">
-          ${j.mensualidad.toFixed(2).replace('.', ',')} €/mes</td>
+          ${j.mensualidad === null ? 'Con el club' : `${j.mensualidad.toFixed(2).replace('.', ',')} €/mes`}</td>
       </tr>`
         )
         .join('');

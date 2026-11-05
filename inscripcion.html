@@ -938,7 +938,14 @@ function queSeCobraAlDejarla(fallidos) {
  * cobrar una tarifa que todavia nadie miro.
  */
 function prepararPago(jugadores) {
-    ultimosJugadores = jugadores || [];
+    // «Otro: situación especial» no se cobra por la web, haya dejado la tarjeta
+    // o no: no cuenta para nada de lo que viene (ni pedirle la tarjeta, ni el
+    // «se cobra al guardarla»). Lo que deba lo lleva el club a mano.
+    jugadores = (jugadores || []).filter(function (j) {
+        var i = j.inscripcion_actual;
+        return !(i && i.tarifa_variante === 'situacion_especial');
+    });
+    ultimosJugadores = jugadores;
     // Quien pago la temporada entera: no hay cuota mensual ni nada pendiente.
     // Antes caia en el cubo de "tu tarjeta esta guardada y no se te ha cobrado
     // nada", que es lo contrario de lo que le paso.
@@ -1512,6 +1519,7 @@ var NOMBRES_TARIFA = {
     familiar_colaborador: 'Hijo/a de colaborador',
     colaborador: 'Colaborador',
     con_beca: 'Con beca',
+    situacion_especial: 'Situación especial',
 };
 
 function nombreDeTarifa(j) {
@@ -1520,6 +1528,9 @@ function nombreDeTarifa(j) {
 
 function detalleDeTarifa(j) {
     var t = j.tarifa || {};
+    if (t.variante === 'situacion_especial') {
+        return 'El pago de esta temporada lo gestionas directamente con el club.';
+    }
     if (t.mensualidad === null || t.mensualidad === undefined) {
         return 'Te confirmamos el importe al revisar la inscripción.';
     }
@@ -1685,6 +1696,9 @@ function actualizarResumen() {
     var total = 0;
     var totalAnual = 0;
     var faltanPrecios = false;
+    // Los que están en «situación especial»: no se les cobra por la web, así que
+    // ni suman ni son un precio que falte.
+    var especiales = 0;
 
     estado.jugadores.forEach(function (j) {
         var nombre = j.nombre ? j.nombre + ' ' + j.apellido : 'Jugador sin nombre';
@@ -1694,6 +1708,11 @@ function actualizarResumen() {
             return;
         }
         var t = j.tarifa;
+        if (t && t.variante === 'situacion_especial') {
+            especiales++;
+            lineas.push('<div class="linea"><span>' + escapar(nombre) + '</span><span style="color:#AAB4C2">lo gestionas con el club</span></div>');
+            return;
+        }
         if (t && t.mensualidad !== null && t.mensualidad !== undefined) {
             total += t.mensualidad;
             if (t.total_temporada) totalAnual += t.total_temporada;
@@ -1743,7 +1762,10 @@ function actualizarResumen() {
 
     mostrar('resumen', estado.jugadores.length > 0);
     $('resumenLineas').innerHTML = lineas.join('');
-    $('resumenTotal').textContent = faltanPrecios && total === 0 ? 'Te lo confirmamos' : euros(total) + (faltanPrecios ? ' + los nuevos' : '');
+    var soloEspeciales = especiales > 0 && total === 0 && !faltanPrecios;
+    $('resumenTotal').textContent = soloEspeciales
+        ? '—'
+        : faltanPrecios && total === 0 ? 'Te lo confirmamos' : euros(total) + (faltanPrecios ? ' + los nuevos' : '');
     $('resumenAnual').textContent = totalAnual > 0 ? euros(totalAnual) : (faltanPrecios ? 'Te lo confirmamos' : '—');
 
     // El detalle, con las fechas de verdad. Son NUEVE cuotas, del 5 de octubre
@@ -1752,7 +1774,9 @@ function actualizarResumen() {
     $('resumenDetalle').innerHTML = t0
         ? t0.meses + ' cuotas, del ' + escapar(t0.primer_cobro) + ' al ' + escapar(t0.ultimo_cobro) +
           '. La ficha federativa va en el primer recibo.'
-        : 'Te confirmamos los importes al revisar la inscripción.';
+        : soloEspeciales
+            ? 'El pago de esta temporada lo gestionas directamente con el club.'
+            : 'Te confirmamos los importes al revisar la inscripción.';
 }
 
 // ── Enviar ─────────────────────────────────────────────────────────────────
@@ -1880,6 +1904,9 @@ $('btnEnviar').addEventListener('click', async function () {
 
         var bajas = (r.jugadores || []).filter(function (x) { return x.no_renueva; });
         var altas = (r.jugadores || []).filter(function (x) { return !x.no_renueva; });
+        // Quien está en situación especial no se cobra por la web: ni total al
+        // mes, ni paso de la tarjeta.
+        var aCobrar = altas.filter(function (x) { return x.variante !== 'situacion_especial'; });
 
         var html = altas.length === 0
             ? '<p class="sub">Anotamos que ' + bajas.map(function (x) { return '<strong>' + escapar(x.nombre) + '</strong>'; }).join(' y ') +
@@ -1903,9 +1930,14 @@ $('btnEnviar').addEventListener('click', async function () {
         if (altas.length) {
             html += '<div class="resumen" style="margin-top:8px;">' +
                 altas.map(function (x) {
-                    return '<div class="linea"><span>' + escapar(x.nombre) + '</span><span>' + euros(x.mensualidad) + '/mes</span></div>';
+                    return '<div class="linea"><span>' + escapar(x.nombre) + '</span><span>' +
+                        (x.variante === 'situacion_especial' ? 'Lo gestionas con el club' : euros(x.mensualidad) + '/mes') +
+                        '</span></div>';
                 }).join('') +
-                '<div class="total"><span>Total al mes</span><strong>' + euros(r.total_mensual) + '</strong></div></div>';
+                (aCobrar.length
+                    ? '<div class="total"><span>Total al mes</span><strong>' + euros(r.total_mensual) + '</strong></div>'
+                    : '') +
+                '</div>';
         }
 
         if (r.cuenta_creada) {
@@ -1916,15 +1948,16 @@ $('btnEnviar').addEventListener('click', async function () {
         $('textoListo').innerHTML = html;
 
         // Sólo si hay alguien a quien cobrarle: una familia que sólo vino a
-        // avisar de que su hijo no juega no tiene que dejar ninguna tarjeta.
-        if (altas.length) {
-            var resumen = altas.map(function (x) {
+        // avisar de que su hijo no juega no tiene que dejar ninguna tarjeta. Ni
+        // por quien está en situación especial, que no se cobra por la web.
+        if (aCobrar.length) {
+            var resumen = aCobrar.map(function (x) {
                 return '<div class="linea"><span>' + escapar(x.nombre) + '</span><span>' +
                     euros(x.mensualidad) + '/mes' +
                     (x.ficha_anual ? ' + ' + euros(x.ficha_anual) + ' de ficha' : '') +
                     '</span></div>';
             }).join('');
-            var totalAnual = altas.reduce(function (n, x) { return n + (x.total_temporada || 0); }, 0);
+            var totalAnual = aCobrar.reduce(function (n, x) { return n + (x.total_temporada || 0); }, 0);
             if (totalAnual > 0) {
                 resumen += '<div class="total"><span>Toda la temporada</span><strong>' +
                     euros(totalAnual) + '</strong></div>';

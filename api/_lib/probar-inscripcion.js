@@ -1348,6 +1348,99 @@ async function main() {
                 insc && insc.tarifa_variante_origen === 'con_beca', insc);
         }
 
+        // ── «Otro: situación especial» ──────────────────────────────────
+        //
+        // No tiene precio en el catálogo y no se cobra por la web. Tres cosas
+        // que no pueden pasar: que la familia no pueda corregir sus datos (la
+        // cuota «no está publicada»), que vea la nota interna del club, y que se
+        // le arrastre a la temporada siguiente.
+        {
+            const { data: t } = await db.from('tutores').select('tutor_id').eq('email', MAIL_VE).single();
+            const { data: v } = await db.from('tutor_jugador').select('player_id').eq('tutor_id', t.tutor_id);
+            const { data: fichas } = await db.from('players').select('player_id, first_name').in('player_id', (v || []).map((x) => x.player_id));
+            const idUno = (fichas || []).find((f) => f.first_name === 'Uno').player_id;
+            const NOTA = 'Prueba: nota interna del club';
+
+            const { error: eEsp } = await db.from('inscripciones').update({
+                tarifa_variante: 'situacion_especial',
+                tarifa_variante_origen: 'base',
+                motivo_especial: NOTA,
+                stripe_subscription_id: null,
+            }).eq('player_id', idUno).eq('temporada', temporada);
+            comprobar('se puede poner en situación especial', !eEsp, eEsp && eEsp.message);
+
+            const est = await llamar('estado', { method: 'GET', token: tokenVE });
+            const yo = ((est.body && est.body.jugadores) || []).find((j) => j.player_id === idUno);
+            comprobar('el estado la enseña como situación especial',
+                yo && yo.tarifa && yo.tarifa.variante === 'situacion_especial', yo && yo.tarifa);
+            comprobar('y NO le manda a la familia la nota interna',
+                yo && yo.inscripcion_actual && !('motivo_especial' in yo.inscripcion_actual) &&
+                    !JSON.stringify(est.body).includes(NOTA),
+                yo && yo.inscripcion_actual);
+
+            r = await llamar('enviar', {
+                token: tokenVE,
+                body: {
+                    acepta_reglamento: true,
+                    tutor: TUTOR,
+                    jugadores: [{
+                        player_id: idUno, nombre: 'Uno', apellido: 'Ve Guarda',
+                        fecha_nacimiento: '2011-01-01', genero: 'Masculino', parentesco: 'madre',
+                        telefono: '600333444',
+                    }],
+                },
+            });
+            comprobar('en situación especial puede corregir sus datos igual', r.status === 200, r.body);
+            {
+                const { data: insc } = await db.from('inscripciones')
+                    .select('tarifa_variante, motivo_especial')
+                    .eq('player_id', idUno).eq('temporada', temporada).single();
+                comprobar('y sigue en situación especial, con su motivo',
+                    insc && insc.tarifa_variante === 'situacion_especial' && insc.motivo_especial === NOTA, insc);
+            }
+
+            // La temporada siguiente: la de este año pasa a ser «la anterior».
+            const anterior = `${yearTemporada - 1}/${yearTemporada}`;
+            await db.from('inscripciones').delete().eq('player_id', idUno).eq('temporada', temporada);
+            const { error: eAnt } = await db.from('inscripciones').insert({
+                temporada: anterior, player_id: idUno, tutor_id: t.tutor_id,
+                estado: 'enviada', tarifa_tramo: 'juvenil',
+                tarifa_variante: 'situacion_especial', tarifa_variante_origen: 'base',
+                motivo_especial: NOTA,
+                acepta_reglamento: true, acepta_reglamento_at: new Date().toISOString(),
+            });
+            comprobar('se monta la del año pasado en situación especial', !eAnt, eAnt && eAnt.message);
+
+            const est2 = await llamar('estado', { method: 'GET', token: tokenVE });
+            const yo2 = ((est2.body && est2.body.jugadores) || []).find((j) => j.player_id === idUno);
+            comprobar('al renovar no se le ofrece la situación especial del año pasado',
+                yo2 && yo2.tarifa && yo2.tarifa.variante !== 'situacion_especial' && yo2.tarifa.mensualidad !== null,
+                yo2 && yo2.tarifa);
+            comprobar('ni la nota interna de la del año pasado',
+                yo2 && yo2.inscripcion_anterior && !('motivo_especial' in yo2.inscripcion_anterior),
+                yo2 && yo2.inscripcion_anterior);
+
+            r = await llamar('enviar', {
+                token: tokenVE,
+                body: {
+                    acepta_reglamento: true,
+                    tutor: TUTOR,
+                    jugadores: [{
+                        player_id: idUno, nombre: 'Uno', apellido: 'Ve Guarda',
+                        fecha_nacimiento: '2011-01-01', genero: 'Masculino', parentesco: 'madre',
+                    }],
+                },
+            });
+            comprobar('renovar después de un año en situación especial funciona', r.status === 200, r.body);
+            {
+                const { data: insc } = await db.from('inscripciones')
+                    .select('tarifa_variante, motivo_especial')
+                    .eq('player_id', idUno).eq('temporada', temporada).single();
+                comprobar('y la nueva va a precio normal, sin la nota',
+                    insc && insc.tarifa_variante !== 'situacion_especial' && !insc.motivo_especial, insc);
+            }
+        }
+
         await limpiarVE();
     }
 

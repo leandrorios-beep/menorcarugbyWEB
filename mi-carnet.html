@@ -719,7 +719,10 @@
 
                     let cobro = '';
                     if (i.estado !== 'baja' && i.estado !== 'rechazada') {
-                        if (i.pago_anual && i.estado_cobro === 'al_dia') {
+                        if (i.tarifa_variante === 'situacion_especial') {
+                            // No se cobra por la web: tarjeta guardada o no, no se usa.
+                            cobro = 'El pago de esta temporada lo gestionas directamente con el club.';
+                        } else if (i.pago_anual && i.estado_cobro === 'al_dia') {
                             cobro = 'Temporada pagada por adelantado. No hay cuotas mensuales.';
                         } else if (i.estado === 'aprobada' && i.estado_cobro === 'impago') {
                             // Antes salía "Cuota domiciliada" o "El cobro empieza

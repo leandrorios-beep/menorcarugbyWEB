@@ -164,6 +164,13 @@ module.exports = async function accionEstado(req, res) {
                         (i) => i.player_id === p.player_id && i.temporada === anterior
                     );
                     const base = deEsteAnio || delAnterior || null;
+                    // «Otro: situación especial» es de UNA temporada: la puso el
+                    // club al aprobar, por un motivo de ese año. Al renovar no se
+                    // arrastra (accion-enviar.js hace lo mismo al guardar).
+                    const varianteDeLaBase =
+                        base && base === delAnterior && base.tarifa_variante === 'situacion_especial'
+                            ? null
+                            : base ? base.tarifa_variante : null;
 
                     // La categoría se recalcula con el año de la temporada NUEVA,
                     // no se lee de players.
@@ -199,12 +206,12 @@ module.exports = async function accionEstado(req, res) {
                         // Lo que ya está enviado para ESTA temporada. Si existe,
                         // la pantalla muestra "ya renovaste" en vez del formulario.
                         inscripcion_actual: deEsteAnio
-                            ? { ...deEsteAnio, ficha_pagada: fichasPagadas.has(deEsteAnio.inscripcion_id) }
+                            ? { ...sinNotaInterna(deEsteAnio), ficha_pagada: fichasPagadas.has(deEsteAnio.inscripcion_id) }
                             : null,
                         // Lo del año pasado sirve para precargar: tallas, tarifa,
                         // alergias. Es la diferencia entre renovar en dos toques
                         // y volver a escribir todo.
-                        inscripcion_anterior: delAnterior || null,
+                        inscripcion_anterior: delAnterior ? sinNotaInterna(delAnterior) : null,
                         // Si la primera cuota espera al 5 de octubre: entonces
                         // el primer cobro es sólo la ficha. La pantalla lo
                         // necesita para no anunciar "ficha y primera cuota".
@@ -217,7 +224,7 @@ module.exports = async function accionEstado(req, res) {
                             // `base` es la inscripción de esta temporada o, si no
                             // hay, la del año pasado: de ahí sale la tarifa especial
                             // que el club ya hubiera concedido.
-                            base ? base.tarifa_variante : null,
+                            varianteDeLaBase,
                             tramo,
                             tramoDeFicha(p.dob, year),
                             hijosDeLaFamilia,
@@ -257,6 +264,18 @@ module.exports = async function accionEstado(req, res) {
  * la familia, las pone el club. Si se ofrecieran, cualquiera se autoasigna la
  * cuota de 1 €.
  */
+/**
+ * La inscripción sin lo que es sólo del club.
+ *
+ * Se lee con `select('*')` y va entera al navegador de la familia. El motivo de
+ * la situación especial es una nota interna —puede ser la economía de la casa—
+ * y no tiene por qué leerlo nadie más.
+ */
+function sinNotaInterna(insc) {
+    const { motivo_especial, ...resto } = insc;
+    return resto;
+}
+
 /**
  * ¿La primera cuota espera al 5 de octubre? Sólo si falta más de dos días.
  *
