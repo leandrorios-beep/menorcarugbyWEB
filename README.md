@@ -139,7 +139,6 @@ menorca-rugby-club/
 - **Sistema multiidioma** con detección automática
 - **6 idiomas completos** con todas las traducciones
 - **Sistema dinámico de noticias** basado en carpetas
-- **Chat inteligente** multiidioma
 - **Estructura organizativa** de archivos
 - **Galería responsive** sin subida de fotos
 - **Tipografía moderna** (Space Grotesk + JetBrains Mono)
@@ -154,7 +153,6 @@ menorca-rugby-club/
 
 ### 📱 **Mobile-First**
 - **Navegación móvil** optimizada
-- **Chat responsivo** en todos los dispositivos
 - **Galería táctil** para móviles
 - **Formularios adaptivos**
 
@@ -188,7 +186,6 @@ menorca-rugby-club/
 
 Para soporte técnico o dudas sobre el sistema:
 - **Email**: info@menorcarugby.com
-- **Chat**: Utiliza el widget de chat de la página
 
 ---
 

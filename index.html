@@ -166,26 +166,26 @@
         </div>
     </nav>
 
-    <!-- FRIDAS Hanging Tag -->
-    <!-- Cartel colgante de inscripciones. Hermano del de FRIDAS pero a la
-         izquierda, para que no se pisen. Los textos llevan data-i18n: sin
-         traducción cargada se quedan con el castellano de aquí. -->
-    <a href="inscripcion.html" class="inscripcion-hanging-tag" id="inscripcionTag">
-        <div class="inscripcion-tag-body">
-            <strong data-i18n="inscripcion.tag_title">Inscripciones</strong>
-            <span data-i18n="inscripcion.tag_season">Temporada 2026/2027</span>
-        </div>
-    </a>
-
-    <a href="fridas.html" class="fridas-hanging-tag" id="fridasTag">
-        <div class="fridas-tag-body">FRIDAS</div>
-    </a>
-
     <!-- Hero Section -->
     <section id="inicio" class="hero">
         <div class="hero-video">
             <div class="hero-overlay"></div>
             <div class="hero-content">
+                <!-- Inscripciones y FRIDAS. Hasta el 10/11/2026 eran dos
+                     carteles que colgaban del header; ahora van dentro de la
+                     portada, encima del título. -->
+                <div class="hero-badges">
+                    <a href="inscripcion.html" class="hero-badge hero-badge-inscripcion">
+                        <strong data-i18n="inscripcion.tag_title">Inscripciones</strong>
+                        <span data-i18n="inscripcion.tag_season">Temporada 2026/2027</span>
+                        <i class="fas fa-arrow-right"></i>
+                    </a>
+                    <a href="fridas.html" class="hero-badge hero-badge-fridas">
+                        <strong>FRIDAS</strong>
+                        <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+
                 <h1 class="hero-title">
                     <span class="title-main" data-i18n="hero.title_main">MENORCA</span>
                     <span class="title-sub" data-i18n="hero.title_sub">RUGBY CLUB</span>
@@ -543,27 +543,17 @@
     </section>
 
     <!-- Contact Section -->
-    <section id="contacto" class="contact chat-contact">
+    <section id="contacto" class="contact contact-club">
         <div class="container">
             <div class="section-header">
                 <h2 data-i18n="contact.title">Contacto</h2>
                 <p data-i18n="contact.subtitle">Estamos aquí para resolver todas tus dudas</p>
             </div>
 
-            <div class="chat-activation-content">
-                <div class="chat-hero">
-                    <div class="chat-icon">
-                        <i class="fas fa-comments"></i>
-                    </div>
-                    <h3 data-i18n="chat.live_support">Soporte en vivo disponible</h3>
-                    <p data-i18n="chat.external_info">Serás redirigido a nuestro chat en tiempo real donde podrás hablar directamente con nuestro equipo.</p>
-
-                    <button id="contactChatBtn" class="btn btn-primary chat-btn">
-                        <i class="fas fa-comment-dots"></i>
-                        <span data-i18n="chat.button_text">¿Necesitas ayuda?</span>
-                    </button>
-                </div>
-
+            <!-- Hasta el 10/11/2026 la columna de la izquierda era el chat. Se
+                 quitó y quedan dos columnas: la dirección con las redes, y el
+                 mapa. -->
+            <div class="contact-content">
                 <div class="contact-quick-info">
                     <div class="info-card">
                         <i class="fas fa-map-marker-alt"></i>
@@ -582,20 +572,20 @@
                             <i class="fab fa-tiktok"></i>
                         </a>
                     </div>
+                </div>
 
-                    <div class="contact-map">
-                        <div class="map-container">
-                            <iframe
-                                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3058.123456789!2d4.261290!3d39.866870!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x12959a1b2c3d4e5f%3A0x123456789abcdef!2sSa%20Terranova%208%2C%20Ma%C3%B3%2C%20Illes%20Balears!5e0!3m2!1ses!2ses!4v1726407892123!5m2!1ses!2ses"
-                                width="100%"
-                                height="300"
-                                style="border:0; border-radius: 12px;"
-                                allowfullscreen=""
-                                loading="lazy"
-                                referrerpolicy="no-referrer-when-downgrade"
-                                title="Campo de Rugby Menorca - Sa Terranova 8, Mahón, Illes Balears">
-                            </iframe>
-                        </div>
+                <div class="contact-map">
+                    <div class="map-container">
+                        <iframe
+                            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3058.123456789!2d4.261290!3d39.866870!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x12959a1b2c3d4e5f%3A0x123456789abcdef!2sSa%20Terranova%208%2C%20Ma%C3%B3%2C%20Illes%20Balears!5e0!3m2!1ses!2ses!4v1726407892123!5m2!1ses!2ses"
+                            width="100%"
+                            height="300"
+                            style="border:0; border-radius: 12px;"
+                            allowfullscreen=""
+                            loading="lazy"
+                            referrerpolicy="no-referrer-when-downgrade"
+                            title="Campo de Rugby Menorca - Sa Terranova 8, Mahón, Illes Balears">
+                        </iframe>
                     </div>
                 </div>
             </div>
@@ -621,6 +611,8 @@
                         <li><a href="#nosotros">Nosotros</a></li>
                         <li><a href="#equipo">Equipos</a></li>
                         <li><a href="#galeria">Galería</a></li>
+                        <li><a href="inscripcion.html">Inscripciones</a></li>
+                        <li><a href="fridas.html">FRIDAS</a></li>
                         <li><a href="privacidad.html" data-i18n-privacy="footer.link">Política de Privacidad</a></li>
                         <li><a href="/reglamento">Reglamento y normativa</a></li>
                     </ul>
@@ -666,27 +658,6 @@
                 </button>
             </div>
         </div>
-    </div>
-
-    <!-- External Chat Widget - Content loaded by JavaScript -->
-    <div class="chat-widget" id="chatWidget">
-        <div class="chat-launcher" id="chatLauncher">
-            <div class="chat-icon">
-                <i class="fas fa-comment-dots"></i>
-            </div>
-            <div class="chat-notification" id="chatNotification">1</div>
-        </div>
-        <!-- Chat window content dynamically loaded from external URL -->
-        <div class="chat-window" id="chatWindow" style="display: none;"></div>
-    </div>
-
-    <!-- Floating Donation Button -->
-    <div class="donate-widget">
-        <a href="supportus.html" class="donate-launcher" aria-label="Apóyanos">
-            <div class="donate-icon">
-                <i class="fas fa-heart"></i>
-            </div>
-        </a>
     </div>
 
     <!-- Scripts optimized for performance -->

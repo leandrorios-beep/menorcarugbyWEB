@@ -12,7 +12,6 @@ const siteConfig = {
     'STORE_FR': 'https://menorcarugby.clupik.app/es',
     'STORE_IT': 'https://menorcarugby.clupik.app/es',
     'STORE_PT': 'https://menorcarugby.clupik.app/es',
-    'CHAT_URL': 'https://smartchatweb-pi.vercel.app/',
     'INSTAGRAM_URL': 'https://www.instagram.com/menorcarugby/',
     'FACEBOOK_URL': 'https://www.facebook.com/menorcarugby',
     'TIKTOK_URL': 'https://www.tiktok.com/@menorcarugbyclub'
@@ -29,9 +28,10 @@ const siteConfig = {
  * parallax y el chat no llegaban a arrancar nunca. Nadie se entero porque el
  * error se quedaba en la consola.
  *
- * Son doce piezas independientes: que una pagina no tenga galeria no es razon
- * para quedarse sin chat. Si una falla, se dice en la consola con su nombre y
- * se sigue con la siguiente.
+ * Son once piezas independientes (eran doce hasta que se quito el chat, el
+ * 10/11/2026): que una pagina no tenga galeria no es razon para quedarse sin
+ * formulario. Si una falla, se dice en la consola con su nombre y se sigue con
+ * la siguiente.
  */
 function arrancar(nombre, fn) {
     try {
@@ -50,7 +50,6 @@ document.addEventListener('DOMContentLoaded', function() {
     arrancar('initSmoothScroll', initSmoothScroll);
     arrancar('initScrollAnimations', initScrollAnimations);
     arrancar('initParallaxEffects', initParallaxEffects);
-    arrancar('initChatWidget', initChatWidget);
     arrancar('setupExternalLinks', setupExternalLinks);
     arrancar('setupImageFallbacks', setupImageFallbacks);
     arrancar('setupRandomHeroBackground', setupRandomHeroBackground);
@@ -717,224 +716,6 @@ const animationStyles = `
 const styleSheet = document.createElement('style');
 styleSheet.textContent = animationStyles;
 document.head.appendChild(styleSheet);
-
-// ==========================================================================
-// CHAT WIDGET
-// ==========================================================================
-
-function initChatWidget() {
-    console.log('🚀 CHAT: Starting initialization');
-
-    // Add a global test function
-    window.testChat = function() {
-        console.log('🧪 CHAT: Manual test triggered');
-        const chatWindow = document.getElementById('chatWindow');
-        if (chatWindow) {
-            chatWindow.style.cssText = `
-                position: fixed !important;
-                bottom: 80px !important;
-                right: 0 !important;
-                width: 380px !important;
-                height: 500px !important;
-                background: white !important;
-                border-radius: 12px !important;
-                box-shadow: 0 8px 32px rgba(0,0,0,0.2) !important;
-                z-index: 10000 !important;
-                display: block !important;
-                opacity: 1 !important;
-                transform: scale(1) translateY(0) !important;
-            `;
-            console.log('✅ CHAT: Manual test applied styles');
-        } else {
-            console.error('❌ CHAT: No chatWindow found in manual test');
-        }
-    };
-
-    // DOM is ready (inside DOMContentLoaded), find elements directly
-    {
-        const chatLauncher = document.getElementById('chatLauncher');
-        const contactChatBtn = document.getElementById('contactChatBtn');
-        const chatWindow = document.getElementById('chatWindow');
-        const chatClose = document.getElementById('chatClose');
-
-        console.log('🔍 CHAT: Element check:', {
-            chatLauncher: chatLauncher ? 'FOUND' : 'NOT FOUND',
-            contactChatBtn: contactChatBtn ? 'FOUND' : 'NOT FOUND',
-            chatWindow: chatWindow ? 'FOUND' : 'NOT FOUND',
-            chatClose: chatClose ? 'FOUND' : 'NOT FOUND'
-        });
-
-        if (!chatWindow) {
-            // Normal: el chat solo esta maquetado en la portada. No es un error,
-            // y gritarlo en rojo en las otras catorce paginas solo sirve para que
-            // nadie mire la consola, que es como initGallery se paso anios
-            // reventando sin que se enterara nadie.
-            console.log('CHAT: esta pagina no lleva chat, no se inicia.');
-            const allWithIds = document.querySelectorAll('[id]');
-            allWithIds.forEach(el => {
-                if (el.id.toLowerCase().includes('chat')) {
-                    console.log('📝 Found chat-related element:', el.id, el.tagName);
-                }
-            });
-            return;
-        }
-
-        function showChat() {
-            console.log('💬 CHAT: Opening external chat in iframe');
-
-            // Get external chat URL from config loader
-            let chatURL = 'https://smartchatweb-pi.vercel.app/';
-            if (typeof configLoader !== 'undefined' && configLoader.getChatURL) {
-                chatURL = configLoader.getChatURL();
-            }
-            console.log('🔗 CHAT: Using URL:', chatURL);
-
-            // Check if mobile device
-            const isMobile = window.innerWidth <= 768;
-            console.log('📱 CHAT: Mobile device detected:', isMobile);
-
-            // Create iframe if it doesn't exist
-            let iframe = chatWindow.querySelector('iframe');
-            if (!iframe) {
-                // Clear existing content and create mobile-optimized header
-                const headerStyle = isMobile ?
-                    'background: #182B49; color: white; padding: 12px 16px; border-radius: 0; display: flex; justify-content: space-between; align-items: center; position: fixed; top: 0; left: 0; right: 0; width: 100%; height: 60px; z-index: 10001; box-sizing: border-box;' :
-                    'background: #182B49; color: white; padding: 15px; border-radius: 12px 12px 0 0; display: flex; justify-content: space-between; align-items: center;';
-
-                const closeButtonStyle = isMobile ?
-                    'background: rgba(255,255,255,0.1); border: none; color: white; font-size: 18px; cursor: pointer; padding: 8px; border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;' :
-                    'background: rgba(255,255,255,0.1); border: none; color: white; font-size: 20px; cursor: pointer; padding: 8px; border-radius: 50%; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;';
-
-                const iframeStyle = isMobile ?
-                    'position: fixed; top: 60px; left: 0; right: 0; bottom: 0; width: 100vw; height: calc(100vh - 60px); border: none; border-radius: 0; z-index: 10000;' :
-                    'width: 100%; height: calc(100% - 60px); border: none; border-radius: 0 0 12px 12px;';
-
-                chatWindow.innerHTML = `
-                    <div class="chat-header" style="${headerStyle}">
-                        <div>
-                            <h4 style="margin: 0; font-size: 16px;">Menorca Rugby Chat</h4>
-                            <span style="font-size: 12px; opacity: 0.8;">Soporte en tiempo real</span>
-                        </div>
-                        <button id="chatClose" style="${closeButtonStyle}">&times;</button>
-                    </div>
-                    <iframe src="${chatURL}"
-                            style="${iframeStyle}"
-                            onerror="console.error('Error loading chat iframe')">
-                    </iframe>
-                `;
-
-                // Reconnect close button
-                const newCloseBtn = chatWindow.querySelector('#chatClose');
-                if (newCloseBtn) {
-                    newCloseBtn.onclick = function(e) {
-                        console.log('🖱️ CHAT: Close button clicked from iframe');
-                        hideChat();
-                    };
-                }
-            }
-
-            // Apply different styles based on device type
-            if (isMobile) {
-                // Mobile: Full screen
-                chatWindow.style.cssText = `
-                    position: fixed !important;
-                    top: 0 !important;
-                    left: 0 !important;
-                    right: 0 !important;
-                    bottom: 0 !important;
-                    width: 100vw !important;
-                    height: 100vh !important;
-                    background: white !important;
-                    border-radius: 0 !important;
-                    box-shadow: none !important;
-                    z-index: 10000 !important;
-                    display: block !important;
-                    opacity: 1 !important;
-                    transform: none !important;
-                    margin: 0 !important;
-                    padding: 0 !important;
-                    max-width: none !important;
-                    max-height: none !important;
-                `;
-                console.log('📱 CHAT: Mobile full-screen mode activated');
-            } else {
-                // Desktop: Window style - increased height and better positioning
-                chatWindow.style.cssText = `
-                    position: fixed !important;
-                    bottom: 20px !important;
-                    right: 20px !important;
-                    width: 400px !important;
-                    height: calc(100vh - 120px) !important;
-                    max-height: 700px !important;
-                    background: white !important;
-                    border-radius: 12px !important;
-                    box-shadow: 0 8px 32px rgba(0,0,0,0.3) !important;
-                    z-index: 10000 !important;
-                    display: block !important;
-                    opacity: 1 !important;
-                    transform: scale(1) translateY(0) !important;
-                    transition: all 0.3s ease !important;
-                    border: 1px solid rgba(24, 43, 73, 0.2) !important;
-                `;
-                console.log('🖥️ CHAT: Desktop window mode activated');
-            }
-
-            chatWindow.classList.add('active');
-
-            // Prevent body scroll when chat opens (especially important for mobile)
-            document.body.classList.add('chat-open');
-
-            console.log('✅ CHAT: External chat loaded in iframe');
-
-        }
-
-        function hideChat() {
-            console.log('❌ CHAT: Closing chat window');
-            chatWindow.classList.remove('active');
-
-            // Re-enable body scroll when chat closes
-            document.body.classList.remove('chat-open');
-            chatWindow.style.display = 'none';
-            console.log('✅ CHAT: Chat closed');
-        }
-
-        // Add event listeners
-        if (chatLauncher) {
-            console.log('🎯 CHAT: Setting up launcher');
-            chatLauncher.onclick = function(e) {
-                console.log('🖱️ CHAT: Launcher clicked!');
-                e.preventDefault();
-                e.stopPropagation();
-                showChat();
-                return false;
-            };
-        }
-
-        if (contactChatBtn) {
-            console.log('🎯 CHAT: Setting up contact button');
-            contactChatBtn.onclick = function(e) {
-                console.log('🖱️ CHAT: Contact button clicked!');
-                e.preventDefault();
-                e.stopPropagation();
-                showChat();
-                return false;
-            };
-        }
-
-        if (chatClose) {
-            console.log('🎯 CHAT: Setting up close button');
-            chatClose.onclick = function(e) {
-                console.log('🖱️ CHAT: Close button clicked!');
-                e.preventDefault();
-                e.stopPropagation();
-                hideChat();
-                return false;
-            };
-        }
-
-        console.log('✅ CHAT: Setup completed');
-    }
-}
 
 // ==========================================================================
 // DYNAMIC GALLERY LOADER

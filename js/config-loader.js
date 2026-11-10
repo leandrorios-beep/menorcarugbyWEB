@@ -68,7 +68,6 @@ class ConfigLoader {
             'REGISTRATION_YOUTH': 'https://www.menorcarugbyclub.com/inscripcion',
             'REGISTRATION_SENIOR': 'https://www.menorcarugbyclub.com/inscripcion',
             'REGISTRATION_MEMBERS': 'https://www.menorcarugbyclub.com/socios',
-            'CHAT_URL': 'https://smartchatweb-pi.vercel.app/',
             'INSTAGRAM_URL': 'https://www.instagram.com/menorcarugby/',
             'FACEBOOK_URL': 'https://www.facebook.com/menorcarugby',
             'TIKTOK_URL': 'https://www.tiktok.com/@menorcarugbyclub',
@@ -82,10 +81,6 @@ class ConfigLoader {
     getStoreURL(language = 'es') {
         const key = `STORE_${language.toUpperCase()}`;
         return this.config[key] || this.config['STORE_ES'];
-    }
-
-    getChatURL() {
-        return this.config['CHAT_URL'] || 'https://smartchatweb-pi.vercel.app/';
     }
 
     getContactInfo() {
@@ -124,12 +119,6 @@ class ConfigLoader {
 
         // Update social media links
         this.updateSocialLinks();
-
-        // Setup chat integration
-        this.setupChatIntegration();
-
-        // Setup contact section
-        this.setupContactSection();
 
         // Setup registration buttons
         this.setupRegistrationButtons();
@@ -197,33 +186,6 @@ class ConfigLoader {
         });
     }
 
-    setupChatIntegration() {
-        const chatURL = this.getChatURL();
-
-        // Don't replace the chat launcher functionality - let main.js handle it
-        // This ensures the internal chat widget works properly
-
-        // Contact navigation handled by regular navigation
-
-        // Contact chat button is handled by main.js - no need to override
-    }
-
-    setupContactSection() {
-        // Don't hide the contact section - keep it visible but make chat button work
-        // const contactSection = document.getElementById('contacto');
-        // if (contactSection) {
-        //     contactSection.style.display = 'none';
-        // }
-
-        // Update any contact buttons to open internal chat
-        document.querySelectorAll('[data-action="contact"]').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                e.preventDefault();
-                this.toggleInternalChat();
-            });
-        });
-    }
-
     setupRegistrationButtons() {
         document.querySelectorAll('.registration-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
@@ -269,34 +231,6 @@ class ConfigLoader {
 
         // Hide loading after a short delay
         setTimeout(() => this.hideLoadingMessage(), 1000);
-    }
-
-    openExternalChat(url) {
-        // Use internal chat widget instead of external window
-        this.toggleInternalChat();
-    }
-
-    toggleInternalChat() {
-        // Find the chat window element
-        const chatWindow = document.getElementById('chatWindow');
-        if (chatWindow) {
-            // Show the chat with animation
-            chatWindow.classList.add('active');
-
-            // Focus on the chat input if available
-            setTimeout(() => {
-                const chatInput = document.getElementById('chatInput');
-                if (chatInput) {
-                    chatInput.focus();
-                }
-            }, 300);
-        } else {
-            console.warn('Internal chat window not found');
-            // If main.js toggleChat function is available, use it
-            if (typeof window.toggleChat === 'function') {
-                window.toggleChat();
-            }
-        }
     }
 
     showLoadingMessage(message) {

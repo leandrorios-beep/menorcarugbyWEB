@@ -29,9 +29,6 @@ REGISTRATION_SENIOR=https://www.menorcarugbyclub.com/inscripcion
 # Socios es otra cosa distinta de jugar: tiene su propia pagina.
 REGISTRATION_MEMBERS=https://www.menorcarugbyclub.com/socios
 
-# CHAT URL (SmartChat)
-CHAT_URL=https://smartchatweb-pi.vercel.app/
-
 # SOCIAL MEDIA
 INSTAGRAM_URL=https://www.instagram.com/menorcarugby/
 FACEBOOK_URL=https://www.facebook.com/menorcarugby

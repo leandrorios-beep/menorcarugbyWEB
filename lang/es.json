@@ -211,13 +211,6 @@
     "made_with": "Diseñado con",
     "for": "para la comunidad rugbística de Menorca"
   },
-  "chat": {
-    "button_text": "¿Necesitas ayuda?",
-    "opening": "Abriendo chat...",
-    "loading": "Conectando con nuestro equipo...",
-    "external_info": "Serás redirigido a nuestro chat en tiempo real donde podrás hablar directamente con nuestro equipo.",
-    "live_support": "Atención en directo disponible"
-  },
   "forms": {
     "success": "¡Solicitud enviada correctamente! Te escribiremos pronto.",
     "error": "Error en el formulario",
